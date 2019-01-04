@@ -1,0 +1,41 @@
+site_name: gdalcubes
+site_url: https://github.com/appelmar/gdalcubes
+repo_url: https://github.com/appelmar/gdalcubes
+edit_uri: ""
+
+site_author: Marius Appel
+nav:
+    - Home: index.md
+    - Installation: installation.md
+    - Basic concepts: concepts.md
+    - R package: R.md
+#    - Tutorial: tutorial.md
+    - C++ API: cpp-api.md
+    - Server API: server-api.md
+    - Credits: credits.md
+
+theme:
+  name: 'material'
+  favicon: 'favicon.ico'
+  feature:
+      tabs: false
+  logo:
+      icon: 'collections'
+  palette:
+    primary: 'blue grey'
+    accent: 'deep orange'
+
+#extra:
+#  social:
+#    - type: 'github'
+#      link: 'https://github.com/appelmar/gdalcubes'
+#    - type: 'twitter'
+#      link: 'https://twitter.com/appelmar'
+
+use_directory_urls: false
+
+markdown_extensions:
+  - pymdownx.arithmatex
+
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
