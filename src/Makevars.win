@@ -1,0 +1,53 @@
+
+RWINLIB_GDAL = ../windows/gdal2-2.2.3
+RWINLIB_NETCDF = ../windows/netcdf-4.4.1.1-dap
+RWINLIB_CURL = ../windows/libcurl-7.59.0
+
+OBJECTS =   gdalcubes/src/apply_pixel.obj \
+            gdalcubes/src/config.obj \
+			gdalcubes/src/cube.obj \
+			gdalcubes/src/cube_factory.obj \
+			gdalcubes/src/error.obj \
+			gdalcubes/src/image_collection.obj \
+			gdalcubes/src/image_collection_cube.obj \
+			gdalcubes/src/join_bands.obj \
+			gdalcubes/src/reduce.obj \
+			gdalcubes/src/select_bands.obj \
+			gdalcubes/src/stream.obj \
+			gdalcubes/src/swarm.obj \
+			gdalcubes/src/view.obj \
+			gdalcubes/src/external/tinyexpr/tinyexpr.obj \
+			gdalcubes/src/external/tiny-process-library/process.obj \
+			gdalcubes/src/external/tiny-process-library/process_win.obj \
+			gdalcubes.obj \
+			RcppExports.obj
+
+PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
+               -I$(RWINLIB_NETCDF)/include \
+               -I$(RWINLIB_CURL)/include/curl \
+               -DCURL_STATICLIB
+ 
+
+PKG_LIBS = -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
+  -lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
+	-ljson-c -lnetcdf -lmariadbclient -lpq -lintl -lwebp -lcurl -lssh2 -lssl -lcrypto \
+	-lkea -lhdf5_cpp -lhdf5_hl -lhdf5 -lexpat -lfreexl -lcfitsio \
+	-lmfhdf -ldf -lxdr \
+	-lopenjp2 -ljasper -lpng16 -ljpeg -ltiff -lgeotiff -lgif -lxml2 -llzma -lszip -lz \
+	-lodbc32 -lodbccp32 -liconv -lpsapi -lws2_32 -lcrypt32 -lwldap32 -lsecur32 -lgdi32 
+	
+
+all: clean winlibs
+
+CXX_STD=CXX11
+
+winlibs:
+	"${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" --vanilla "../tools/winlibs.R"
+
+clean:
+	rm -f $(SHLIB) $(OBJECTS)
+	
+.PHONY: all winlibs clean
+	
+	
+	
