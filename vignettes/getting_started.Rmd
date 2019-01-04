@@ -1,0 +1,217 @@
+---
+title: "Getting started with gdalcubes"
+author: "Marius Appel"
+output: 
+  html_document:
+    toc: true
+    theme: united
+vignette: >
+  %\VignetteIndexEntry{Getting started with gdalcubes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
+```
+
+This document presents a first vignette to illustrate basic ideas of the gdalcubes R package and library. 
+
+It will present how to process satellite imagary from 
+the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://modis.gsfc.nasa.gov/)) that is small enough to process locally even on older machines. These data come as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files. Please make sure that your GDAL installation
+supports the HDF4 driver (e.g. by running `gdalinfo --format HDF4` in the command line).
+
+
+We will follow a typical workflow by
+
+1. creating an image collection from raw files
+2. creating data cubes at various spatiotemporal resolutions and extents,
+3. selecting bands, applying pixel-wise functions, reducing data cubes over time,
+4. joining data cubes
+
+
+## Download sample data
+
+The vignette will use two different  MODIS datasets, which will be eventually combined in a single data cube. The first dataset contains monthly aggregated vegetation indexes over Europe from the MODIS product MOD13A3, covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 360 megabytes. The second dataset contains 8-daily land surface temperature from the MODIS product MOD11A2 for the same area and time, summing to a zip archive of approximately 600 megabytes.
+
+The code below downloads and unzips the data to the current working directory. 
+
+```{r data_download, echo=TRUE, results='hide'}
+if (!file.exists("MOD11A2.zip"))
+  download.file("https://uni-muenster.sciebo.de/s/NSUNrX0Q3UcJRKq/download", destfile="MOD11A2.zip",mode = "wb")
+if (!file.exists("MOD13A3.zip"))
+  download.file("https://uni-muenster.sciebo.de/s/qsy2zAV9TyjWlCG/download", destfile="MOD13A3.zip",mode = "wb")
+
+unzip("MOD11A2.zip", exdir = "MOD11A2")
+unzip("MOD13A3.zip", exdir = "MOD13A3")
+```
+
+As a result, this will generate two directories MOD11A2 and MOD13A3 with HDF files from the corresponding MODIS product.
+
+
+
+# Creating an image collection
+
+As a first step, we need to tell gdalcubes how the products are organized in files. For MODIS data, each file is a complete image, i.e. it contains all bands. Other satellite imagery such as Landsat or Sentinel 2 can be organized quite differently with band dyta coming from different files. 
+Furthermore gdalcubes must know how to derive the image aquisition date / time from the filename. All this needed information is specified in an _image collection format_, which is a set of regular expressions in a JSON file. gdalcubes comes with a set of predefined formats, including both MODIS products. The following command gives a list with identifiers and short descriptions of available predefined image collection formats. 
+
+
+
+```{r}
+library(gdalcubes)
+knitr::kable(gcbs_collection_formats())
+```
+
+
+
+Since the MODIS data are HDF4 files, reading the data with GDAL is a bit tricky, as we must know how to identify the corresponding subdatasets in addition to the filenames. 
+For MOD11A2, the pattern for the subdatasets is `HDF4_EOS:EOS_GRID:"/path/to/file":MODIS_Grid_8Day_1km_LST:BAND`, where `BAND` can be e.g. `"LST_Day_1km"`.
+The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL dataset identifiers, which then can be put as first argument to `gcbs_create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
+
+```{r}
+file_subdatasets = expand.grid(file=list.files("MOD11A2", pattern=".hdf$", full.names = TRUE), 
+            subdataset=c("LST_Day_1km", "QC_Day", "Day_view_time", "LST_Night_1km",
+                        "QC_Night", "Night_view_time", "Emis_31", "Emis_32"))
+
+gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MODIS_Grid_8Day_1km_LST:", file_subdatasets$subdataset, sep="")
+
+gcbs_create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
+```
+
+# Creating a data cube
+
+The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. `gcbs_cube()` creates a data cube from an image collection. This function takes one to three arguments:
+
+1. an image collection object as created above
+2. a data cube view defining the spatiotemporal resolution and extent of the target cube
+3. the internal size of chunks how the cube is materialized in memory 
+
+If no data cube view is provided, a default cube that covers the whole extent of the
+collection at low resolution in web mercator projection (or in the CRS of the data if all images have the same CRS) is created. The chunk size defaults to (16 x 256 x 256) pixels in time, y, and x directions.
+
+Below, we create a data cube with a default cube view and print some basic information about its dimensions and bands.
+
+```{r}
+x = gcbs_cube(gcbs_image_collection("MOD11A2.db"))
+x
+
+gcbs_bands(x)
+gcbs_dimensions(x)
+gcbs_get_projection(x)
+```
+
+Notice that `gcbs_cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. by `plot`). This not only applies to data cubes from image collections but also for derived cubes (see further below).
+
+In most cases, users want to specify the extent and resolution manually. Above, the temporal resolution of the cube was 3 months whereas below, we define a custom data cube view with temporal resolution of one month.
+
+```{r}
+v = gcbs_view(proj="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs", 
+          nx = 633, ny=413, l = -1703607, r = 1703607, t = 6671703, b = 4447802, 
+          t0="2018-01", t1="2018-12", dt="P1M")
+MOD11A2.cube = gcbs_cube(gcbs_image_collection("MOD11A2.db"), v)
+MOD11A2.cube
+```
+
+# Data cube operations
+
+The package comes with a few operations on data cubes to (i) select bands (`gcbs_select_bands`), (ii) apply pixel wise arithmetic expressions (`gcbs_apply_pixel`), (iii) reduce data cubes over time (`gcbs_reduce`), (iv) apply an R function over chunks of a data cube (`gcbs_apply_chunk`), and (v) join bands of identically shaped data cubes (`gcbs_join_bands`). 
+
+The following code demonstrates the first three of these oprations and how results can be plotted.
+
+```{r}
+MOD11A2.bandselect = gcbs_select_bands(MOD11A2.cube, c("LST_DAY","LST_NIGHT"))
+MOD11A2.daynight_difference = gcbs_apply_pixel(MOD11A2.bandselect, "0.02*(LST_DAY-LST_NIGHT)",names = "LST_difference")
+MOD11A2.reduce = gcbs_reduce(MOD11A2.daynight_difference, "median")
+plot(MOD11A2.reduce, col=heat.colors, key.pos=1)
+```
+
+The result is the median day night surface temperature difference for all pixels between Jan and December 2018.
+Notice that no data is actually read until we call `plot()`, i.e. all operations again return _proxy_ objects.
+We can also use the pipe operator to write the same expressions as written below.
+
+```{r}
+library(magrittr) # get the pipe
+gcbs_cube(gcbs_image_collection("MOD11A2.db"), v) %>%
+  gcbs_select_bands(c("LST_DAY","LST_NIGHT")) %>%
+  gcbs_apply_pixel("0.02*(LST_DAY-LST_NIGHT)", names = "LST difference") %>%
+  gcbs_reduce("median") %>%
+  plot(col=heat.colors, key.pos=1)
+```
+
+
+
+
+
+# Joining data cubes
+
+To join the land surface temperature data with vegetation index data, we have to repeat some of the steps for the MOD13A3 dataset. Below, we will create an image collection and a data cube with identical shape and afterwards join it with the land surface temperature cube.
+
+
+```{r}
+file_subdatasets = expand.grid(file=list.files("MOD13A3", pattern=".hdf$", full.names = TRUE), 
+            subdataset=c("1 km monthly NDVI", "1 km monthly EVI", "1 km monthly VI Quality",
+                        "1 km monthly red reflectance", "1 km monthly NIR reflectance",
+                        "1 km monthly blue reflectance","1 km monthly MIR reflectance"))
+
+gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MOD_Grid_monthly_1km_VI:",file_subdatasets$subdataset, sep="")
+gcbs_create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
+
+
+
+# create data cube for vegetion index data using the same view as above
+MOD11A2.cube = gcbs_cube(gcbs_image_collection("MOD11A2.db"), v)
+MOD13A3.cube = gcbs_cube(gcbs_image_collection("MOD13A3.db"), v)
+MOD13A3.cube
+
+
+joined.cube = gcbs_join_bands(
+  gcbs_select_bands(MOD13A3.cube, "NDVI"), 
+  gcbs_select_bands(MOD11A2.cube, c("LST_DAY", "LST_NIGHT")))
+joined.cube
+```
+
+# Applying R functions over chunks
+
+Data cubes are processed chunk-wise, where users can specify the size of chunks when they create a data cube from an image collection in `gcbs_cube()`.
+The function `gcbs_chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
+in separate R processes (data is streamed to stdin of these processes) and first must read the data as array with `gcbs_read_stream_as_array()`.
+This function returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written to stdout using `gcbs_write_stream_from_array`. In the example below, we use the joined data cube and compute
+pixel-wise rank correlations between all three pairs of bands. The result is a map with three correlation coefficients between NDVI, LST_DAY, and LST_NIGHT. Results are of course not very meaningful but this example illustrates how R functions can be applied on the data.
+
+```{r}
+f <- function() {
+  x = gcbs_read_stream_as_array()
+  out <- reduce_time(x, function(y) {
+    c(cor(y[1,], y[2,] , use="na.or.complete", method="spearman"),
+    cor(y[1,], y[3,] , use="na.or.complete", method="spearman"),
+    cor(y[2,], y[3,] , use="na.or.complete", method="spearman"))
+  })
+  gcbs_write_stream_from_array(out)
+}
+
+plot(gcbs_chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
+```
+
+
+# Explicit evaluation
+Sometimes it is be useful to store resulting data on disk. The function `gcbs_eval()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
+
+```{r}
+gcbs_eval(gcbs_reduce(joined.cube, "max"), "test.nc")
+```
+
+Similarly, gdalcubes proxy objects can be converted as [stars](https://github.com/r-spatial/stars) objects with `as_stars`. This function
+will call `gcbs_eval` and load the data using the stars package.
+
+
+
+# Multithreading
+gdalcubes supports multithreaded evaluation of data cube operations. You just need to call e.g. `gcbs_set_threads(8)` and all following operations will use up to 8 threads. Internally, threads are assigned to chunks of result data cubes ,i.e., one chunk of the result is processed by exactly one thread. Consequently, if the result has only one chunk, multhreading will have no effect.
+
+
+
+# Future work
+This vignette presented a very simple first example with a small dataset. Future vignettes will demonstrate how to process larger imagery as from Sentinel 2 and how to run gdalcubes in the cloud. 
+
