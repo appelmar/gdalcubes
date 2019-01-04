@@ -1,0 +1,3 @@
+[submodule "src/gdalcubes"]
+	path = src/gdalcubes
+	url = https://github.com/appelmar/gdalcubes
