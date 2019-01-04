@@ -1,8 +1,0 @@
-http://localhost:11111/gdalcubes/api
-http://localhost:11112/gdalcubes/api
-http://localhost:11113/gdalcubes/api
-http://localhost:11114/gdalcubes/api
-http://localhost:11115/gdalcubes/api
-http://localhost:11116/gdalcubes/api
-http://localhost:11117/gdalcubes/api
-http://localhost:11118/gdalcubes/api
