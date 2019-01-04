@@ -1,4 +1,24 @@
-PKG_CPPFLAGS=-I/usr/include/gdal -I/usr/include/gdalcubes -I/usr/include/x86_64-linux-gnu/curl 
-PKG_LIBS=-lgdalcubes -lnetcdf -lgdal
+
+OBJECTS =   gdalcubes/src/apply_pixel.o \
+            gdalcubes/src/config.o \
+			gdalcubes/src/cube.o \
+			gdalcubes/src/cube_factory.o \
+			gdalcubes/src/error.o \
+			gdalcubes/src/image_collection.o \
+			gdalcubes/src/image_collection_cube.o \
+			gdalcubes/src/join_bands.o \
+			gdalcubes/src/reduce.o \
+			gdalcubes/src/select_bands.o \
+			gdalcubes/src/stream.o \
+			gdalcubes/src/swarm.o \
+			gdalcubes/src/view.o \
+			gdalcubes/src/external/tinyexpr/tinyexpr.o \
+			gdalcubes/src/external/tiny-process-library/process.o \
+			gdalcubes/src/external/tiny-process-library/process_unix.o \
+			gdalcubes.o \
+			RcppExports.o
+
+PKG_CPPFLAGS=-I/usr/include/gdal -I/usr/include/x86_64-linux-gnu/curl 
+PKG_LIBS=-lnetcdf -lgdal
 CXX_STD=CXX11
-# TODO: use autoconf to derive locations for gdal and gdalcubes
+

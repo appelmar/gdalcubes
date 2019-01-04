@@ -1,5 +1,5 @@
 
-#include <gdalcubes.h>
+#include "gdalcubes/src/gdalcubes.h"
 
 // [[Rcpp::plugins("cpp11")]]
 // [[Rcpp::depends(RcppProgress)]]
