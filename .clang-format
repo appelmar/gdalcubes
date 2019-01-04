@@ -1,0 +1,8 @@
+BasedOnStyle: Google
+IndentWidth: 4
+Language: Cpp
+ColumnLimit: 0
+AlignTrailingComments: true
+#FixNamespaceComments: true # not yet supported
+ReflowComments: true
+NamespaceIndentation: All

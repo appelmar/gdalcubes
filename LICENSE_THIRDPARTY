@@ -1,0 +1,69 @@
+gdalcubes makes use of the following third party software.
+
+**[GDAL](https://www.gdal.org/):  A translator library for raster and vector geospatial data formats**
+    - Copyright (c) 2000, Frank Warmerdam
+    - Copyright (c) The GDAL/OGR project team
+    - License:  [MIT license](https://opensource.org/licenses/MIT)
+    - Parts of GDAL are licensed under different terms, see [https://github.com/OSGeo/gdal/blob/master/gdal/LICENSE.TXT](https://github.com/OSGeo/gdal/blob/master/gdal/LICENSE.TXT)
+    - gdalcubes may statically or dynamically link to the gdal library depending on compilation flags
+
+**[json](https://github.com/nlohmann/json): JSON for Modern C++**
+     - Copyright (c) 2013-2018 Niels Lohmann
+     - License: [MIT license](https://opensource.org/licenses/MIT)
+     - gdalcubes distributes an unmodified version of the library under `src/external/json.hpp`
+
+**[SQLite](https://www.sqlite.org/): A self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine**
+     - Copyright:  _public domain_
+     - License: _public domain_
+     - gdalcubes may statically or dynamically link to the sqlite library depending on compilation flags
+
+**[CURL](https://curl.haxx.se/): Command line tool and library for transferring data with URLs**
+     - Copyright (c) 1996 - 2018, Daniel Stenberg
+     - License: [curl license](https://curl.haxx.se/docs/copyright.html)
+     - gdalcubes may statically or dynamically link to the libcurl library depending on compilation flags
+
+**[ExprTk](http://www.partow.net/programming/exprtk/): A C++ Mathematical Expression Parsing and Evaluation Library**
+    - Copyright (c) Arash Partow (1999-2018)
+    - License:  [MIT license](https://opensource.org/licenses/MIT)
+    - gdalcubes distributes an unmodified version of the library under `src/external/exprtk.hpp`
+
+**[netCDF](https://www.unidata.ucar.edu/software/netcdf): The Unidata network Common Data Form C library**
+    - Copyright (c) 1993-2017 University Corporation for Atmospheric Research/Unidata
+    - License: MIT-like, see [https://www.unidata.ucar.edu/software/netcdf/copyright.html](https://www.unidata.ucar.edu/software/netcdf/copyright.html)
+    - DOI: http://doi.org/10.5065/D6H70CW6
+    - gdalcubes may statically or dynamically link to the NetCDF C library depending on compilation flags
+
+**[tiny-process-library](https://gitlab.com/eidheim/tiny-process-library): A small platform independent library making it simple to create and stop new processes in C++**
+    - Copyright (c) 2015-2018 Ole Christian Eidheim
+    - License:  [MIT license](https://opensource.org/licenses/MIT)
+    - gdalcubes_server includes may statically or dynamically link to the cpprestsdk library depending on compilation flags
+    - gdalcubes distributes an unmodified version of the library under `src/external/tiny-process-library`
+
+**[Catch](https://www.gdal.org/): A modern, C++-native, header-only, test framework for unit-tests, TDD and BDD**
+    - Copyright (c) 2010 Two Blue Cubes Ltd
+    - License:  [Boost Software License 1.0](https://www.boost.org/LICENSE_1_0.txt)
+    - gdalcubes distributes an unmodified version of the library under `src/external/catch.hpp`
+
+**[Boost.Filesystem](https://www.boost.org/doc/libs/1_68_0/libs/filesystem/doc/index.htm)**
+    - Copyright (c) Beman Dawes, 2011
+    - License:  [Boost Software License 1.0](https://www.boost.org/LICENSE_1_0.txt)
+    - gdalcubes may statically or dynamically link to the Boost.Filesystem library depending on compilation flags
+
+**[Boost.Program_options](https://www.boost.org/doc/libs/1_68_0/doc/html/program_options.html)**
+    - Copyright (c) 2002-2004 Vladimir Prus
+    - License:  [Boost Software License 1.0](https://www.boost.org/LICENSE_1_0.txt)
+    - gdalcubes may statically or dynamically link to the Boost.Program_options library depending on compilation flags
+
+**[Date](https://github.com/HowardHinnant/date): A date and time library based on the C++11/14/17 <chrono> header**
+    - Copyright (c) 2015, 2016, 2017 Howard Hinnant
+    - Copyright (c) 2016 Adrian Colomitchi
+    - Copyright (c) 2017 Florian Dang
+    - Copyright (c) 2017 Paul Thompson
+    - Copyright (c) 2018 Tomasz Kamiński
+    - License: [MIT license](https://opensource.org/licenses/MIT)
+    - gdalcubes distributes an unmodified version of the library under `src/external/date.h`
+
+**[cpprestsdk](https://github.com/Microsoft/cpprestsdk)**
+    - Copyright (c) Microsoft Corporation
+    - License:  [MIT license](https://opensource.org/licenses/MIT)
+    - gdalcubes_server includes may statically or dynamically link to the cpprestsdk library depending on compilation flags

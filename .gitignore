@@ -1,0 +1,16 @@
+.idea/
+cmake-build-debug/
+cmake-build-release/
+build/
+cppcheck.log
+build_info.h
+gdalcubes_src_*.tar.gz
+.Rproj.user
+.Rhistory
+Rpkg/gdalcubes/man
+Rpkg/gdalcubes/gdalcubes.Rproj
+doc/site
+*.o
+*.so
+*.a
+*.gch
