@@ -27,5 +27,10 @@ if(!file.exists("../windows/libcurl-7.59.0/include/curl/curl.h")){
   unlink("lib.zip")
 }
 
-
-
+# previous winlibs come with sqlite library but not with header file
+if(!file.exists("../windows/sqlite-amalgamation-3260000/sqlite3.h")) {
+  download.file("https://www.sqlite.org/2018/sqlite-amalgamation-3260000.zip", "lib.zip", quiet = TRUE)
+  dir.create("../windows", showWarnings = FALSE)
+  unzip("lib.zip", exdir = "../windows")
+  unlink("lib.zip")
+}

@@ -2,29 +2,31 @@
 RWINLIB_GDAL = ../windows/gdal2-2.2.3
 RWINLIB_NETCDF = ../windows/netcdf-4.4.1.1-dap
 RWINLIB_CURL = ../windows/libcurl-7.59.0
+RWINLIB_SQLITE = ../windows/sqlite-amalgamation-3260000
 
-OBJECTS =   gdalcubes/src/apply_pixel.obj \
-            gdalcubes/src/config.obj \
-			gdalcubes/src/cube.obj \
-			gdalcubes/src/cube_factory.obj \
-			gdalcubes/src/error.obj \
-			gdalcubes/src/image_collection.obj \
-			gdalcubes/src/image_collection_cube.obj \
-			gdalcubes/src/join_bands.obj \
-			gdalcubes/src/reduce.obj \
-			gdalcubes/src/select_bands.obj \
-			gdalcubes/src/stream.obj \
-			gdalcubes/src/swarm.obj \
-			gdalcubes/src/view.obj \
-			gdalcubes/src/external/tinyexpr/tinyexpr.obj \
-			gdalcubes/src/external/tiny-process-library/process.obj \
-			gdalcubes/src/external/tiny-process-library/process_win.obj \
-			gdalcubes.obj \
-			RcppExports.obj
+OBJECTS =   gdalcubes/src/apply_pixel.o \
+            gdalcubes/src/config.o \
+			gdalcubes/src/cube.o \
+			gdalcubes/src/cube_factory.o \
+			gdalcubes/src/error.o \
+			gdalcubes/src/image_collection.o \
+			gdalcubes/src/image_collection_cube.o \
+			gdalcubes/src/join_bands.o \
+			gdalcubes/src/reduce.o \
+			gdalcubes/src/select_bands.o \
+			gdalcubes/src/stream.o \
+			gdalcubes/src/swarm.o \
+			gdalcubes/src/view.o \
+			gdalcubes/src/external/tinyexpr/tinyexpr.o \
+			gdalcubes/src/external/tiny-process-library/process.o \
+			gdalcubes/src/external/tiny-process-library/process_win.o \
+			gdalcubes.o \
+			RcppExports.o
 
 PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
                -I$(RWINLIB_NETCDF)/include \
                -I$(RWINLIB_CURL)/include/curl \
+               -I$(RWINLIB_SQLITE) \
                -DCURL_STATICLIB
  
 
