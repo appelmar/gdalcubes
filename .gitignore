@@ -41,3 +41,10 @@ vignettes/*.pdf
 *.a
 *.o
 *.obj
+
+# winlibs
+windows
+
+# vignette files
+vignettes/*
+!vignettes/*.Rmd

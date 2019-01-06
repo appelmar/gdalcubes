@@ -40,9 +40,9 @@ The code below downloads and unzips the data to the current working directory.
 
 ```{r data_download, echo=TRUE, results='hide'}
 if (!file.exists("MOD11A2.zip"))
-  download.file("https://uni-muenster.sciebo.de/s/NSUNrX0Q3UcJRKq/download", destfile="MOD11A2.zip",mode = "wb")
+  download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile="MOD11A2.zip",mode = "wb")
 if (!file.exists("MOD13A3.zip"))
-  download.file("https://uni-muenster.sciebo.de/s/qsy2zAV9TyjWlCG/download", destfile="MOD13A3.zip",mode = "wb")
+  download.file("https://uni-muenster.sciebo.de/s/jK90qk4FdlNtY21/download", destfile="MOD13A3.zip",mode = "wb")
 
 unzip("MOD11A2.zip", exdir = "MOD11A2")
 unzip("MOD13A3.zip", exdir = "MOD13A3")
