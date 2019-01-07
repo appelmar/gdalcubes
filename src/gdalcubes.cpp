@@ -151,6 +151,10 @@ Rcpp::List libgdalcubes_version() {
       Rcpp::Named("GIT_COMMIT") = v.GIT_COMMIT));
 }
 
+// [[Rcpp::export]]
+void libgdalcubes_add_format_dir(std::string dir) {
+  config::instance()->add_collection_format_preset_dir(dir);
+}
 
 // [[Rcpp::export]]
 void libgdalcubes_init() {

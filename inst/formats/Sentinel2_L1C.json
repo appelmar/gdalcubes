@@ -1,0 +1,67 @@
+{
+  "description" : "Image collection format for Sentinel 2 Level 1C data as downloaded from the Copernicus Open Access Hub, expects a list of file paths as input. The format works on original ZIP compressed as well as uncompressed imagery.",
+  "tags" : ["Sentinel", "Copernicus", "ESA", "TOA"],
+  "pattern" : ".+/IMG_DATA/.+\\.jp2",
+  "images" : {
+    "pattern" : ".*/(.+)\\.SAFE.*"
+  },
+  "datetime" : {
+    "pattern" : ".*MSIL1C_(.+?)_.*",
+    "format" : "%Y%m%dT%H%M%S"
+  },
+  "bands" : {
+    "B01" : {
+      "nodata" : 0,
+      "pattern" : ".+_B01\\.jp2"
+    },
+    "B02" : {
+      "nodata" : 0,
+      "pattern" : ".+_B02\\.jp2"
+    },
+    "B03" : {
+      "nodata" : 0,
+      "pattern" : ".+_B03\\.jp2"
+    },
+    "B04" : {
+      "nodata" : 0,
+      "pattern" : ".+_B04\\.jp2"
+    },
+    "B05" : {
+      "nodata" : 0,
+      "pattern" : ".+_B05\\.jp2"
+    },
+    "B06" : {
+      "nodata" : 0,
+      "pattern" : ".+_B06\\.jp2"
+    },
+    "B07" : {
+      "nodata" : 0,
+      "pattern" : ".+_B07\\.jp2"
+    },
+    "B08" : {
+      "nodata" : 0,
+      "pattern" : ".+_B08\\.jp2"
+    },
+    "B8A" : {
+      "nodata" : 0,
+      "pattern" : ".+_B8A\\.jp2"
+    },
+    "B09" : {
+      "nodata" : 0,
+      "pattern" : ".+_B09\\.jp2"
+    },
+    "B10" : {
+      "nodata" : 0,
+      "pattern" : ".+_B10\\.jp2"
+    },
+    "B11" : {
+      "nodata" : 0,
+      "pattern" : ".+_B11\\.jp2"
+    },
+    "B12" : {
+      "nodata" : 0,
+      "pattern" : ".+_B12\\.jp2"
+    }
+  }
+
+}

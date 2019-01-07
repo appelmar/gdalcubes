@@ -73,19 +73,44 @@ gcbs_create_image_collection <-function(files, format, out_file=tempfile(fileext
 #' They are described as a set of regular expressions in a JSON file and used by gdalcubes to extract this information 
 #' from the paths and/or filenames. 
 #' 
+#' @param print Should available formats and their descriptions be printed nicely?
 #' @return A data.frame with columns name and description where the former describes the unique identifier that can be used in \code{gcbs_create_image_collection} and the
 #' latter gives a brief description of the format.
 #' @export
-gcbs_collection_formats <-function()
+gcbs_collection_formats <-function(print=TRUE)
 {
   df = libgdalcubes_list_collection_formats()
   df$name = as.character(df$name)
   df$path = as.character(df$path)
   df$description = ""
+  df$tags = ""
   for (i in 1:nrow(df)) {
     x = jsonlite::read_json(df$path[i])$description
     if (!is.null(x))
       df$description[i] = x
+    x = jsonlite::read_json(df$path[i])$tags
+    if (!is.null(x))
+      df$description[i] = paste(df$description[i], " [TAGS: ", paste(x, collapse=", "), "]", sep="") 
   }
-  return(df[,c("name","description")])
+  w = getOption("width")
+  
+  lw = max(nchar(df$name))
+  if (lw >= w) {
+    # TODO: what if current width is less than the format identifier column?
+  }
+  
+  y = lapply(df$description, strwrap, width=w-lw-3)
+  
+  # TODO: header
+  for (i in 1:nrow(df)) {
+    cat( rep(" ", lw-nchar(df$name[i])), df$name[i], " | ", y[[i]][1], sep="")
+    cat("\n", sep="")
+    if (length(y[[i]]) > 1) {
+      for (j in 2:length(y[[i]])) {
+        cat(rep(" ", lw)," | ", y[[i]][j], sep="")
+        cat("\n", sep="")
+      }
+    }
+  }
+  return(invisible(df[,c("name","description")]))
 }

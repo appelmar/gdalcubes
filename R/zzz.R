@@ -5,6 +5,7 @@
   # call gdalcubes_init()
   if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
     libgdalcubes_init()
+    libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
   }
   invisible()
 }
