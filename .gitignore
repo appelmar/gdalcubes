@@ -48,3 +48,5 @@ windows
 # vignette files
 vignettes/*
 !vignettes/*.Rmd
+
+example*.R
