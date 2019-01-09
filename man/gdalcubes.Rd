@@ -6,5 +6,5 @@
 \alias{gdalcubes-package}
 \title{gdalcubes: Earth observation data cubes from GDAL image collections}
 \description{
-The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets..
+The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets.
 }

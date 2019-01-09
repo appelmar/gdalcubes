@@ -35,7 +35,8 @@ gcbs_chunk_apply <- function(cube, f) {
   stopifnot(is.gcbs_cube(cube))
   srcfile =  tempfile(".stream_",fileext = ".R")
   cat(serialize_function(f), file = srcfile, append = FALSE)
-  cmd <- paste("Rscript ", "--vanilla ", "-e ", "\"require(gdalcubes)\" ", "-e ", "\"do.call(eval(parse('", srcfile ,"')), args=list())\"", sep="")
+  
+  cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e ", "\"require(gdalcubes)\" ", "-e ", "\"do.call(eval(parse('", srcfile ,"')), args=list())\"", sep="")
   x = libgdalcubes_create_stream_cube(cube, cmd)
   class(x) <- c("gcbs_chunk_apply_cube", "gcbs_cube", "xptr")
   return(x)
