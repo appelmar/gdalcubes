@@ -20,7 +20,7 @@ RUN useradd -m -d /home/rstudio rstudio && echo "rstudio:rstudio" | chpasswd
 
 RUN Rscript -e "library(devtools)" -e "install_git(\"https://github.com/appelmar/gdalcubes_R\", args=\"--recursive\")"
 
-RUN echo "[program:rstudio-server]\ncommand=rstudio-server start" >> /opt/supervisord.conf
+RUN echo "[supervisord]\nnodaemon=true\nlogfile=/opt/supervisord.log\n[program:rstudio-server]\ncommand=rstudio-server start" > /opt/supervisord.conf
 
 
 EXPOSE 8787
