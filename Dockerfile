@@ -29,5 +29,5 @@ EXPOSE 8787
 CMD ["/usr/bin/supervisord", "-c", "/opt/supervisord.conf"]
 
 
-# docker build -t appelmar/gdalcubes_demo .
-# run with docker run -d -p 8787:8787 -p 1111:1111  appelmar/gdalcubes_demo
+# docker build -t appelmar/gdalcubes_R .
+# run with docker run -d -p 8787:8787 -p 1111:1111  appelmar/gdalcubes_R

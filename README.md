@@ -29,13 +29,13 @@ install_git("https://github.com/appelmar/gdalcubes_R", args="--recursive")
 The package includes a Dockerfile that runs [RStudio Server](https://www.rstudio.com/products/rstudio-server/) with the gdalcubes R package. Use the following commands to run a container that becomes accessible from a browser at http://localhost:8787 (user `rstudio`, password `rstudio`).
 
 ```
-docker build -t appelmar/gdalcubes_demo .
-docker run -d -p 8787:8787 appelmar/gdalcubes_demo
+docker build -t appelmar/gdalcubes_R .
+docker run -d -p 8787:8787 appelmar/gdalcubes_R
 ```
 
 # Getting started
-The package includes a vignette that illustrates the basic concepts and funcitonality on a 
-small (a few hundred megabytes) MODIS dataset (see `vignettes/getting_started.Rmd`).
+The package includes a vignette that illustrates the basic concepts and functionality on a 
+small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
 
 
 # Warning 
