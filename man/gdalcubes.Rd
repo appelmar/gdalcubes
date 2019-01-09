@@ -4,7 +4,7 @@
 \name{gdalcubes}
 \alias{gdalcubes}
 \alias{gdalcubes-package}
-\title{gdalcubes: Streaming GDAL Data Cubes to R}
+\title{gdalcubes: Earth observation data cubes from GDAL image collections}
 \description{
-The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets and allows streaming data chunk-wise into R.
+The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets..
 }

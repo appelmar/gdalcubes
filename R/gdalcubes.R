@@ -1,6 +1,6 @@
-#' gdalcubes: Streaming GDAL Data Cubes to R
+#' gdalcubes: Earth observation data cubes from GDAL image collections
 #'
-#' The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets and allows streaming data chunk-wise into R.
+#' The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets.
 #'
 #' @docType package
 #' @name gdalcubes

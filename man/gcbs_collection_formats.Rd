@@ -4,7 +4,10 @@
 \alias{gcbs_collection_formats}
 \title{List predefined image collection formats}
 \usage{
-gcbs_collection_formats()
+gcbs_collection_formats(print = TRUE)
+}
+\arguments{
+\item{print}{Should available formats and their descriptions be printed nicely?}
 }
 \value{
 A data.frame with columns name and description where the former describes the unique identifier that can be used in \code{gcbs_create_image_collection} and the
