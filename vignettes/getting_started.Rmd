@@ -61,7 +61,7 @@ Furthermore gdalcubes must know how to derive the image aquisition date / time f
 
 ```{r}
 library(gdalcubes)
-knitr::kable(gcbs_collection_formats())
+gcbs_collection_formats()
 ```
 
 
