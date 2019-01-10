@@ -1,5 +1,7 @@
 # gdalcubes_R
 
+[![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
+
 ![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes_R)
 
 R package for [gdalcubes](https://github.com/appelmar/gdalcubes) to process collections of Earth observation image collection as on demand data cubes.
