@@ -13,6 +13,7 @@ addons:
       - libgdal-dev
       - libnetcdf-dev
       - netcdf-bin
+      - libudunits2-dev
       - libcurl4-openssl-dev
       
 r_check_args: "--no-manual --no-vignettes --as-cran"
