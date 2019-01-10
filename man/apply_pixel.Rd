@@ -24,9 +24,10 @@ This is a helper function that uses the same dimension ordering as gdalcubes str
 the application of R functions e.g. over time series in a data cube.
 }
 \examples{
+\dontrun{
 load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
 y = apply_pixel(sample_chunk, function(x) {
  ndvi <- (x[8]-x[4])/(x[8]+x[4])
  return(c(ndvi=(x[8]-x[4])/(x[8]+x[4]), nir=x[8]))
-})
+})}
 }

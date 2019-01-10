@@ -35,5 +35,5 @@
 Plot a gdalcubes data cube
 }
 \note{
-There is currently no way to plot the result of \çode{gcbs_eval} without reevaluating the cube
+There is currently no way to plot the result of \code{gcbs_eval} without reevaluating the cube
 }

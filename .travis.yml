@@ -3,6 +3,8 @@ r:
   - oldrel
   - release
   - devel
+  
+dist: xenial
 
 addons:
   apt:

@@ -11,7 +11,7 @@
 #' @param rgb bands used to assign RGB color channels, vector of length 3  (currently this must be band numbers, not band names)
 #' @param zlim vector of length 2, defining the maximum and minimum values to either derive breaks, or define black and white values in RGB plots
 #' @param ... further arguments passed to \code{image.default}
-#' @note There is currently no way to plot the result of \çode{gcbs_eval} without reevaluating the cube
+#' @note There is currently no way to plot the result of \code{gcbs_eval} without reevaluating the cube
 #' @export
 plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL) {
   stopifnot(is.gcbs_cube(x))

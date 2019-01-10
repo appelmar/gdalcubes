@@ -24,9 +24,10 @@ This is a helper function that uses the same dimension ordering as gdalcubes str
 the application of R functions e.g. over spatial slices in a data cube.
 }
 \examples{
+\dontrun{
 load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
 y = reduce_space(sample_chunk, function(x) {
  ndvi <- (x[8,,]-x[4,,])/(x[8,,]+x[4,,])
  return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-})
+})}
 }
