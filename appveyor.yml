@@ -14,6 +14,9 @@ cache:
   - C:\RLibrary
 
 # Adapt as necessary starting from here
+before_build:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - git submodule update --init --recursive
 
 build_script:
   - travis-tool.sh install_deps

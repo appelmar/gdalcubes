@@ -12,6 +12,7 @@ addons:
       - libsqlite3-dev
       - libgdal-dev
       - libnetcdf-dev
+      - netcdf-bin
       - libcurl4-openssl-dev
       
 r_check_args: "--no-manual --no-vignettes --as-cran"
