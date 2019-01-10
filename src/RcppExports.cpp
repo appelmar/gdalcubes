@@ -121,17 +121,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_create_image_collection
-SEXP libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives);
+void libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_image_collection(SEXP filesSEXP, SEXP format_fileSEXP, SEXP outfileSEXP, SEXP unroll_archivesSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<std::string> >::type files(filesSEXP);
     Rcpp::traits::input_parameter< std::string >::type format_file(format_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
     Rcpp::traits::input_parameter< bool >::type unroll_archives(unroll_archivesSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_image_collection(files, format_file, outfile, unroll_archives));
-    return rcpp_result_gen;
+    libgdalcubes_create_image_collection(files, format_file, outfile, unroll_archives);
+    return R_NilValue;
 END_RCPP
 }
 // libgdalcubes_list_collection_formats

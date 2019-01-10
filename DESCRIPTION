@@ -1,5 +1,5 @@
 Package: gdalcubes
-Title: Earth observation data cubes from GDAL image collections
+Title: Earth Observation Data Cubes from GDAL Image Collections
 Version: 0.0.1.0
 Authors@R: person("Marius", "Appel", email = "marius.appel@uni-muenster.de", role = c("aut", "cre"))
 Description: The gdalcubes package constructs Earth Observation data cubes from many GDAL images / datasets. 

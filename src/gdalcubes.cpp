@@ -494,7 +494,7 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
+void libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
 
   try {
     collection_format cfmt(format_file);
@@ -672,7 +672,7 @@ SEXP libgdalcubes_create_select_bands_cube(SEXP pin, std::vector<std::string> ba
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names = std::vector<std::string>()) {
+SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
