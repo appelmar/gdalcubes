@@ -1,0 +1,19 @@
+language: r
+r:
+  - oldrel
+  - release
+  - devel
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ppa'
+    packages:
+      - libsqlite3-dev
+      - libgdal-dev
+      - libnetcdf-dev
+      - libcurl4-openssl-dev
+      
+r_check_args: "--no-manual --no-vignettes --as-cran"
+r_build_args: "--no-build-vignettes"
+      
