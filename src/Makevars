@@ -18,7 +18,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes.o \
 			RcppExports.o
 
-PKG_CPPFLAGS=-I/usr/include/gdal -I/usr/include/x86_64-linux-gnu/curl 
+PKG_CPPFLAGS=-I/usr/include/gdal -I/usr/include/x86_64-linux-gnu/curl -I/usr/include/curl 
 
 PKG_LIBS=-lnetcdf -lgdal
 

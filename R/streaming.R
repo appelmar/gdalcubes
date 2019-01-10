@@ -82,11 +82,12 @@ gcbs_write_stream_from_array <- function(v) {
 #' @details 
 #' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
 #' @examples
+#' \dontrun{
 #' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
 #' reduce_time(sample_chunk, function(x) {
 #'   ndvi <- (x[8,]-x[4,])/(x[8,]+x[4,])
 #'   return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-#' })
+#' })}
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
@@ -112,11 +113,12 @@ reduce_time <- function(x, FUN, ...) {
 #' @details 
 #' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
 #' @examples
+#' \dontrun{
 #' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
 #' y = apply_pixel(sample_chunk, function(x) {
 #'  ndvi <- (x[8]-x[4])/(x[8]+x[4])
 #'  return(c(ndvi=(x[8]-x[4])/(x[8]+x[4]), nir=x[8]))
-#' })
+#' })}
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
@@ -139,11 +141,12 @@ apply_pixel <- function(x, FUN, ...) {
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over spatial slices in a data cube.
 #' @examples
+#' \dontrun{
 #' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
 #' y = reduce_space(sample_chunk, function(x) {
 #'  ndvi <- (x[8,,]-x[4,,])/(x[8,,]+x[4,,])
 #'  return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-#' })
+#' })}
 #' @export
 reduce_space <- function(x, FUN, ...) {
   stopifnot(is.array(x))
