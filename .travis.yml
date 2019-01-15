@@ -33,6 +33,9 @@ addons:
       - netcdf
       - sqlite
       - curl
+      - git
+      - udunits
+    update: true
 
 
 r_check_args: "--no-manual --no-vignettes --as-cran"
