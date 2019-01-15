@@ -33,7 +33,7 @@ addons:
       - netcdf
       - sqlite
       - curl
-      - git
+      - libgit2
       - udunits
     update: true
 
