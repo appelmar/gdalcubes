@@ -4,7 +4,17 @@ r:
   - release
   - devel
   
+os: 
+  - linux
+  - osx
+
+matrix:
+  allow_failures:
+    - os: osx
+    
 dist: xenial
+
+
 
 addons:
   apt:
@@ -17,7 +27,14 @@ addons:
       - netcdf-bin
       - libudunits2-dev
       - libcurl4-openssl-dev
-      
+  homebrew:
+    packages:
+      - gdal
+      - netcdf
+      - sqlite
+      - curl
+
+
 r_check_args: "--no-manual --no-vignettes --as-cran"
 r_build_args: "--no-build-vignettes"
 warnings_are_errors: false      
