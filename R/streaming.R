@@ -152,7 +152,13 @@ reduce_space <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(2), FUN, ...)
-  dim(res) <- c(dim(res)[1],dim(res)[2],1,1) # if a vector of length n is returned, elements are interpreted as new bands of the output
+  if (is.null(dim(res)) || length(dim(res)) == 1) {
+    dim(res) <- c(length(res),1,1,1) # if a vector of length n is returned, elements are interpreted as new bands of the output
+    # FIXME: automatically find out whether values refer to band or time
+  }
+  else {
+    dim(res) <- c(dim(res)[1],dim(res)[2],1,1) # if a vector of length n is returned, elements are interpreted as new bands of the output
+  }
   return(res)
 }
 
