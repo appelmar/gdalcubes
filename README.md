@@ -38,9 +38,11 @@ docker run -d -p 8787:8787 appelmar/gdalcubes_R
 ```
 
 # Getting started
-The package includes a vignette that illustrates the basic concepts and functionality on a 
+
+- The package includes a vignette that illustrates the basic concepts and functionality on a 
 small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
 
+- A tutorial how to use the R package to process Sentinel 2 time series can be found at https://appelmar.github.io/gdalcubes/S2R.html.
 
 # Warning 
 The package is still in an early development version. Major changes on the functionality and
