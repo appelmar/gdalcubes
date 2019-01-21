@@ -61,6 +61,10 @@ libgdalcubes_create_reduce_cube <- function(pin, reducer) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_cube', PACKAGE = 'gdalcubes', pin, reducer)
 }
 
+libgdalcubes_create_reduce_time_cube <- function(pin, reducers, bands) {
+    .Call('_gdalcubes_libgdalcubes_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
+}
+
 libgdalcubes_create_join_bands_cube <- function(pinA, pinB) {
     .Call('_gdalcubes_libgdalcubes_create_join_bands_cube', PACKAGE = 'gdalcubes', pinA, pinB)
 }

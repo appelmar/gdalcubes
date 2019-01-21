@@ -21,6 +21,8 @@ Create a proxy data cube, which applies a reducer function over pixel time serie
 Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
+
+This function is deprecated and will be replaced by the mor flexible gcbs_reduce_time.
 }
 \examples{
 \dontrun{

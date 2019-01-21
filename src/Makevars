@@ -8,6 +8,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/image_collection_cube.o \
 			gdalcubes/src/join_bands.o \
 			gdalcubes/src/reduce.o \
+			gdalcubes/src/reduce_time.o \
 			gdalcubes/src/select_bands.o \
 			gdalcubes/src/stream.o \
 			gdalcubes/src/swarm.o \

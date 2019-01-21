@@ -639,6 +639,29 @@ SEXP libgdalcubes_create_reduce_cube(SEXP pin, std::string reducer) {
 
 
 // [[Rcpp::export]]
+SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::vector<std::pair<std::string, std::string>> reducer_bands;
+    for (uint16_t i=0; i<reducers.size(); ++i) {
+      // assuming reducers.size() == bands.size(), this is checked in R code calling this function
+      reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
+    }
+    
+    std::shared_ptr<reduce_time_cube>* x = new std::shared_ptr<reduce_time_cube>(reduce_time_cube::create(*aa, reducer_bands));
+    Rcpp::XPtr< std::shared_ptr<reduce_time_cube> > p(x, true) ;
+    
+    return p;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 SEXP libgdalcubes_create_join_bands_cube(SEXP pinA, SEXP pinB) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > A = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pinA);
