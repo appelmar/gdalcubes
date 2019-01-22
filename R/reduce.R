@@ -44,7 +44,7 @@ gcbs_reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.
 #' 
-#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", and "sd".
+#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 #' @export
 gcbs_reduce_time <- function(cube, expr, ...) {
   stopifnot(is.gcbs_cube(cube))

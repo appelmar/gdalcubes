@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{gcbs_cube}(x, y, ..., nbreaks = 11, breaks = NULL,
   col = grey(1:(nbreaks - 1)/nbreaks), key.pos = NULL, bands = NULL,
-  t = NULL, rgb = NULL, zlim = NULL)
+  t = NULL, rgb = NULL, zlim = NULL, periods.in.title = TRUE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class gcbs_cube)}
@@ -30,6 +30,8 @@
 \item{rgb}{bands used to assign RGB color channels, vector of length 3  (currently this must be band numbers, not band names)}
 
 \item{zlim}{vector of length 2, defining the maximum and minimum values to either derive breaks, or define black and white values in RGB plots}
+
+\item{periods.in.title}{logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string}
 }
 \description{
 Plot a gdalcubes data cube

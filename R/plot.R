@@ -10,10 +10,11 @@
 #' @param t integer vector time indexes to plot (currently this must be time index, not date / time)
 #' @param rgb bands used to assign RGB color channels, vector of length 3  (currently this must be band numbers, not band names)
 #' @param zlim vector of length 2, defining the maximum and minimum values to either derive breaks, or define black and white values in RGB plots
+#' @param periods.in.title logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string
 #' @param ... further arguments passed to \code{image.default}
 #' @note There is currently no way to plot the result of \code{gcbs_eval} without reevaluating the cube
 #' @export
-plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL) {
+plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL, periods.in.title=TRUE) {
   stopifnot(is.gcbs_cube(x))
   size = c(gcbs_nbands(x), gcbs_size(x))
   stopifnot(!(!is.null(rgb) && !is.null(bands))) # RGB and bands parameters ase mutually exclusive
@@ -62,6 +63,7 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
     size[1] <- 3
   }
   dtvalues = libgdalcubes_datetime_values(x)
+  if(periods.in.title) dtvalues = paste(dtvalues, gcbs_view(x)$time$dt)
   if (!is.null(t)) {
     if (is.numeric(t)) {
       stopifnot(all(is.wholenumber(t)))
