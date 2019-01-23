@@ -57,7 +57,17 @@ and the output projection.
 All arguments are optional
 }
 \examples{
+# 1. full manual specification
 gcbs_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40, 
           t0="2018-01-01", t1="2018-09-30", dt="P1M", nx=1000, 
           ny=500, aggregation = "mean", resampling="bilinear")
+          
+# 2. read existing data cube
+ L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                        ".TIF", recursive = TRUE, full.names = TRUE)
+ L8.col = gcbs_create_image_collection(L8_files, "L8_L1TP") 
+ v = gcbs_view(gcbs_cube(L8.col)) 
+ 
+# 3. overwrite parts of an existing data cube view
+vnew = gcbs_view(view = v, dt="P1M")  
 }

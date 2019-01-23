@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 This document presents a first vignette to illustrate basic ideas of the gdalcubes R package and library. 
 
 It will present how to process satellite imagary from 
-the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://modis.gsfc.nasa.gov/)) that is small enough to process locally even on older machines. These data come as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files. Please make sure that your GDAL installation
+the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process locally even on older machines. These data come as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files. Please make sure that your GDAL installation
 supports the HDF4 driver (e.g. by running `gdalinfo --format HDF4` in the command line).
 
 

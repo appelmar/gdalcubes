@@ -5,7 +5,7 @@
 \title{Create an image collection from a set of GDAL datasets or files}
 \usage{
 gcbs_create_image_collection(files, format, out_file = tempfile(fileext =
-  ".sqlite"), unroll_archives = TRUE)
+  ".sqlite"), unroll_archives = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{files}{A character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)}
@@ -15,6 +15,8 @@ gcbs_create_image_collection(files, format, out_file = tempfile(fileext =
 \item{out_file}{Optional name of the output SQLite database file, defaults to a temporary file}
 
 \item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of files}
+
+\item{quiet}{logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable}
 }
 \value{
 An image collection proxy object, which can be used to create a data cube using \code{gcbs_cube}
@@ -25,4 +27,9 @@ collection format.
 }
 \details{
 An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
+}
+\examples{
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+gcbs_create_image_collection(L8_files, "L8_L1TP")
 }

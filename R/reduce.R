@@ -10,10 +10,18 @@
 #' @return A proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 #' @examples 
-#' \dontrun{
-#' gcbs_reduce(XXXX, "min")}
+#'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                         ".TIF", recursive = TRUE, full.names = TRUE)
+#'  v = gcbs_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
+#'          proj="+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs",
+#'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+#'  L8.col = gcbs_create_image_collection(L8_files, "L8_L1TP") 
+#'  L8.cube = gcbs_cube(L8.col, v) 
+#'  L8.rgb = gcbs_select_bands(L8.cube, c("B02", "B03", "B04"))
+#'  L8.rgb.median = gcbs_reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
+#'  L8.rgb.median
+#'  plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @deprecated
 #' @note This function is deprecated and will be replaced by the mor flexible gcbs_reduce_time.
 #' @export
 gcbs_reduce <- function(cube, reducer=c("mean","median","min","max")) {

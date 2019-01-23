@@ -22,3 +22,6 @@ which bands they contain, to which image they belong, and how the derive date/ti
 They are described as a set of regular expressions in a JSON file and used by gdalcubes to extract this information 
 from the paths and/or filenames.
 }
+\examples{
+gcbs_collection_formats()
+}

@@ -18,5 +18,8 @@ index / reference existing imagery. To create a collection from files on disk,
 use \code{gcbs_create_collection}.
 }
 \examples{
-\dontrun{gcbs_image_collection("/home/marius/github/gdalcubes/cmake-build-debug/src/test.db")}
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+gcbs_create_image_collection(L8_files, "L8_L1TP", out_file = "L8.db", quiet=TRUE)
+gcbs_image_collection("L8.db")
 }

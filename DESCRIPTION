@@ -13,5 +13,6 @@ Suggests:
     knitr,
     rmarkdown,
     processx,
-    stars
+    stars,
+    magrittr
 VignetteBuilder: knitr

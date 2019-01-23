@@ -6,7 +6,10 @@
 #' @param path Path to an existing image collection file
 #' @return An image collection proxy object, which can be used to create a data cube using \code{gcbs_cube}
 #' @examples 
-#' \dontrun{gcbs_image_collection("/home/marius/github/gdalcubes/cmake-build-debug/src/test.db")}
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' gcbs_create_image_collection(L8_files, "L8_L1TP", out_file = "L8.db", quiet=TRUE)
+#' gcbs_image_collection("L8.db")
 #' @export
 gcbs_image_collection <- function(path) {
   stopifnot(file.exists(path))
@@ -53,11 +56,19 @@ print.gcbs_image_collection <- function(x, ...) {
 #' @param out_file Optional name of the output SQLite database file, defaults to a temporary file
 #' @param format Collection format, can be either a name to use predefined formats (as output from \code{gcbs_collection_formats}) or a path to a custom JSON format description file.
 #' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of files  
+#' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
 #' @return An image collection proxy object, which can be used to create a data cube using \code{gcbs_cube}
+#' @examples 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' gcbs_create_image_collection(L8_files, "L8_L1TP")
 #' @export
-gcbs_create_image_collection <-function(files, format, out_file=tempfile(fileext = ".sqlite"), unroll_archives=TRUE)
+gcbs_create_image_collection <-function(files, format, out_file=tempfile(fileext = ".sqlite"), unroll_archives=TRUE, quiet=FALSE)
 {
   libgdalcubes_create_image_collection(files, format, out_file, unroll_archives)
+  if (quiet) {
+    return(invisible(gcbs_image_collection(out_file)))
+  }
   return(gcbs_image_collection(out_file))
 }
 
@@ -76,6 +87,8 @@ gcbs_create_image_collection <-function(files, format, out_file=tempfile(fileext
 #' @param print Should available formats and their descriptions be printed nicely?
 #' @return A data.frame with columns name and description where the former describes the unique identifier that can be used in \code{gcbs_create_image_collection} and the
 #' latter gives a brief description of the format.
+#' @examples 
+#' gcbs_collection_formats()
 #' @export
 gcbs_collection_formats <-function(print=TRUE)
 {

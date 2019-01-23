@@ -15,15 +15,14 @@
 #'  3. Read the resulting data to the chunk buffer and if pixels already contain non NAN values, apply an aggregation method (as defined in the view) 
 #' 
 #' @examples 
-#' \dontrun{
-#' gcbs_cube(
-#'    gcbs_image_collection("MOD13A3.db"), 
-#'    view = gcbs_view(proj="EPSG:4326", 
-#'                    l = -20, r = 20, t = 60, b=40, 
-#'                    t0="2018-01-01", t1="2018-09-30", 
-#'                    dt="P1M", nx=1000, ny=500, 
-#'                    aggregation = "mean", resampling="bilinear"))
-#' }
+#'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                         ".TIF", recursive = TRUE, full.names = TRUE)
+#'  v = gcbs_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
+#'          proj="+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs",
+#'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+#'  L8.col = gcbs_create_image_collection(L8_files, "L8_L1TP") 
+#'  gcbs_cube(L8.col, v)
+#'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 gcbs_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {

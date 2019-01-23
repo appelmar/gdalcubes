@@ -6,6 +6,7 @@
 ^.travis.yml$
 ^src/gdalcubes/.clang-format$
 ^src/gdalcubes/.dockerignore$
+^src/gdalcubes/.travis.yml$
 ^src/gdalcubes/.git$
 ^vignettes/MOD11A2$
 ^vignettes/MOD11A2.db$
