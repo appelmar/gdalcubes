@@ -735,6 +735,19 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
 
 
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<filter_predicate_cube>* x = new std::shared_ptr<filter_predicate_cube>(filter_predicate_cube::create(*aa, pred));
+    Rcpp::XPtr< std::shared_ptr<filter_predicate_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 
 
 

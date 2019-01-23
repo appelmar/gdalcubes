@@ -81,6 +81,10 @@ libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names) {
     .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names)
 }
 
+libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
+    .Call('_gdalcubes_libgdalcubes_create_filter_predicate_cube', PACKAGE = 'gdalcubes', pin, pred)
+}
+
 libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }
