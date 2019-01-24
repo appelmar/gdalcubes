@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{gcbs_cube}(x, y, ..., nbreaks = 11, breaks = NULL,
   col = grey(1:(nbreaks - 1)/nbreaks), key.pos = NULL, bands = NULL,
-  t = NULL, rgb = NULL, zlim = NULL, periods.in.title = TRUE)
+  t = NULL, rgb = NULL, zlim = NULL, periods.in.title = TRUE,
+  join.timeseries = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class gcbs_cube)}
@@ -32,6 +33,8 @@
 \item{zlim}{vector of length 2, defining the maximum and minimum values to either derive breaks, or define black and white values in RGB plots}
 
 \item{periods.in.title}{logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string}
+
+\item{join.timeseries}{logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?}
 }
 \description{
 Plot a gdalcubes data cube
