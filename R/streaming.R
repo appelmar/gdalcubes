@@ -9,7 +9,7 @@
 #' @param with.dimnames if TRUE, the resulting array will contain dimnames with coordinates, datetime, and band names
 #' @return four-dimensional array
 #' @export
-gcbs_read_stream_as_array <-function(with.dimnames=TRUE) {
+read_stream_as_array <-function(with.dimnames=TRUE) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
@@ -57,7 +57,7 @@ gcbs_read_stream_as_array <-function(with.dimnames=TRUE) {
 #' 
 #' @param v A four-dimensional array with dimensions band, time, y, and x
 #' @export
-gcbs_write_stream_from_array <- function(v) {
+write_stream_from_array <- function(v) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }

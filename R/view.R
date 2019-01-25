@@ -32,28 +32,28 @@
 #' @param resampling resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://www.gdal.org/gdalwarp.html})
 #' @examples 
 #' # 1. full manual specification
-#' gcbs_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40, 
+#' cube_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40, 
 #'           t0="2018-01-01", t1="2018-09-30", dt="P1M", nx=1000, 
 #'           ny=500, aggregation = "mean", resampling="bilinear")
 #'           
 #' # 2. read existing data cube
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  L8.col = gcbs_create_image_collection(L8_files, "L8_L1TP") 
-#'  v = gcbs_view(gcbs_cube(L8.col)) 
+#'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#'  v = cube_view(cube(L8.col)) 
 #'  
 #' # 3. overwrite parts of an existing data cube view
-#' vnew = gcbs_view(view = v, dt="P1M")  
+#' vnew = cube_view(view = v, dt="P1M")  
 #' @return A list with view properties
 #' @export
-gcbs_view <- function(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, t1, aggregation,resampling)  {
+cube_view <- function(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, t1, aggregation,resampling)  {
   if (!missing(cube)) {
     if (length(as.list(match.call())) > 2) {
       warning("Provided arguments except cube will be ignored")
     }
-    stopifnot(is.gcbs_cube(cube))
+    stopifnot(is.cube(cube))
     x = libgdalcubes_get_cube_view(cube)
-    class(x) <- c("gcbs_view", class(x))
+    class(x) <- c("cube_view", class(x))
     return(x)
   }
   xx = NULL
@@ -79,7 +79,7 @@ gcbs_view <- function(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, 
               )
   }
   else {
-    stopifnot(is.gcbs_view(view))
+    stopifnot(is.cube_view(view))
     xx = view
   }
 
@@ -137,13 +137,13 @@ gcbs_view <- function(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, 
   if (!missing(aggregation)) xx$aggregation = aggregation
   if (!missing(resampling)) xx$resampling = resampling
   
-  class(xx) <- c("gcbs_view", class(xx))
+  class(xx) <- c("cube_view", class(xx))
   return(xx)
 }
 
 
 
-is.gcbs_view <- function(obj) {
- return("gcbs_view" %in% class(obj))
+is.cube_view <- function(obj) {
+ return("cube_view" %in% class(obj))
 }
 

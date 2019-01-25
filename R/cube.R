@@ -3,7 +3,7 @@
 #' 
 #' Create a proxy data cube, which loads data from a given image collection
 #'
-#' @param image_collection Source image collection as from \code{gcbs_image_collection} or \code{gcbs_create_image_collection}
+#' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
 #' @param chunking Vector of length 3 defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
@@ -17,36 +17,36 @@
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  v = gcbs_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
+#'  v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
 #'          proj="EPSG:32618",
 #'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
-#'  L8.col = gcbs_create_image_collection(L8_files, "L8_L1TP") 
-#'  gcbs_cube(L8.col, v)
+#'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#'  cube(L8.col, v)
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-gcbs_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
+cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
 
-  stopifnot(is.gcbs_image_collection(image_collection))
+  stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
   chunking = as.integer(chunking)
   stopifnot(chunking[1] > 0 && chunking[2] > 0 && chunking[3] > 0)
   
   x = NULL
   if (!missing(view)) {
-    stopifnot(is.gcbs_view(view))
+    stopifnot(is.cube_view(view))
     x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), view)
   }
   else {
     x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking))
   }
-  class(x) <- c("gcbs_image_collection_cube", "gcbs_cube", "xptr")
+  class(x) <- c("image_collection_cube", "cube", "xptr")
   return(x)
 }
 
 
-is.gcbs_image_collection_cube <- function(obj) {
-  if(!("gcbs_image_collection_cube" %in% class(obj))) {
+is.image_collection_cube <- function(obj) {
+  if(!("image_collection_cube" %in% class(obj))) {
     return(FALSE)
   }
   if (libgdalcubes_is_null(obj)) {
@@ -57,8 +57,8 @@ is.gcbs_image_collection_cube <- function(obj) {
 }
 
 
-is.gcbs_cube <- function(obj) {
-  if(!("gcbs_cube" %in% class(obj))) {
+is.cube <- function(obj) {
+  if(!("cube" %in% class(obj))) {
     return(FALSE)
   }
   if (libgdalcubes_is_null(obj)) {
@@ -69,7 +69,7 @@ is.gcbs_cube <- function(obj) {
 }
 
 #' @export
-print.gcbs_cube <- function(x, ...) {
+print.cube <- function(x, ...) {
   if (libgdalcubes_is_null(x)) {
     stop("GDAL data cube proxy object is invalid")
   }
@@ -86,10 +86,10 @@ print.gcbs_cube <- function(x, ...) {
 #' Query data cube properties 
 #' 
 #' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso dim.gcbs_cube
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @seealso dim.cube
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_size <- function(obj) {
+size <- function(obj) {
   if (libgdalcubes_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
@@ -100,20 +100,20 @@ gcbs_size <- function(obj) {
 #' Query data cube properties 
 #' 
 #' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso gcbs_size
-#' @param x a data cube proxy object (class gcbs_cube)
+#' @seealso size
+#' @param x a data cube proxy object (class cube)
 #' @export
-dim.gcbs_cube <- function(x) {
-  return(gcbs_size(x))
+dim.cube <- function(x) {
+  return(size(x))
 }
 
 #' Query data cube properties 
 #' 
 #' @return Band names as character vector
 #' 
-#' @param x a data cube proxy object (class gcbs_cube)
+#' @param x a data cube proxy object (class cube)
 #' @export
-names.gcbs_cube <- function(x) {
+names.cube <- function(x) {
   if (libgdalcubes_is_null(x)) {
     stop("GDAL data cube proxy object is invalid")
   }
@@ -126,9 +126,9 @@ names.gcbs_cube <- function(x) {
 #' 
 #' @return Dimension information as a data.frame, where each row represents a dimension and columns represent properties such as dimension boundaries, names, and chunk size
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_dimensions <- function(obj) {
+dimensions <- function(obj) {
   if (libgdalcubes_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
@@ -140,9 +140,9 @@ gcbs_dimensions <- function(obj) {
 #' 
 #' @return A data.frame with rows representing the bands and columns representing properties of a band (name, type, scale, offset, unit)
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_bands <- function(obj) {
+bands <- function(obj) {
   if (libgdalcubes_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
@@ -154,10 +154,10 @@ gcbs_bands <- function(obj) {
 #' 
 #' @return The spatial reference system expressed as a string readable by GDAL
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_get_projection <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+get_projection <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$proj)
 }
@@ -166,11 +166,11 @@ gcbs_get_projection <- function(obj) {
 #' 
 #' @return Total data size of data cube values expressed in the given unit
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @param unit Unit of data size, can be "B", "KB", "KiB", "MB", "MiB", "GB", "GiB", "TB", "TiB", "PB", "PiB"
 #' @export
-gcbs_get_cubesize <- function(obj, unit="MiB") {
-  stopifnot(is.gcbs_cube(obj))
+get_cubesize <- function(obj, unit="MiB") {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   size_bytes = prod(x$size) * 8 # assuming everything is double
   return(switch(unit,
@@ -192,10 +192,10 @@ gcbs_get_cubesize <- function(obj, unit="MiB") {
 #' 
 #' @return Number of bands
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_nbands <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+nbands <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$size[1])
 }
@@ -204,10 +204,10 @@ gcbs_nbands <- function(obj) {
 #' 
 #' @return Number of pixels in the time dimension
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_nt <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+nt <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$size[2])
 }
@@ -216,10 +216,10 @@ gcbs_nt <- function(obj) {
 #' 
 #' @return Number of pixels in the y dimension
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_ny <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+ny <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$size[3])
 }
@@ -228,10 +228,10 @@ gcbs_ny <- function(obj) {
 #' 
 #' @return Number of pixels in the x dimension
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_nx <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+nx <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$size[4])
 }
@@ -245,19 +245,19 @@ gcbs_nx <- function(obj) {
 #' @return A JSON string representing a graph (currently a tree) that can be used to create the same
 #' chain of gdalcubes operations.
 #' 
-#' @param obj a data cube proxy object (class gcbs_cube)
+#' @param obj a data cube proxy object (class cube)
 #' @export
-gcbs_graph <- function(obj) {
-  stopifnot(is.gcbs_cube(obj))
+graph <- function(obj) {
+  stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$graph)
 }
 #' 
 #' 
-#' "gcbs_view<-" <-function(x,value) {
-#'   stopifnot(is.gcbs_cube(x))
-#'   stopifnot(is.gcbs_view(value))
-#'   if (!is.gcbs_image_collection_cube)
+#' "cube_view<-" <-function(x,value) {
+#'   stopifnot(is.cube(x))
+#'   stopifnot(is.cube_view(value))
+#'   if (!is.image_collection_cube)
 #'     stop("x is no image_collection_cube, updating the data cube view is currently only implemented for image_collection_cube")
 #'   libgdalcubes_update_cube_view(x,value)
 #'   return(x)
@@ -268,11 +268,11 @@ gcbs_graph <- function(obj) {
 #' 
 #' This function will read chunks of a data cube and write them to a single NetCDF file.
 #' 
-#' @param x a data cube proxy object (class gcbs_cube)
+#' @param x a data cube proxy object (class cube)
 #' @param fname output file name
 #' @export
-gcbs_eval <- function(x, fname = tempfile(pattern = "gcbs_eval_", fileext = ".nc")) {
-  stopifnot(is.gcbs_cube(x))
+as_ncdf <- function(x, fname = tempfile(pattern = "as_ncdf_", fileext = ".nc")) {
+  stopifnot(is.cube(x))
   libgdalcubes_eval_cube(x, fname)
 }
 
