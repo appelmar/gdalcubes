@@ -199,7 +199,7 @@ plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
 Sometimes it is be useful to store resulting data on disk. The function `as_netcdf()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
 
 ```{r}
-eval(reduce(joined.cube, "max"), "test.nc")
+as_ncdf(reduce(joined.cube, "max"), "test.nc")
 ```
 
 Similarly, gdalcubes proxy objects can be converted as [stars](https://github.com/r-spatial/stars) objects with `as_stars`. This function

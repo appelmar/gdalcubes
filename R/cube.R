@@ -271,7 +271,7 @@ graph <- function(obj) {
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
 #' @export
-as_ncdf <- function(x, fname = tempfile(pattern = "as_ncdf_", fileext = ".nc")) {
+as_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
   stopifnot(is.cube(x))
   libgdalcubes_eval_cube(x, fname)
 }

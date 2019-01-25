@@ -84,14 +84,14 @@ write_stream_from_array <- function(v) {
 #' @examples
 #' \dontrun{
 #' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-#' reduce_time(sample_chunk, function(x) {
+#' strm_reduce_time(sample_chunk, function(x) {
 #'   ndvi <- (x[8,]-x[4,])/(x[8,]+x[4,])
 #'   return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
 #' })}
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
-reduce_time <- function(x, FUN, ...) {
+reduce_time.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(3,4), FUN, ...)
@@ -122,7 +122,7 @@ reduce_time <- function(x, FUN, ...) {
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
-apply_pixel <- function(x, FUN, ...) {
+apply_pixel.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(2,3,4), FUN, ...)
@@ -148,7 +148,7 @@ apply_pixel <- function(x, FUN, ...) {
 #'  return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
 #' })}
 #' @export
-reduce_space <- function(x, FUN, ...) {
+reduce_space.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(2), FUN, ...)

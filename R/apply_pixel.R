@@ -1,4 +1,13 @@
 
+#' @export
+apply_pixel <- function(x, ...) {
+  UseMethod("apply_pixel")
+}
+
+
+
+
+
 #' Apply arithmetic expressions over all pixels of a data cube
 #' 
 #' Create a proxy data cube, which applies arithmetics expressions over all pixels of a data cube. Expressions may access band values by their name.
@@ -25,7 +34,7 @@
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-apply_pixel <- function(cube, expr, names=NULL) {
+apply_pixel.cube <- function(cube, expr, names=NULL) {
   stopifnot(is.cube(cube))
   
   if (is.null(names)) {

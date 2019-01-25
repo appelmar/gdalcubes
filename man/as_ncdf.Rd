@@ -12,7 +12,7 @@
 }
 Materialize a data cube as a NetCDF file}
 \usage{
-as_ncdf(x, fname = tempfile(pattern = "as_ncdf_", fileext = ".nc"))
+as_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}

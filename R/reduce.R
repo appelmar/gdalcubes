@@ -1,5 +1,13 @@
 
+#' @export
+reduce_time <- function(x, ...) {
+  UseMethod("reduce_time")
+}
 
+#' @export
+reduce_space <- function(x, ...) {
+  UseMethod("reduce_space")
+}
 
 #' Reduce a data cube over the time dimension
 #' 
@@ -63,7 +71,7 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 #' @export
-reduce_time <- function(cube, expr, ...) {
+reduce_time.cube <- function(cube, expr, ...) {
   stopifnot(is.cube(cube))
   stopifnot(is.character(expr))
   if (length(list(...))> 0) {
@@ -109,7 +117,7 @@ reduce_time <- function(cube, expr, ...) {
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 #' @export
-reduce_space <- function(cube, expr, ...) {
+reduce_space.cube <- function(cube, expr, ...) {
   stopifnot(is.cube(cube))
   stopifnot(is.character(expr))
   if (length(list(...))> 0) {
