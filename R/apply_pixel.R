@@ -12,7 +12,7 @@ apply_pixel <- function(x, ...) {
 #' 
 #' Create a proxy data cube, which applies arithmetics expressions over all pixels of a data cube. Expressions may access band values by their name.
 #'
-#' @param cube Source data cube
+#' @param x Source data cube
 #' @param expr character vector with one or more arithmetic expressions (see Details)
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
 #' @return A proxy data cube object
@@ -34,14 +34,14 @@ apply_pixel <- function(x, ...) {
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-apply_pixel.cube <- function(cube, expr, names=NULL) {
-  stopifnot(is.cube(cube))
+apply_pixel.cube <- function(x, expr, names=NULL, ...) {
+  stopifnot(is.cube(x))
   
   if (is.null(names)) {
     names <- paste("band", 1:length(expr), sep="")
   }
   
-  x = libgdalcubes_create_apply_pixel_cube(cube, expr, names)
+  x = libgdalcubes_create_apply_pixel_cube(x, expr, names)
   class(x) <- c("apply_pixel_cube", "cube", "xptr")
   return(x)
 }

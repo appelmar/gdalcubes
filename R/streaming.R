@@ -13,7 +13,14 @@ read_stream_as_array <-function(with.dimnames=TRUE) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
-  f <-file('stdin', 'rb')
+  
+  if (Sys.getenv("GDALCUBES_STREAMING_FILE_IN") != "") {
+    f <- file(Sys.getenv("GDALCUBES_STREAMING_FILE_IN"), "rb")
+  }
+  else {
+    f <-file("stdin", "rb")
+  }
+ 
   on.exit(close(f))
   s <- readBin(f, integer(), n=4)
   if (prod(s) == 0) {
@@ -64,9 +71,15 @@ write_stream_from_array <- function(v) {
   v = aperm(v,c(4,3,2,1))
   dim(v) <- rev(dim(v))
   stopifnot(length(dim(v)) == 4)
-  f <- pipe("cat", "wb")
+  
+  if (Sys.getenv("GDALCUBES_STREAMING_FILE_OUT") != "") {
+    f <- file(Sys.getenv("GDALCUBES_STREAMING_FILE_OUT"), "wb")
+  }
+  else { # this works only on Linux
+    f <- pipe("cat", "wb")
+  }
   on.exit(close(f))
-  s <- dim(v) # test
+  s <- dim(v) 
   writeBin(as.integer(s), f)
   writeBin(as.double(v), f)
   flush(f)

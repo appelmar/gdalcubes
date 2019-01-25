@@ -786,7 +786,7 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
-    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd));
+    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd, "", true));
     
     Rcpp::XPtr< std::shared_ptr<stream_cube> > p(x, true) ;
   

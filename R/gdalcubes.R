@@ -9,9 +9,12 @@
 #' 
 #' @importFrom grDevices grey
 #' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title
+#' @importFrom grDevices rainbow
+#' @importFrom graphics legend lines
 #' @importFrom stats quantile rnorm
 #' @importFrom utils head 
 #' @import RcppProgress jsonlite ncdf4 
+#' 
 #' 
 #' 
 NULL

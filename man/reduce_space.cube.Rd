@@ -4,10 +4,10 @@
 \alias{reduce_space.cube}
 \title{Reduce a data cube over spatial (x,y or lat,lon) dimensions}
 \usage{
-\method{reduce_space}{cube}(cube, expr, ...)
+\method{reduce_space}{cube}(x, expr, ...)
 }
 \arguments{
-\item{cube}{Source data cube}
+\item{x}{Source data cube}
 
 \item{expr}{Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
 

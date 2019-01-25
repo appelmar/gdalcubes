@@ -4,10 +4,10 @@
 \alias{reduce_time.cube}
 \title{Reduce a data cube over the time dimension}
 \usage{
-\method{reduce_time}{cube}(cube, expr, ...)
+\method{reduce_time}{cube}(x, expr, ...)
 }
 \arguments{
-\item{cube}{Source data cube}
+\item{x}{Source data cube}
 
 \item{expr}{Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
 

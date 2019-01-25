@@ -4,10 +4,10 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(cube, expr, names = NULL)
+\method{apply_pixel}{cube}(x, expr, names = NULL, ...)
 }
 \arguments{
-\item{cube}{Source data cube}
+\item{x}{Source data cube}
 
 \item{expr}{character vector with one or more arithmetic expressions (see Details)}
 

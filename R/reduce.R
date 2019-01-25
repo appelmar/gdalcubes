@@ -48,7 +48,7 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' 
 #' Create a proxy data cube, which applies one ore more reducer functions over selected bands of pixel time series of a data cube
 #'
-#' @param cube Source data cube
+#' @param x Source data cube
 #' @param expr Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube
 #' @param ... Optional additional expressions (if expr is not a vector)
 #' @return A proxy data cube object
@@ -71,8 +71,8 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 #' @export
-reduce_time.cube <- function(cube, expr, ...) {
-  stopifnot(is.cube(cube))
+reduce_time.cube <- function(x, expr, ...) {
+  stopifnot(is.cube(x))
   stopifnot(is.character(expr))
   if (length(list(...))> 0) {
     stopifnot(all(sapply(list(...), is.character)))
@@ -83,7 +83,7 @@ reduce_time.cube <- function(cube, expr, ...) {
   reducers = gsub("\\(.*\\)", "", expr)
   bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
   stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_reduce_time_cube(cube, reducers, bands)
+  x = libgdalcubes_create_reduce_time_cube(x, reducers, bands)
   class(x) <- c("reduce_time_cube", "cube", "xptr")
   return(x)
 }
@@ -94,7 +94,7 @@ reduce_time.cube <- function(cube, expr, ...) {
 #' 
 #' Create a proxy data cube, which applies one ore more reducer functions over selected bands of spatial slices of a data cube
 #'
-#' @param cube Source data cube
+#' @param x Source data cube
 #' @param expr Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube
 #' @param ... Optional additional expressions (if expr is not a vector)
 #' @return A proxy data cube object
@@ -117,8 +117,8 @@ reduce_time.cube <- function(cube, expr, ...) {
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 #' @export
-reduce_space.cube <- function(cube, expr, ...) {
-  stopifnot(is.cube(cube))
+reduce_space.cube <- function(x, expr, ...) {
+  stopifnot(is.cube(x))
   stopifnot(is.character(expr))
   if (length(list(...))> 0) {
     stopifnot(all(sapply(list(...), is.character)))
@@ -129,7 +129,7 @@ reduce_space.cube <- function(cube, expr, ...) {
   reducers = gsub("\\(.*\\)", "", expr)
   bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
   stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_reduce_space_cube(cube, reducers, bands)
+  x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
   class(x) <- c("reduce_space_cube", "cube", "xptr")
   return(x)
 }
