@@ -12,6 +12,8 @@
 \item{expr}{character vector with one or more arithmetic expressions (see Details)}
 
 \item{names}{optional character vector with the same length as expr to specify band names for the output cube}
+
+\item{...}{not used}
 }
 \value{
 A proxy data cube object

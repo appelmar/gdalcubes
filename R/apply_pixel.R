@@ -1,9 +1,13 @@
-
+#' Apply a function over (multiband) pixels
+#' 
+#' This generic function applies a  function on pixels of a data cube, an R array, or other classes if implemented.
+#' 
+#' @param object to be reduced 
+#' @return return value and type depend on the class of x
 #' @export
 apply_pixel <- function(x, ...) {
   UseMethod("apply_pixel")
 }
-
 
 
 
@@ -15,6 +19,7 @@ apply_pixel <- function(x, ...) {
 #' @param x Source data cube
 #' @param expr character vector with one or more arithmetic expressions (see Details)
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
+#' @param ... not used
 #' @return A proxy data cube object
 #' @details gdalcubes uses the \href{https://github.com/ArashPartow/exprtk}{exprtk library} to evaluate expressions in C++, you can look at the library examples 
 #' to see what kind of expressions you can execute.

@@ -1,9 +1,18 @@
-
+#' Reduce multidimensional data over time
+#' 
+#' This generic function applies a reducer function over a data cube, an R array, or other classes if implemented.
+#' @param object to be reduced 
+#' @return return value and type depend on the class of x
 #' @export
 reduce_time <- function(x, ...) {
   UseMethod("reduce_time")
 }
 
+#' Reduce multidimensional data over space
+#' 
+#' This generic function applies a reducer function over a data cube, an R array, or other classes if implemented.
+#' @param object to be reduced 
+#' @return return value and type depend on the class of x
 #' @export
 reduce_space <- function(x, ...) {
   UseMethod("reduce_space")
