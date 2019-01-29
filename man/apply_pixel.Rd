@@ -7,11 +7,18 @@
 apply_pixel(x, ...)
 }
 \arguments{
-\item{object}{to be reduced}
+\item{x}{object to be reduced}
+
+\item{...}{additional arguments passed to method implementations}
 }
 \value{
 return value and type depend on the class of x
 }
 \description{
 This generic function applies a  function on pixels of a data cube, an R array, or other classes if implemented.
+}
+\seealso{
+\code{\link{apply_pixel.cube}}
+
+\code{\link{apply_pixel.array}}
 }

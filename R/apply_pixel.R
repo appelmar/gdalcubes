@@ -2,8 +2,11 @@
 #' 
 #' This generic function applies a  function on pixels of a data cube, an R array, or other classes if implemented.
 #' 
-#' @param object to be reduced 
+#' @param x object to be reduced 
+#' @param ... additional arguments passed to method implementations
 #' @return return value and type depend on the class of x
+#' @seealso \code{\link{apply_pixel.cube}}
+#' @seealso \code{\link{apply_pixel.array}} 
 #' @export
 apply_pixel <- function(x, ...) {
   UseMethod("apply_pixel")

@@ -7,11 +7,18 @@
 reduce_space(x, ...)
 }
 \arguments{
-\item{object}{to be reduced}
+\item{x}{object to be reduced}
+
+\item{...}{further arguments passed to specific implementations}
 }
 \value{
 return value and type depend on the class of x
 }
 \description{
 This generic function applies a reducer function over a data cube, an R array, or other classes if implemented.
+}
+\seealso{
+\code{\link{reduce_space.cube}}
+
+\code{\link{reduce_space.array}}
 }

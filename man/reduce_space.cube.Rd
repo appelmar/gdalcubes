@@ -23,7 +23,7 @@ Create a proxy data cube, which applies one ore more reducer functions over sele
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 more complex functions or arguments.
 
-Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
 }
 \note{
 Implemented reducers will ignore any NAN values (as na.rm=TRUE does)

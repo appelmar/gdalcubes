@@ -1,8 +1,11 @@
 #' Reduce multidimensional data over time
 #' 
 #' This generic function applies a reducer function over a data cube, an R array, or other classes if implemented.
-#' @param object to be reduced 
+#' @param x object to be reduced 
+#' @param ... further arguments passed to specific implementations
 #' @return return value and type depend on the class of x
+#' @seealso \code{\link{reduce_time.cube}} 
+#' @seealso \code{\link{reduce_time.array}} 
 #' @export
 reduce_time <- function(x, ...) {
   UseMethod("reduce_time")
@@ -11,8 +14,11 @@ reduce_time <- function(x, ...) {
 #' Reduce multidimensional data over space
 #' 
 #' This generic function applies a reducer function over a data cube, an R array, or other classes if implemented.
-#' @param object to be reduced 
+#' @param x object to be reduced 
+#' @param ... further arguments passed to specific implementations
 #' @return return value and type depend on the class of x
+#' @seealso \code{\link{reduce_space.cube}} 
+#' @seealso \code{\link{reduce_space.array}} 
 #' @export
 reduce_space <- function(x, ...) {
   UseMethod("reduce_space")
@@ -124,7 +130,7 @@ reduce_time.cube <- function(x, expr, ...) {
 #' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.
 #' 
-#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
 #' @export
 reduce_space.cube <- function(x, expr, ...) {
   stopifnot(is.cube(x))

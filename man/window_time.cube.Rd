@@ -41,7 +41,7 @@ v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931,
 L8.col = create_image_collection(L8_files, "L8_L1TP") 
 L8.cube = cube(L8.col, v) 
 L8.nir = select_bands(L8.cube, c("B08"))
-L8.nir.min = window_time(L8.rgb, c(2,2), "min(B02)")  
+L8.nir.min = window_time(L8.nir, c(2,2), "min(B02)")  
 L8.nir.min
 plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 

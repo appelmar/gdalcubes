@@ -1,8 +1,10 @@
 #' Apply a moving window operation over time
 #' 
 #' This generic function applies a reducer function over a moving window over the time dimension of a data cube, an R array, or other classes if implemented.
-#' @param object to be reduced 
-#' @return return value and type depend on the class of x
+#' @param x object to be reduced 
+#' @param ... further arguments passed to specific implementations
+#' @return Value and type depend on the class of x
+#' @seealso \code{\link{window_time.cube}} 
 #' @export
 window_time <- function(x, ...) {
   UseMethod("window_time")
@@ -28,7 +30,7 @@ window_time <- function(x, ...) {
 #' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' L8.cube = cube(L8.col, v) 
 #' L8.nir = select_bands(L8.cube, c("B08"))
-#' L8.nir.min = window_time(L8.rgb, c(2,2), "min(B02)")  
+#' L8.nir.min = window_time(L8.nir, c(2,2), "min(B02)")  
 #' L8.nir.min
 #' plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 #' 
