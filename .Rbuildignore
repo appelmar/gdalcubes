@@ -22,3 +22,5 @@
 ^example2.R$
 ^IDEAS.md$
 ^LICENSE$
+^src/gdalcubes/src/test$
+^src/gdalcubes/src/external/catch.hpp$

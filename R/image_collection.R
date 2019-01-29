@@ -32,12 +32,15 @@ is.image_collection <- function(obj) {
 
 
 #' @export
-print.image_collection <- function(x, ...) {
+print.image_collection <- function(x, ..., n=6) {
   stopifnot(is.image_collection(x))
   info <- libgdalcubes_image_collection_info(x)
   cat(paste("A GDAL image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), " bands\n"))
   cat("Images:\n")
-  print(head(info$images))
+  print(head(info$images, n))
+  if (n < nrow(info$images)) {
+    cat("[ omitted", nrow(info$images) - n , "images ]", "\n")
+  }
   cat("\n")
   cat("Bands:\n")
   print(info$bands)
@@ -115,13 +118,15 @@ collection_formats <-function(print=TRUE)
   y = lapply(df$description, strwrap, width=w-lw-3)
   
   # TODO: header
-  for (i in 1:nrow(df)) {
-    cat( rep(" ", lw-nchar(df$name[i])), df$name[i], " | ", y[[i]][1], sep="")
-    cat("\n", sep="")
-    if (length(y[[i]]) > 1) {
-      for (j in 2:length(y[[i]])) {
-        cat(rep(" ", lw)," | ", y[[i]][j], sep="")
-        cat("\n", sep="")
+  if (print) {
+    for (i in 1:nrow(df)) {
+      cat( rep(" ", lw-nchar(df$name[i])), df$name[i], " | ", y[[i]][1], sep="")
+      cat("\n", sep="")
+      if (length(y[[i]]) > 1) {
+        for (j in 2:length(y[[i]])) {
+          cat(rep(" ", lw)," | ", y[[i]][j], sep="")
+          cat("\n", sep="")
+        }
       }
     }
   }

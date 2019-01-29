@@ -34,6 +34,7 @@ serialize_function <- function(f) {
 chunk_apply <- function(cube, f) {
   stopifnot(is.cube(cube))
   srcfile =  tempfile(".stream_",fileext = ".R")
+  srcfile = gsub("\\\\", "/", srcfile) # Windows fix
   cat(serialize_function(f), file = srcfile, append = FALSE)
   
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e ", "\"require(gdalcubes)\" ", "-e ", "\"do.call(eval(parse('", srcfile ,"')), args=list())\"", sep="")

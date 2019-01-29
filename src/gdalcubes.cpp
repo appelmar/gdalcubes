@@ -125,7 +125,6 @@ private:
       error_handling_r::defer_output();
       _rp = new Progress(100,true);
     }
-    double p_old = _p;
     _p = p;
     _rp->update((int)(_p*100));
   }
@@ -810,7 +809,7 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
-    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd, "", true));
+    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd, true));
     
     Rcpp::XPtr< std::shared_ptr<stream_cube> > p(x, true) ;
   

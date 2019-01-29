@@ -31,7 +31,7 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
                -I$(RWINLIB_NETCDF)/include \
                -I$(RWINLIB_CURL)/include/curl \
                -I$(RWINLIB_SQLITE) \
-               -DCURL_STATICLIB
+               -DCURL_STATICLIB -DR_PACKAGE
  
 
 PKG_LIBS = -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
