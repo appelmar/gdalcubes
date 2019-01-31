@@ -13,7 +13,7 @@
 #' @param periods.in.title logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string
 #' @param join.timeseries logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?
 #' @param ... further arguments passed to \code{image.default}
-#' @note There is currently no way to plot the result of \code{as_ncdf} without reevaluating the cube
+#' @note There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube
 #' @export
 plot.cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL, periods.in.title=TRUE, join.timeseries=FALSE) {
   stopifnot(is.cube(x))
@@ -30,7 +30,7 @@ plot.cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)
     #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
     
     fn = tempfile(fileext=".nc")
-    as_ncdf(x, fn)
+    write_ncdf(x, fn)
     
     
     def.par <- par(no.readonly = TRUE) # save default, for resetting...
@@ -198,7 +198,7 @@ plot.cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)
     
     
     fn = tempfile(fileext=".nc")
-    as_ncdf(x, fn)
+    write_ncdf(x, fn)
     
     # read nc and plot individual slices as table, x = band, y = t
     def.par <- par(no.readonly = TRUE) # save default, for resetting...

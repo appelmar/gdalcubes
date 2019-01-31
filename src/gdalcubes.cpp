@@ -510,7 +510,16 @@ void libgdalcubes_create_image_collection(std::vector<std::string> files, std::s
 // [[Rcpp::export]]
 SEXP libgdalcubes_list_collection_formats() {
   try {
-  
+    
+    // get package directory and add to presets... (file.path(system.file(package="gdalcubes"),"formats"))
+    Rcpp::Environment base("package:base"); 
+    Rcpp::Function sfile = base["system.file"];  
+    Rcpp::Function fpath = base["file.path"];
+    Rcpp::CharacterVector preset_dir = fpath(sfile(Rcpp::_["package"] = "gdalcubes"), "formats");
+    std::string temp = Rcpp::as<std::string>(preset_dir[0]);
+    config::instance()->add_collection_format_preset_dir(temp);
+    
+    
     std::map<std::string,std::string> fmts = collection_format::list_presets();
     Rcpp::CharacterVector out_keys(fmts.size());
     Rcpp::CharacterVector out_values(fmts.size());

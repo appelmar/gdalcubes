@@ -38,3 +38,6 @@ vignettes/*
 !vignettes/*.Rmd
 example*.R
 gdalcubes_R.Rproj
+config.log
+config.status
+autom4te.cache

@@ -21,11 +21,11 @@
 #'          proj="EPSG:32618",
 #'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  cube(L8.col, v)
+#'  data_cube(L8.col, v)
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
+data_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
 
   stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
@@ -252,16 +252,17 @@ graph <- function(obj) {
   x = libgdalcubes_cube_info(obj)
   return(x$graph)
 }
-#' 
-#' 
-#' "cube_view<-" <-function(x,value) {
-#'   stopifnot(is.cube(x))
-#'   stopifnot(is.cube_view(value))
-#'   if (!is.image_collection_cube)
-#'     stop("x is no image_collection_cube, updating the data cube view is currently only implemented for image_collection_cube")
-#'   libgdalcubes_update_cube_view(x,value)
-#'   return(x)
-#' }
+
+
+
+#"cube_view<-" <-function(x,value) {
+#   stopifnot(is.cube(x))
+#   stopifnot(is.cube_view(value))
+#   if (!is.image_collection_cube)
+#     stop("x is no image_collection_cube, updating the data cube view is currently only implemented for image_collection_cube")
+#   libgdalcubes_update_cube_view(x,value)
+#   return(x)
+# }
 
 
 #' Materialize a data cube as a NetCDF file
@@ -270,8 +271,9 @@ graph <- function(obj) {
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
+#' @details The resulting NetCDF file contains three dimensions (d, y, x) and bands as variables.
 #' @export
-as_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
   stopifnot(is.cube(x))
   libgdalcubes_eval_cube(x, fname)
 }

@@ -1,0 +1,5 @@
+#!/bin/sh
+find . -type f -name "*.o" -delete
+find . -type f -name "*.so" -delete
+rm -f src/Makevars config.status config.log
+rm -rf autom4te.cache

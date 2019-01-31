@@ -66,7 +66,7 @@ cube_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40,
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                         ".TIF", recursive = TRUE, full.names = TRUE)
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
- v = cube_view(cube(L8.col)) 
+ v = cube_view(data_cube(L8.col)) 
  
 # 3. overwrite parts of an existing data cube view
 vnew = cube_view(view = v, dt="P1M")  

@@ -22,6 +22,6 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes.o \
 			RcppExports.o
 
-PKG_CPPFLAGS=  -I/usr/local/include -I/usr/include/hdf5/serial  -I/usr/include/x86_64-linux-gnu -I/usr/include/x86_64-linux-gnu/curl -DR_PACKAGE
-PKG_LIBS= -L/usr/local/lib -lgdal -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lnetcdf -lhdf5_hl -lhdf5 -lpthread -lsz -lz -ldl -lm -lcurl -lproj -lcurl
+PKG_CPPFLAGS=@CPPFLAGS@
+PKG_LIBS=@LIBS@
 CXX_STD=CXX11

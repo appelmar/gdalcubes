@@ -82,7 +82,7 @@ create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
 
 # Creating a data cube
 
-The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. `cube()` creates a data cube from an image collection. This function takes one to three arguments:
+The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. `data_cube()` creates a data cube from an image collection. This function takes one to three arguments:
 
 1. an image collection object as created above
 2. a data cube view defining the spatiotemporal resolution and extent of the target cube
@@ -94,7 +94,7 @@ collection at low resolution in web mercator projection (or in the CRS of the da
 Below, we create a data cube with a default cube view and print some basic information about its dimensions and bands.
 
 ```{r}
-x = cube(image_collection("MOD11A2.db"))
+x = data_cube(image_collection("MOD11A2.db"))
 x
 
 bands(x)
@@ -102,7 +102,7 @@ dimensions(x)
 get_projection(x)
 ```
 
-Notice that `cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. by `plot`). This not only applies to data cubes from image collections but also for derived cubes (see further below).
+Notice that `data_cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. by `plot`). This not only applies to data cubes from image collections but also for derived cubes (see further below).
 
 In most cases, users want to specify the extent and resolution manually. Above, the temporal resolution of the cube was 3 months whereas below, we define a custom data cube view with temporal resolution of one month.
 
@@ -110,7 +110,7 @@ In most cases, users want to specify the extent and resolution manually. Above, 
 v = cube_view(proj="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs", 
           nx = 633, ny=413, l = -1703607, r = 1703607, t = 6671703, b = 4447802, 
           t0="2018-01", t1="2018-12", dt="P1M")
-MOD11A2.cube = cube(image_collection("MOD11A2.db"), v)
+MOD11A2.cube = data_cube(image_collection("MOD11A2.db"), v)
 MOD11A2.cube
 ```
 
@@ -133,7 +133,7 @@ We can also use the pipe operator to write the same expressions as written below
 
 ```{r}
 library(magrittr) # get the pipe
-cube(image_collection("MOD11A2.db"), v) %>%
+data_cube(image_collection("MOD11A2.db"), v) %>%
   select_bands(c("LST_DAY","LST_NIGHT")) %>%
   apply_pixel("0.02*(LST_DAY-LST_NIGHT)", names = "LST difference") %>%
   reduce("median") %>%
@@ -161,8 +161,8 @@ create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
 
 
 # create data cube for vegetion index data using the same view as above
-MOD11A2.cube = cube(image_collection("MOD11A2.db"), v)
-MOD13A3.cube = cube(image_collection("MOD13A3.db"), v)
+MOD11A2.cube = data_cube(image_collection("MOD11A2.db"), v)
+MOD13A3.cube = data_cube(image_collection("MOD13A3.db"), v)
 MOD13A3.cube
 
 
@@ -174,7 +174,7 @@ joined.cube
 
 # Applying R functions over chunks
 
-Data cubes are processed chunk-wise, where users can specify the size of chunks when they create a data cube from an image collection in `cube()`.
+Data cubes are processed chunk-wise, where users can specify the size of chunks when they create a data cube from an image collection in `data_cube()`.
 The function `chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
 in separate R processes (data is streamed to stdin of these processes) and first must read the data as array with `read_stream_as_array()`.
 This function returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written to stdout using `write_stream_from_array`. In the example below, we use the joined data cube and compute
@@ -196,14 +196,14 @@ plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
 
 
 # Explicit evaluation
-Sometimes it is be useful to store resulting data on disk. The function `as_netcdf()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
+Sometimes it is be useful to store resulting data on disk. The function `write_ncdf()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
 
 ```{r}
-as_ncdf(reduce(joined.cube, "max"), "test.nc")
+write_ncdf(reduce(joined.cube, "max"), "test.nc")
 ```
 
 Similarly, gdalcubes proxy objects can be converted as [stars](https://github.com/r-spatial/stars) objects with `as_stars`. This function
-will call `as_ncdf` and load the data using the stars package.
+will call `write_ncdf` and load the data using the stars package.
 
 
 

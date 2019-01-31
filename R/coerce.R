@@ -8,6 +8,6 @@ as_stars <- function(from) {
     stop("stars package not found, please install first") 
 
   fname = tempfile(fileext = ".nc")
-  as_ncdf(from, fname)
+  write_ncdf(from, fname)
   return(stars::read_stars(fname))
 }

@@ -16,7 +16,7 @@
 #'          proj="EPSG:32618",
 #'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  L8.cube = cube(L8.col, v) 
+#'  L8.cube = data_cube(L8.col, v) 
 #'  L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 #'  L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #'  L8.ndvi.filtered = filter_predicate(L8.ndvi, "NDVI > 0.5") 

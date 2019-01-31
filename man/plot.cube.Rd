@@ -40,5 +40,5 @@
 Plot a gdalcubes data cube
 }
 \note{
-There is currently no way to plot the result of \code{as_ncdf} without reevaluating the cube
+There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube
 }
