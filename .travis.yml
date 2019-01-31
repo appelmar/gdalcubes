@@ -29,6 +29,7 @@ addons:
       - libcurl4-openssl-dev
   homebrew:
     packages:
+      - pkg-config
       - gdal
       - netcdf
       - sqlite
@@ -38,6 +39,6 @@ addons:
     update: true
 
 
-r_check_args: "--no-manual --no-vignettes --as-cran"
-r_build_args: "--no-build-vignettes"
-warnings_are_errors: false      
+r_check_args: "--as-cran"
+#r_build_args: "--no-build-vignettes"
+#warnings_are_errors: false      
