@@ -39,10 +39,10 @@ On Ubuntu, the following commands wlil install all libraries.
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
-sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev
+sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev libudunits2-dev
 ```
 
-If package configuration cannot find the libraries, please install `pkg-config`.
+If the configuration script cannot find the libraries, please install `pkg-config`.
 
 
 

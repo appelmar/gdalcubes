@@ -26,3 +26,4 @@ Suggests:
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes
+SystemRequirements: C++11, GDAL, PROJ, CURL, SQLite
