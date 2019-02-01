@@ -41,3 +41,5 @@ gdalcubes_R.Rproj
 config.log
 config.status
 autom4te.cache
+src/Makevars
+cran-comments.md

@@ -12,7 +12,7 @@ if test -z "${R_HOME}"; then
 fi
 RBIN="${R_HOME}/bin/R"
 CC=`"${RBIN}" CMD config CC`;
-CFLAGS=`"${RBIN}" CMD config CFLAGS`
+CFLAGS=`"${RBIN}" CMD config CFLAGS`;
 CPP=`"${RBIN}" CMD config CPP`;
 AC_SUBST(R_HOME)
 
@@ -200,6 +200,9 @@ INPKG_LIBS="${PKG_LIBS}"
 
 CPPFLAGS="$CPPFLAGS ${PKG_CPPFLAGS} ${GDAL_CFLAGS} ${NC_CFLAGS} ${PROJ_CFLAGS} ${CURL_CFLAGS} -DR_PACKAGE"
 
+GDEBUG=`find /usr -type f -name gdal.h`
+AC_MSG_NOTICE([$GDEBUG])
+#AC_MSG_NOTICE(`find /usr/local/Cellar -type f -name gdal.h`)
 AC_CHECK_HEADER(gdal.h,,AC_MSG_ERROR([Cannot find gdal.h! Please install GDAL and/or set GDAL_CFLAGS/LIBS correspondingly.]))
 AC_CHECK_HEADER(netcdf.h,,AC_MSG_ERROR([Cannot find netcdf.h! Please install the NetCDF C library and/or set NC_CFLAGS/LIBS correspondingly.]))
 AC_CHECK_HEADER(curl.h,,AC_MSG_ERROR([Cannot find curl.h! Please install curl and/or set CURL_CFLAGS/LIBS correspondingly.]))

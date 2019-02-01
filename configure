@@ -1999,7 +1999,7 @@ if test -z "${R_HOME}"; then
 fi
 RBIN="${R_HOME}/bin/R"
 CC=`"${RBIN}" CMD config CC`;
-CFLAGS=`"${RBIN}" CMD config CFLAGS`
+CFLAGS=`"${RBIN}" CMD config CFLAGS`;
 CPP=`"${RBIN}" CMD config CPP`;
 
 
@@ -2255,6 +2255,10 @@ INPKG_LIBS="${PKG_LIBS}"
 
 CPPFLAGS="$CPPFLAGS ${PKG_CPPFLAGS} ${GDAL_CFLAGS} ${NC_CFLAGS} ${PROJ_CFLAGS} ${CURL_CFLAGS} -DR_PACKAGE"
 
+GDEBUG=`find /usr -type f -name gdal.h`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: $GDEBUG" >&5
+$as_echo "$as_me: $GDEBUG" >&6;}
+#AC_MSG_NOTICE(`find /usr/local/Cellar -type f -name gdal.h`)
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
