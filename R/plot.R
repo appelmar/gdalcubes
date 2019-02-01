@@ -1,6 +1,6 @@
 #' Plot a gdalcubes data cube
 #'
-#' @param x a data cube proxy object (class gcbs_cube)
+#' @param x a data cube proxy object (class cube)
 #' @param y _not used_
 #' @param nbreaks number of breaks, should be one more than the number of colors given
 #' @param breaks actual breaks used to assign colors to values, if missing, the function subsamples values and uses equally sized intervals between min and max or zlim[0] and zlim[1] if provided
@@ -13,11 +13,11 @@
 #' @param periods.in.title logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string
 #' @param join.timeseries logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?
 #' @param ... further arguments passed to \code{image.default}
-#' @note There is currently no way to plot the result of \code{gcbs_eval} without reevaluating the cube
+#' @note There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube
 #' @export
-plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL, periods.in.title=TRUE, join.timeseries=FALSE) {
-  stopifnot(is.gcbs_cube(x))
-  size = c(gcbs_nbands(x), gcbs_size(x))
+plot.cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbreaks-1)/nbreaks), key.pos=NULL, bands=NULL, t=NULL, rgb=NULL, zlim=NULL, periods.in.title=TRUE, join.timeseries=FALSE) {
+  stopifnot(is.cube(x))
+  size = c(nbands(x), size(x))
   
   if (size[3] == 1 && size[4] == 1) {
     # cube is a (potentially multi-band) time-series
@@ -27,10 +27,10 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
     if (!is.null(rgb)) warning("data cube is a pure time-series, ignoring rgb")
     
     dtvalues = libgdalcubes_datetime_values(x)
-    #if(periods.in.title) dtvalues = paste(dtvalues, gcbs_view(x)$time$dt)
+    #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
     
     fn = tempfile(fileext=".nc")
-    gcbs_eval(x, fn)
+    write_ncdf(x, fn)
     
     
     def.par <- par(no.readonly = TRUE) # save default, for resetting...
@@ -132,7 +132,7 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
           stopifnot(min(bands) >= 1 && max(bands) <= size[1])
         }
       }
-      x = gcbs_select_bands(x, as.character(gcbs_bands(x)$name[bands])) # optimization to only store needed bands
+      x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
       bands = 1:length(bands)
       size[1] = length(bands)
     }
@@ -154,13 +154,13 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
         }
       }
       bands <- rgb
-      x = gcbs_select_bands(x, as.character(gcbs_bands(x)$name[bands])) # optimization to only store needed bands
+      x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
       rgb = 1:3
       bands = 1:3
       size[1] <- 3
     }
     dtvalues = libgdalcubes_datetime_values(x)
-    if(periods.in.title) dtvalues = paste(dtvalues, gcbs_view(x)$time$dt)
+    if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
     if (!is.null(t)) {
       if (is.numeric(t)) {
         stopifnot(all(is.wholenumber(t)))
@@ -198,7 +198,7 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
     
     
     fn = tempfile(fileext=".nc")
-    gcbs_eval(x, fn)
+    write_ncdf(x, fn)
     
     # read nc and plot individual slices as table, x = band, y = t
     def.par <- par(no.readonly = TRUE) # save default, for resetting...
@@ -224,7 +224,7 @@ plot.gcbs_cube  <- function(x, y, ..., nbreaks=11, breaks=NULL,col=grey(1:(nbrea
       }
     }
     
-    dims <- gcbs_dimensions(x)
+    dims <- dimensions(x)
     
     f <- ncdf4::nc_open(fn)
     # dtunit = strsplit(f$dim$time$units, " since ")[[1]]

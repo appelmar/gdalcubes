@@ -22,3 +22,7 @@
 ^example2.R$
 ^IDEAS.md$
 ^LICENSE$
+^src/gdalcubes/src/test$
+^src/gdalcubes/src/external/catch.hpp$
+^cran-comments.md$
+^travis-tool.sh.cmd$

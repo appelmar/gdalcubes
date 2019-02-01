@@ -9,11 +9,18 @@
 #' @param with.dimnames if TRUE, the resulting array will contain dimnames with coordinates, datetime, and band names
 #' @return four-dimensional array
 #' @export
-gcbs_read_stream_as_array <-function(with.dimnames=TRUE) {
+read_stream_as_array <-function(with.dimnames=TRUE) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
-  f <-file('stdin', 'rb')
+  
+  if (Sys.getenv("GDALCUBES_STREAMING_FILE_IN") != "") {
+    f <- file(Sys.getenv("GDALCUBES_STREAMING_FILE_IN"), "rb")
+  }
+  else {
+    f <-file("stdin", "rb")
+  }
+ 
   on.exit(close(f))
   s <- readBin(f, integer(), n=4)
   if (prod(s) == 0) {
@@ -57,16 +64,22 @@ gcbs_read_stream_as_array <-function(with.dimnames=TRUE) {
 #' 
 #' @param v A four-dimensional array with dimensions band, time, y, and x
 #' @export
-gcbs_write_stream_from_array <- function(v) {
+write_stream_from_array <- function(v) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
   v = aperm(v,c(4,3,2,1))
   dim(v) <- rev(dim(v))
   stopifnot(length(dim(v)) == 4)
-  f <- pipe("cat", "wb")
+  
+  if (Sys.getenv("GDALCUBES_STREAMING_FILE_OUT") != "") {
+    f <- file(Sys.getenv("GDALCUBES_STREAMING_FILE_OUT"), "wb")
+  }
+  else { # this works only on Linux
+    f <- pipe("cat", "wb")
+  }
   on.exit(close(f))
-  s <- dim(v) # test
+  s <- dim(v) 
   writeBin(as.integer(s), f)
   writeBin(as.double(v), f)
   flush(f)
@@ -84,14 +97,14 @@ gcbs_write_stream_from_array <- function(v) {
 #' @examples
 #' \dontrun{
 #' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-#' reduce_time(sample_chunk, function(x) {
+#' strm_reduce_time(sample_chunk, function(x) {
 #'   ndvi <- (x[8,]-x[4,])/(x[8,]+x[4,])
 #'   return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
 #' })}
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
-reduce_time <- function(x, FUN, ...) {
+reduce_time.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(3,4), FUN, ...)
@@ -122,7 +135,7 @@ reduce_time <- function(x, FUN, ...) {
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
-apply_pixel <- function(x, FUN, ...) {
+apply_pixel.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(2,3,4), FUN, ...)
@@ -148,7 +161,7 @@ apply_pixel <- function(x, FUN, ...) {
 #'  return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
 #' })}
 #' @export
-reduce_space <- function(x, FUN, ...) {
+reduce_space.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))
   stopifnot(length(dim(x))==4)
   res <- apply(x, c(2), FUN, ...)

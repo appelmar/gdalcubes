@@ -125,7 +125,6 @@ private:
       error_handling_r::defer_output();
       _rp = new Progress(100,true);
     }
-    double p_old = _p;
     _p = p;
     _rp->update((int)(_p*100));
   }
@@ -511,7 +510,16 @@ void libgdalcubes_create_image_collection(std::vector<std::string> files, std::s
 // [[Rcpp::export]]
 SEXP libgdalcubes_list_collection_formats() {
   try {
-  
+    
+    // get package directory and add to presets... (file.path(system.file(package="gdalcubes"),"formats"))
+    Rcpp::Environment base("package:base"); 
+    Rcpp::Function sfile = base["system.file"];  
+    Rcpp::Function fpath = base["file.path"];
+    Rcpp::CharacterVector preset_dir = fpath(sfile(Rcpp::_["package"] = "gdalcubes"), "formats");
+    std::string temp = Rcpp::as<std::string>(preset_dir[0]);
+    config::instance()->add_collection_format_preset_dir(temp);
+    
+    
     std::map<std::string,std::string> fmts = collection_format::list_presets();
     Rcpp::CharacterVector out_keys(fmts.size());
     Rcpp::CharacterVector out_values(fmts.size());
@@ -685,6 +693,30 @@ SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> re
 
 
 // [[Rcpp::export]]
+SEXP libgdalcubes_create_window_time_cube(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::vector<std::pair<std::string, std::string>> reducer_bands;
+    for (uint16_t i=0; i<reducers.size(); ++i) {
+      // assuming reducers.size() == bands.size(), this is checked in R code calling this function
+      reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
+    }
+    
+    std::shared_ptr<window_time_cube>* x = new std::shared_ptr<window_time_cube>(window_time_cube::create(*aa, reducer_bands, window[0], window[1]));
+    Rcpp::XPtr< std::shared_ptr<window_time_cube> > p(x, true) ;
+    
+    return p;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+
+// [[Rcpp::export]]
 SEXP libgdalcubes_create_join_bands_cube(SEXP pinA, SEXP pinB) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > A = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pinA);
@@ -786,7 +818,7 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
-    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd));
+    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd, true));
     
     Rcpp::XPtr< std::shared_ptr<stream_cube> > p(x, true) ;
   

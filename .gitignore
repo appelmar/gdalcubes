@@ -3,7 +3,6 @@ doc
 # History files
 .Rhistory
 .Rapp.history
-
 # Session Data files
 .RData
 # Example code in package build process
@@ -38,3 +37,9 @@ windows
 vignettes/*
 !vignettes/*.Rmd
 example*.R
+gdalcubes_R.Rproj
+config.log
+config.status
+autom4te.cache
+src/Makevars
+cran-comments.md

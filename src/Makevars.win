@@ -15,6 +15,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/reduce.o \
 			gdalcubes/src/reduce_time.o \
 			gdalcubes/src/reduce_space.o \
+			gdalcubes/src/window_time.o \
 			gdalcubes/src/select_bands.o \
 			gdalcubes/src/filter_predicate.o \
 			gdalcubes/src/stream.o \
@@ -30,7 +31,7 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
                -I$(RWINLIB_NETCDF)/include \
                -I$(RWINLIB_CURL)/include/curl \
                -I$(RWINLIB_SQLITE) \
-               -DCURL_STATICLIB
+               -DCURL_STATICLIB -DR_PACKAGE
  
 
 PKG_LIBS = -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
@@ -47,7 +48,10 @@ all: clean winlibs
 CXX_STD=CXX11
 
 winlibs:
+	mkdir -p ../inst
 	"${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" --vanilla "../tools/winlibs.R"
+	cp -r $(RWINLIB_GDAL)/share/gdal ../inst/
+	cp -r $(RWINLIB_GDAL)/share/proj ../inst/
 
 clean:
 	rm -f $(SHLIB) $(OBJECTS)

@@ -6,7 +6,7 @@
 #' @param n number of threads
 #' @return nothing / invisible
 #' @export
-gcbs_set_threads <- function(n=1) {
+gdalcubes_set_threads <- function(n=1) {
   stopifnot(n >= 1)
   stopifnot(n%%1==0)
   libgdalcubes_set_threads(n)
@@ -17,20 +17,15 @@ gcbs_set_threads <- function(n=1) {
 #'
 #' @return List with gdalcubes library version information
 #' @export
-gcbs_version <- function() {
+gdalcubes_version <- function() {
   return(libgdalcubes_version())
 }
 
-#' Enable debug output from the gdlcubes C++ library
+#' Enable or disable debug output from the gdalcubes C++ library
+#' @param debug logical, TRUE if you want debug messages
 #' @export
-gcbs_enable_debug_output <- function() {
-  libgdalcubes_debug_output(TRUE)
+gdalcubes_debug_output <- function(debug=TRUE) {
+   libgdalcubes_debug_output(debug)
   invisible()
 }
 
-#' Disable debug output from the gdlcubes C++ library
-#' @export
-gcbs_disable_debug_output <- function() {
-  libgdalcubes_debug_output(FALSE)
-  invisible()
-}

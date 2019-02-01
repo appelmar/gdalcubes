@@ -61,14 +61,14 @@ Furthermore gdalcubes must know how to derive the image aquisition date / time f
 
 ```{r}
 library(gdalcubes)
-gcbs_collection_formats()
+collection_formats()
 ```
 
 
 
 Since the MODIS data are HDF4 files, reading the data with GDAL is a bit tricky, as we must know how to identify the corresponding subdatasets in addition to the filenames. 
 For MOD11A2, the pattern for the subdatasets is `HDF4_EOS:EOS_GRID:"/path/to/file":MODIS_Grid_8Day_1km_LST:BAND`, where `BAND` can be e.g. `"LST_Day_1km"`.
-The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL dataset identifiers, which then can be put as first argument to `gcbs_create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
+The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL dataset identifiers, which then can be put as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
 
 ```{r}
 file_subdatasets = expand.grid(file=list.files("MOD11A2", pattern=".hdf$", full.names = TRUE), 
@@ -77,12 +77,12 @@ file_subdatasets = expand.grid(file=list.files("MOD11A2", pattern=".hdf$", full.
 
 gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MODIS_Grid_8Day_1km_LST:", file_subdatasets$subdataset, sep="")
 
-gcbs_create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
+create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
 ```
 
 # Creating a data cube
 
-The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. `gcbs_cube()` creates a data cube from an image collection. This function takes one to three arguments:
+The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. `data_cube()` creates a data cube from an image collection. This function takes one to three arguments:
 
 1. an image collection object as created above
 2. a data cube view defining the spatiotemporal resolution and extent of the target cube
@@ -94,36 +94,36 @@ collection at low resolution in web mercator projection (or in the CRS of the da
 Below, we create a data cube with a default cube view and print some basic information about its dimensions and bands.
 
 ```{r}
-x = gcbs_cube(gcbs_image_collection("MOD11A2.db"))
+x = data_cube(image_collection("MOD11A2.db"))
 x
 
-gcbs_bands(x)
-gcbs_dimensions(x)
-gcbs_get_projection(x)
+bands(x)
+dimensions(x)
+get_projection(x)
 ```
 
-Notice that `gcbs_cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. by `plot`). This not only applies to data cubes from image collections but also for derived cubes (see further below).
+Notice that `data_cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. by `plot`). This not only applies to data cubes from image collections but also for derived cubes (see further below).
 
 In most cases, users want to specify the extent and resolution manually. Above, the temporal resolution of the cube was 3 months whereas below, we define a custom data cube view with temporal resolution of one month.
 
 ```{r}
-v = gcbs_view(proj="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs", 
+v = cube_view(proj="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs", 
           nx = 633, ny=413, l = -1703607, r = 1703607, t = 6671703, b = 4447802, 
           t0="2018-01", t1="2018-12", dt="P1M")
-MOD11A2.cube = gcbs_cube(gcbs_image_collection("MOD11A2.db"), v)
+MOD11A2.cube = data_cube(image_collection("MOD11A2.db"), v)
 MOD11A2.cube
 ```
 
 # Data cube operations
 
-The package comes with a few operations on data cubes to (i) select bands (`gcbs_select_bands`), (ii) apply pixel wise arithmetic expressions (`gcbs_apply_pixel`), (iii) reduce data cubes over time (`gcbs_reduce`), (iv) apply an R function over chunks of a data cube (`gcbs_apply_chunk`), and (v) join bands of identically shaped data cubes (`gcbs_join_bands`). 
+The package comes with a few operations on data cubes to (i) select bands (`select_bands`), (ii) apply pixel wise arithmetic expressions (`apply_pixel`), (iii) reduce data cubes over time (`reduce`), (iv) apply an R function over chunks of a data cube (`apply_chunk`), and (v) join bands of identically shaped data cubes (`join_bands`). 
 
 The following code demonstrates the first three of these oprations and how results can be plotted.
 
 ```{r}
-MOD11A2.bandselect = gcbs_select_bands(MOD11A2.cube, c("LST_DAY","LST_NIGHT"))
-MOD11A2.daynight_difference = gcbs_apply_pixel(MOD11A2.bandselect, "0.02*(LST_DAY-LST_NIGHT)",names = "LST_difference")
-MOD11A2.reduce = gcbs_reduce(MOD11A2.daynight_difference, "median")
+MOD11A2.bandselect = select_bands(MOD11A2.cube, c("LST_DAY","LST_NIGHT"))
+MOD11A2.daynight_difference = apply_pixel(MOD11A2.bandselect, "0.02*(LST_DAY-LST_NIGHT)",names = "LST_difference")
+MOD11A2.reduce = reduce(MOD11A2.daynight_difference, "median")
 plot(MOD11A2.reduce, col=heat.colors, key.pos=1)
 ```
 
@@ -133,10 +133,10 @@ We can also use the pipe operator to write the same expressions as written below
 
 ```{r}
 library(magrittr) # get the pipe
-gcbs_cube(gcbs_image_collection("MOD11A2.db"), v) %>%
-  gcbs_select_bands(c("LST_DAY","LST_NIGHT")) %>%
-  gcbs_apply_pixel("0.02*(LST_DAY-LST_NIGHT)", names = "LST difference") %>%
-  gcbs_reduce("median") %>%
+data_cube(image_collection("MOD11A2.db"), v) %>%
+  select_bands(c("LST_DAY","LST_NIGHT")) %>%
+  apply_pixel("0.02*(LST_DAY-LST_NIGHT)", names = "LST difference") %>%
+  reduce("median") %>%
   plot(col=heat.colors, key.pos=1)
 ```
 
@@ -156,59 +156,59 @@ file_subdatasets = expand.grid(file=list.files("MOD13A3", pattern=".hdf$", full.
                         "1 km monthly blue reflectance","1 km monthly MIR reflectance"))
 
 gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MOD_Grid_monthly_1km_VI:",file_subdatasets$subdataset, sep="")
-gcbs_create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
+create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
 
 
 
 # create data cube for vegetion index data using the same view as above
-MOD11A2.cube = gcbs_cube(gcbs_image_collection("MOD11A2.db"), v)
-MOD13A3.cube = gcbs_cube(gcbs_image_collection("MOD13A3.db"), v)
+MOD11A2.cube = data_cube(image_collection("MOD11A2.db"), v)
+MOD13A3.cube = data_cube(image_collection("MOD13A3.db"), v)
 MOD13A3.cube
 
 
-joined.cube = gcbs_join_bands(
-  gcbs_select_bands(MOD13A3.cube, "NDVI"), 
-  gcbs_select_bands(MOD11A2.cube, c("LST_DAY", "LST_NIGHT")))
+joined.cube = join_bands(
+  select_bands(MOD13A3.cube, "NDVI"), 
+  select_bands(MOD11A2.cube, c("LST_DAY", "LST_NIGHT")))
 joined.cube
 ```
 
 # Applying R functions over chunks
 
-Data cubes are processed chunk-wise, where users can specify the size of chunks when they create a data cube from an image collection in `gcbs_cube()`.
-The function `gcbs_chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
-in separate R processes (data is streamed to stdin of these processes) and first must read the data as array with `gcbs_read_stream_as_array()`.
-This function returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written to stdout using `gcbs_write_stream_from_array`. In the example below, we use the joined data cube and compute
+Data cubes are processed chunk-wise, where users can specify the size of chunks when they create a data cube from an image collection in `data_cube()`.
+The function `chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
+in separate R processes (data is streamed to stdin of these processes) and first must read the data as array with `read_stream_as_array()`.
+This function returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written to stdout using `write_stream_from_array`. In the example below, we use the joined data cube and compute
 pixel-wise rank correlations between all three pairs of bands. The result is a map with three correlation coefficients between NDVI, LST_DAY, and LST_NIGHT. Results are of course not very meaningful but this example illustrates how R functions can be applied on the data.
 
 ```{r}
 f <- function() {
-  x = gcbs_read_stream_as_array()
+  x = read_stream_as_array()
   out <- reduce_time(x, function(y) {
     c(cor(y[1,], y[2,] , use="na.or.complete", method="spearman"),
     cor(y[1,], y[3,] , use="na.or.complete", method="spearman"),
     cor(y[2,], y[3,] , use="na.or.complete", method="spearman"))
   })
-  gcbs_write_stream_from_array(out)
+  write_stream_from_array(out)
 }
 
-plot(gcbs_chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
+plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
 ```
 
 
 # Explicit evaluation
-Sometimes it is be useful to store resulting data on disk. The function `gcbs_eval()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
+Sometimes it is be useful to store resulting data on disk. The function `write_ncdf()` can be used to force the evaluation of a data cube and write the resulting data to a NetCDF file.
 
 ```{r}
-gcbs_eval(gcbs_reduce(joined.cube, "max"), "test.nc")
+write_ncdf(reduce(joined.cube, "max"), "test.nc")
 ```
 
 Similarly, gdalcubes proxy objects can be converted as [stars](https://github.com/r-spatial/stars) objects with `as_stars`. This function
-will call `gcbs_eval` and load the data using the stars package.
+will call `write_ncdf` and load the data using the stars package.
 
 
 
 # Multithreading
-gdalcubes supports multithreaded evaluation of data cube operations. You just need to call e.g. `gcbs_set_threads(8)` and all following operations will use up to 8 threads. Internally, threads are assigned to chunks of result data cubes ,i.e., one chunk of the result is processed by exactly one thread. Consequently, if the result has only one chunk, multhreading will have no effect.
+gdalcubes supports multithreaded evaluation of data cube operations. You just need to call e.g. `gdalcubes_set_threads(8)` and all following operations will use up to 8 threads. Internally, threads are assigned to chunks of result data cubes ,i.e., one chunk of the result is processed by exactly one thread. Consequently, if the result has only one chunk, multhreading will have no effect.
 
 
 
