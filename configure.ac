@@ -1,6 +1,9 @@
 # Process this file with autoconf to produce a configure script.
 # This file has been largely adapted from the R packages Cairo (c) Simon Urbanek and sf (c) Edzer Pebesma (see https://github.com/cran/Cairo/blob/master/configure.ac and https://github.com/r-spatial/sf/blob/master/configure.ac respectively).
 
+
+# This script simply uses pkg-config if available, or tries to guess correct include / library paths.
+
 AC_INIT(gdalcubes, 0.0.1, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
@@ -21,6 +24,7 @@ AC_SUBST(R_HOME)
 
 
 AC_PATH_PROG([PKGCONF],[pkg-config],[],[$PATH:/usr/local/bin:ext/bin:ext:/sw/bin:/opt/bin])
+AC_PATH_PROG([FIND],[find],[],[$PATH:/usr/local/bin])
 
 AC_MSG_CHECKING(pkg-config exists)
 if test -r "${PKGCONF}"; then
@@ -29,7 +33,6 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_WARN([pkg-config not found - guessing library locations])
 fi
-
 
 # GDAL
 if test -r "${PKGCONF}"; then
@@ -195,19 +198,7 @@ INCPPFLAGS="${CPPFLAGS}"
 INPKG_CPPFLAGS="${PKG_CPPFLAGS}"
 INPKG_LIBS="${PKG_LIBS}"
 
-
-
-
 CPPFLAGS="$CPPFLAGS ${PKG_CPPFLAGS} ${GDAL_CFLAGS} ${NC_CFLAGS} ${PROJ_CFLAGS} ${CURL_CFLAGS} -DR_PACKAGE"
-
-GDEBUG=`find /usr -type f -name gdal.h`
-AC_MSG_NOTICE([$GDEBUG])
-#AC_MSG_NOTICE(`find /usr/local/Cellar -type f -name gdal.h`)
-AC_CHECK_HEADER(gdal.h,,AC_MSG_ERROR([Cannot find gdal.h! Please install GDAL and/or set GDAL_CFLAGS/LIBS correspondingly.]))
-AC_CHECK_HEADER(netcdf.h,,AC_MSG_ERROR([Cannot find netcdf.h! Please install the NetCDF C library and/or set NC_CFLAGS/LIBS correspondingly.]))
-AC_CHECK_HEADER(curl.h,,AC_MSG_ERROR([Cannot find curl.h! Please install curl and/or set CURL_CFLAGS/LIBS correspondingly.]))
-
-
 LIBS="$LIBS ${GDAL_LIBS} ${NC_LIBS} ${PROJ_LIBS} ${CURL_LIBS}"
 
 AC_MSG_NOTICE([Package CPP flags: ${CPPFLAGS}])
