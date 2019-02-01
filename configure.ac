@@ -1,9 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 # This file has been largely adapted from the R packages Cairo (c) Simon Urbanek and sf (c) Edzer Pebesma (see https://github.com/cran/Cairo/blob/master/configure.ac and https://github.com/r-spatial/sf/blob/master/configure.ac respectively).
 
-
-# This script simply uses pkg-config if available, or tries to guess correct include / library paths.
-
 AC_INIT(gdalcubes, 0.0.1, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
@@ -24,7 +21,6 @@ AC_SUBST(R_HOME)
 
 
 AC_PATH_PROG([PKGCONF],[pkg-config],[],[$PATH:/usr/local/bin:ext/bin:ext:/sw/bin:/opt/bin])
-AC_PATH_PROG([FIND],[find],[],[$PATH:/usr/local/bin])
 
 AC_MSG_CHECKING(pkg-config exists)
 if test -r "${PKGCONF}"; then
@@ -33,6 +29,7 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_WARN([pkg-config not found - guessing library locations])
 fi
+
 
 # GDAL
 if test -r "${PKGCONF}"; then
@@ -198,7 +195,15 @@ INCPPFLAGS="${CPPFLAGS}"
 INPKG_CPPFLAGS="${PKG_CPPFLAGS}"
 INPKG_LIBS="${PKG_LIBS}"
 
+
+
+
 CPPFLAGS="$CPPFLAGS ${PKG_CPPFLAGS} ${GDAL_CFLAGS} ${NC_CFLAGS} ${PROJ_CFLAGS} ${CURL_CFLAGS} -DR_PACKAGE"
+
+# at least one ac_check seems to be needed 
+AC_CHECK_HEADER(iostream.h)
+
+
 LIBS="$LIBS ${GDAL_LIBS} ${NC_LIBS} ${PROJ_LIBS} ${CURL_LIBS}"
 
 AC_MSG_NOTICE([Package CPP flags: ${CPPFLAGS}])
@@ -207,7 +212,6 @@ AC_MSG_NOTICE([Package LIBS: ${LIBS}])
 
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
-
 
 
 
