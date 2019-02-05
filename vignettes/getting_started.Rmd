@@ -182,13 +182,13 @@ pixel-wise rank correlations between all three pairs of bands. The result is a m
 
 ```{r}
 f <- function() {
-  x = read_stream_as_array()
+  x = read_chunk_as_array()
   out <- reduce_time(x, function(y) {
     c(cor(y[1,], y[2,] , use="na.or.complete", method="spearman"),
     cor(y[1,], y[3,] , use="na.or.complete", method="spearman"),
     cor(y[2,], y[3,] , use="na.or.complete", method="spearman"))
   })
-  write_stream_from_array(out)
+  write_chunk_from_array(out)
 }
 
 plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
