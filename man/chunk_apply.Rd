@@ -31,11 +31,11 @@ This function returns a proxy object, i.e., it will not start any computations b
 \examples{
 \dontrun{
 f <- function() {
-  x = read_stream_as_array()
+  x = read_chunk_as_array()
   out <- reduce_time(x, function(x) {
     y = x[1,]
     mean(y, na.rm=T)})
-  write_stream_from_array(out)
+  write_chunk_from_array(out)
 }
 xstrm <- chunk_apply(XXX, f)
 }
