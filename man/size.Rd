@@ -10,11 +10,11 @@ size(obj)
 \item{obj}{a data cube proxy object (class cube)}
 }
 \value{
-Size of a data cube (number of cells) as integer vector in the order t, y, x
+size of a data cube (number of cells) as integer vector in the order t, y, x
 }
 \description{
 Query data cube properties
 }
 \seealso{
-dim.cube
+\code{\link{dim.cube}}
 }

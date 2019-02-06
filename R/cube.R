@@ -85,8 +85,8 @@ print.cube <- function(x, ...) {
 
 #' Query data cube properties 
 #' 
-#' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso dim.cube
+#' @return size of a data cube (number of cells) as integer vector in the order t, y, x
+#' @seealso \code{\link{dim.cube}}
 #' @param obj a data cube proxy object (class cube)
 #' @export
 size <- function(obj) {
@@ -99,8 +99,8 @@ size <- function(obj) {
 
 #' Query data cube properties 
 #' 
-#' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso size
+#' @return size of a data cube (number of cells) as integer vector in the order t, y, x
+#' @seealso \code{\link{size}}
 #' @param x a data cube proxy object (class cube)
 #' @export
 dim.cube <- function(x) {
@@ -238,7 +238,7 @@ nx <- function(obj) {
 
 #' Query data cube properties 
 #' 
-#' gdalcubes uses a graph (currently a tree) to represent / serialize data cube chains. This function gives a JSON
+#' gdalcubes uses a graph (currently a tree) to serialize data cubes (including chains of cubes). This function gives a JSON
 #' representation, which will be communicated to gdalcubes_server instances to create identical cube instances 
 #' remotely.
 #' 
@@ -262,7 +262,7 @@ graph <- function(obj) {
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
-#' @details The resulting NetCDF file contains three dimensions (d, y, x) and bands as variables.
+#' @details The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
   stopifnot(is.cube(x))

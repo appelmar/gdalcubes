@@ -15,5 +15,5 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
 This function will read chunks of a data cube and write them to a single NetCDF file.
 }
 \details{
-The resulting NetCDF file contains three dimensions (d, y, x) and bands as variables.
+The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
 }

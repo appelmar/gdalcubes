@@ -14,7 +14,7 @@ A JSON string representing a graph (currently a tree) that can be used to create
 chain of gdalcubes operations.
 }
 \description{
-gdalcubes uses a graph (currently a tree) to represent / serialize data cube chains. This function gives a JSON
+gdalcubes uses a graph (currently a tree) to serialize data cubes (including chains of cubes). This function gives a JSON
 representation, which will be communicated to gdalcubes_server instances to create identical cube instances 
 remotely.
 }
