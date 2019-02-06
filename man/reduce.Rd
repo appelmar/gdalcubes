@@ -22,7 +22,7 @@ Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 
-This function is deprecated and will be replaced by the mor flexible reduce_time.
+This function is deprecated and will be replaced by the more flexible reduce_time.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),

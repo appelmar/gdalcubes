@@ -1,7 +1,7 @@
 
 #' Create a data cube from an image collection
 #' 
-#' Create a proxy data cube, which loads data from a given image collection
+#' Create a proxy data cube, which loads data from a given image collection according to a data cube view
 #'
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used

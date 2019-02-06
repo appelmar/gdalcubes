@@ -17,7 +17,7 @@ data_cube(image_collection, view, chunking = c(16, 256, 256))
 A proxy data cube object
 }
 \description{
-Create a proxy data cube, which loads data from a given image collection
+Create a proxy data cube, which loads data from a given image collection according to a data cube view
 }
 \details{
 The following steps will be performed when the data cube is requested to read data of a chunk:

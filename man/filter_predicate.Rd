@@ -15,12 +15,12 @@ filter_predicate(cube, pred)
 A proxy data cube object
 }
 \description{
-Create a proxy data cube, which evaluates a predicate over all pixels of a data cube. For all pixels which fulfill the predicate, the original
+Create a proxy data cube, which evaluates a predicate over all pixels of a data cube. For all pixels that fulfill the predicate, the original
 band values are returned. Other pixels are simply filled with NANs. The predicate may access band values by their name.
 }
 \details{
-gdalcubes uses the \href{https://github.com/ArashPartow/exprtk}{exprtk library} to evaluate expressions in C++, you can look at the library examples 
-to see what kind of expressions you can execute.
+gdalcubes uses and extends the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
+to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

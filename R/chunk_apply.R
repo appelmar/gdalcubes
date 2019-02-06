@@ -6,7 +6,7 @@ serialize_function <- function(f) {
   return(paste(as.character(src),collapse = "\n"))
 }
 
-#' Apply a function on chunks of a data cube 
+#' Apply an R function on chunks of a data cube 
 #' 
 #' @details 
 #' This function internally creates a gdalcubes stream data cube, which streams
@@ -23,14 +23,24 @@ serialize_function <- function(f) {
 #' @return A proxy data cube object
 #' @examples 
 #' \dontrun{
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+#'                        ".TIF", recursive = TRUE, full.names = TRUE) 
+#' 
+#' v = cube_view(extent=list(left=388941.2, right=766552.4,
+#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' L8.col = create_image_collection(L8_files, "L8_L1TP")
+#' L8.cube = data_cube(L8.col, v)
+#' L8.cube = select_bands(L8.cube, c("B04", "B05"))
 #' f <- function() {
-#'   x = read_chunk_as_array()
+#'   x <- read_chunk_as_array()
 #'   out <- reduce_time(x, function(x) {
-#'     y = x[1,]
-#'     mean(y, na.rm=T)})
+#'     cor(x[1,], x[2,], use="na.or.complete", method = "kendall")
+#'   }) 
 #'   write_chunk_from_array(out)
 #' }
-#' xstrm <- chunk_apply(XXX, f)
+#' L8.cor = chunk_apply(L8.cube, f)
+#' plot(L8.cor, zlim=c(0,1), key.pos=1)
 #' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export

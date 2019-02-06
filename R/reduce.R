@@ -45,7 +45,7 @@ reduce_space <- function(x, ...) {
 #'  L8.rgb.median
 #'  plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @note This function is deprecated and will be replaced by the mor flexible reduce_time.
+#' @note This function is deprecated and will be replaced by the more flexible reduce_time.
 #' @export
 reduce <- function(cube, reducer=c("mean","median","min","max")) {
   stopifnot(is.cube(cube))
