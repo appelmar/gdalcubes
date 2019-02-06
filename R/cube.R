@@ -17,9 +17,9 @@
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-#'          proj="EPSG:32618",
-#'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+#'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #'  data_cube(L8.col, v)
 #'  
@@ -156,7 +156,7 @@ bands <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @export
-get_projection <- function(obj) {
+srs <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$proj)
@@ -254,15 +254,6 @@ graph <- function(obj) {
 }
 
 
-
-#"cube_view<-" <-function(x,value) {
-#   stopifnot(is.cube(x))
-#   stopifnot(is.cube_view(value))
-#   if (!is.image_collection_cube)
-#     stop("x is no image_collection_cube, updating the data cube view is currently only implemented for image_collection_cube")
-#   libgdalcubes_update_cube_view(x,value)
-#   return(x)
-# }
 
 
 #' Materialize a data cube as a NetCDF file

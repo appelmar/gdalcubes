@@ -22,8 +22,8 @@ A proxy data cube object
 Create a proxy data cube, which applies arithmetics expressions over all pixels of a data cube. Expressions may access band values by their name.
 }
 \details{
-gdalcubes uses the \href{https://github.com/ArashPartow/exprtk}{exprtk library} to evaluate expressions in C++, you can look at the library examples 
-to see what kind of expressions you can execute.
+gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
+to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
@@ -31,9 +31,9 @@ This function returns a proxy object, i.e., it will not start any computations b
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
                         ".TIF", recursive = TRUE, full.names = TRUE)
- v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-         proj="EPSG:32618",
-         nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+ v = cube_view(extent=list(left=388941.2, right=766552.4, 
+               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
  L8.cube = data_cube(L8.col, v) 
  L8.cube = select_bands(L8.cube, c("B04", "B05")) 

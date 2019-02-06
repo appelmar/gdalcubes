@@ -87,17 +87,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// libgdalcubes_update_cube_view
-void libgdalcubes_update_cube_view(SEXP pin, SEXP v);
-RcppExport SEXP _gdalcubes_libgdalcubes_update_cube_view(SEXP pinSEXP, SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type v(vSEXP);
-    libgdalcubes_update_cube_view(pin, v);
-    return R_NilValue;
-END_RCPP
-}
 // libgdalcubes_open_image_collection
 SEXP libgdalcubes_open_image_collection(std::string filename);
 RcppExport SEXP _gdalcubes_libgdalcubes_open_image_collection(SEXP filenameSEXP) {
@@ -117,6 +106,18 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     rcpp_result_gen = Rcpp::wrap(libgdalcubes_image_collection_info(pin));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_image_collection_extent
+Rcpp::List libgdalcubes_image_collection_extent(SEXP pin, std::string srs);
+RcppExport SEXP _gdalcubes_libgdalcubes_image_collection_extent(SEXP pinSEXP, SEXP srsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type srs(srsSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_image_collection_extent(pin, srs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -310,9 +311,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_datetime_values", (DL_FUNC) &_gdalcubes_libgdalcubes_datetime_values, 1},
     {"_gdalcubes_libgdalcubes_cube_info", (DL_FUNC) &_gdalcubes_libgdalcubes_cube_info, 1},
     {"_gdalcubes_libgdalcubes_get_cube_view", (DL_FUNC) &_gdalcubes_libgdalcubes_get_cube_view, 1},
-    {"_gdalcubes_libgdalcubes_update_cube_view", (DL_FUNC) &_gdalcubes_libgdalcubes_update_cube_view, 2},
     {"_gdalcubes_libgdalcubes_open_image_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_open_image_collection, 1},
     {"_gdalcubes_libgdalcubes_image_collection_info", (DL_FUNC) &_gdalcubes_libgdalcubes_image_collection_info, 1},
+    {"_gdalcubes_libgdalcubes_image_collection_extent", (DL_FUNC) &_gdalcubes_libgdalcubes_image_collection_extent, 2},
     {"_gdalcubes_libgdalcubes_create_image_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection, 4},
     {"_gdalcubes_libgdalcubes_list_collection_formats", (DL_FUNC) &_gdalcubes_libgdalcubes_list_collection_formats, 0},
     {"_gdalcubes_libgdalcubes_create_image_collection_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection_cube, 3},

@@ -246,7 +246,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
 
   return Rcpp::List::create(Rcpp::Named("bands") = bands,
                             Rcpp::Named("dimensions") = dims,
-                            Rcpp::Named("proj") = x->st_reference()->proj(),
+                            Rcpp::Named("srs") = x->st_reference()->proj(),
                             Rcpp::Named("graph") = x->make_constructible_json().dump(2),
                             Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3]));
 
@@ -269,7 +269,7 @@ Rcpp::List libgdalcubes_get_cube_view( SEXP pin) {
       Rcpp::Named("bottom") = x->st_reference()->bottom(),
       Rcpp::Named("nx") = x->st_reference()->nx(),
       Rcpp::Named("ny") = x->st_reference()->ny(),
-      Rcpp::Named("proj") = x->st_reference()->proj(),
+      Rcpp::Named("srs") = x->st_reference()->proj(),
       Rcpp::Named("dx") = R_NilValue,
       Rcpp::Named("dy") = R_NilValue
     ),
@@ -285,93 +285,6 @@ Rcpp::List libgdalcubes_get_cube_view( SEXP pin) {
   return view;
 }
  
-
-// TODO: do not update the view of pin directly
-// but update view for all image_collection_cubes that are somehow connected....
-// [[Rcpp::export]]
-void libgdalcubes_update_cube_view( SEXP pin, SEXP v) {
-  
-  Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-  
-  std::shared_ptr<cube> x = *aa;
-  
-  std::shared_ptr<cube_view> vv = std::dynamic_pointer_cast<cube_view>(x->st_reference());
-  
-  // 1. Create cube view shared_ptr that is default from pin and update in place...
-  std::shared_ptr<cube_view> s = std::make_shared<cube_view>();
-  s->win() = x->st_reference()->win(); 
-  s->proj() = x->st_reference()->proj();
-  s->nx() = x->st_reference()->nx();
-  s->ny() = x->st_reference()->ny();
-  s->t0() =  x->st_reference()->t0();
-  s->t1() =  x->st_reference()->t1();
-  s->dt() =  x->st_reference()->dt();
-  
-  Rcpp::List view = Rcpp::as<Rcpp::List>(v);
-  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    s->right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    s->left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    s->top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-   s->bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
-  }
-  // nx overwrites dx
-  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-   s->dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    s->nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
-  }
-  // ny overwrites dy
-  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-   s->dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    s->ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["proj"] != R_NilValue) {
-    s->proj() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["proj"])[0];
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    s->t0() = datetime::from_string(tmp);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    s->t1() = datetime::from_string(tmp);
-  }
-  
-  // dt overwrites nt
-  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-    s->nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-    s->dt() = duration::from_string(tmp);
-    s->t0().unit() = x->st_reference()->dt().dt_unit; 
-    s->t1().unit() = x->st_reference()->dt().dt_unit; 
-  }
-  
-  if (vv) {
-    if (view["aggregation"] != R_NilValue) {
-      std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-     s->aggregation_method() = aggregation::from_string(tmp);
-    }
-    if (view["resampling"] != R_NilValue) {
-      std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-      s->resampling_method() = resampling::from_string(tmp);
-    }
-  }
-  
-  // 2. Call x->update_st_reference()...
-  x->update_st_reference(s);
-  
-}
 
 
 // [[Rcpp::export]]
@@ -425,7 +338,7 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
                               Rcpp::Named("bottom")=images_bottom,
                               Rcpp::Named("right")=images_right,
                               Rcpp::Named("datetime")=images_datetime,
-                              Rcpp::Named("proj")=images_proj);
+                              Rcpp::Named("srs")=images_proj);
     
     
     
@@ -492,6 +405,39 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
   }
 }
 
+
+
+
+
+// [[Rcpp::export]]
+Rcpp::List libgdalcubes_image_collection_extent( SEXP pin, std::string srs) {
+  
+  try {
+    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
+    std::shared_ptr<image_collection> ic = *aa;
+    
+    bounds_st ext = ic->extent();
+    ext.s = ext.s.transform("EPSG:4326", srs.c_str());
+    
+    return Rcpp::List::create(Rcpp::Named("left") = ext.s.left,
+                              Rcpp::Named("right") = ext.s.right,
+                              Rcpp::Named("top") = ext.s.top,
+                              Rcpp::Named("bottom") = ext.s.bottom,
+                              Rcpp::Named("t0") = ext.t0.to_string(),
+                              Rcpp::Named("t1") = ext.t1.to_string());
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+
+
+
+
+
 // [[Rcpp::export]]
 void libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
 
@@ -542,78 +488,72 @@ SEXP libgdalcubes_list_collection_formats() {
 SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP v = R_NilValue) {
 
   try {
-    
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
     
-   
-    
-    std::shared_ptr<image_collection_cube>* x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa));
-
-    if (v != R_NilValue) {
+    std::shared_ptr<image_collection_cube>* x;
+    if (v == R_NilValue) {
+      x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa));
+    }
+    else {
       Rcpp::List view = Rcpp::as<Rcpp::List>(v);
+      cube_view cv;
+      
       if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-        (*x)->st_reference()->right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+        cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-        (*x)->st_reference()->left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+        cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-        (*x)->st_reference()->top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+        cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-        (*x)->st_reference()->bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+        cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
       }
-      // nx overwrites dx
       if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-        (*x)->st_reference()->dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
+        cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-        (*x)->st_reference()->nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+        cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
       }
-      // ny overwrites dy
       if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-        (*x)->st_reference()->dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
+        cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-        (*x)->st_reference()->ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+        cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
       }
-      if (Rcpp::as<Rcpp::List>(view["space"])["proj"] != R_NilValue) {
-        (*x)->st_reference()->proj() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["proj"])[0];
+      if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
+        cv.proj() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-        (*x)->st_reference()->t0() = datetime::from_string(tmp);
+        cv.t0() = datetime::from_string(tmp);
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-        (*x)->st_reference()->t1() = datetime::from_string(tmp);
+        cv.t1() = datetime::from_string(tmp);
       }
-      
-      // dt overwrites nt
       if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-        (*x)->st_reference()->nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
+        cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-        (*x)->st_reference()->dt() = duration::from_string(tmp);
-        (*x)->st_reference()->t0().unit() = (*x)->st_reference()->dt().dt_unit; 
-        (*x)->st_reference()->t1().unit() = (*x)->st_reference()->dt().dt_unit; 
+        cv.dt() = duration::from_string(tmp);
+        cv.t0().unit() = cv.dt().dt_unit; 
+        cv.t1().unit() = cv.dt().dt_unit; 
       }
-      
       
       if (view["aggregation"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-        std::dynamic_pointer_cast<cube_view>((*x)->st_reference())->aggregation_method() = aggregation::from_string(tmp);
+        cv.aggregation_method() = aggregation::from_string(tmp);
       }
       if (view["resampling"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-        std::dynamic_pointer_cast<cube_view>((*x)->st_reference())->resampling_method() = resampling::from_string(tmp);
+        cv.resampling_method() = resampling::from_string(tmp);
       }
+      x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa, cv));
     }
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
-    
-    
-    //Rcpp::Rcout << std::dynamic_pointer_cast<cube_view>((*x)->st_reference())->write_json_string() << std::endl;
     
     Rcpp::XPtr< std::shared_ptr<image_collection_cube> > p(x, true) ;
     

@@ -1,8 +1,8 @@
-#' Apply a function over (multiband) pixels
+#' Apply a function over (multi-band) pixels
 #' 
-#' This generic function applies a  function on pixels of a data cube, an R array, or other classes if implemented.
+#' This generic function applies a function on pixels of a data cube, an R array, or other classes if implemented.
 #' 
-#' @param x object to be reduced 
+#' @param x input data 
 #' @param ... additional arguments passed to method implementations
 #' @return return value and type depend on the class of x
 #' @seealso \code{\link{apply_pixel.cube}}
@@ -24,14 +24,14 @@ apply_pixel <- function(x, ...) {
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
 #' @param ... not used
 #' @return A proxy data cube object
-#' @details gdalcubes uses the \href{https://github.com/ArashPartow/exprtk}{exprtk library} to evaluate expressions in C++, you can look at the library examples 
-#' to see what kind of expressions you can execute.
+#' @details gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
+#' to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-#'          proj="EPSG:32618",
-#'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+#'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #'  L8.cube = data_cube(L8.col, v) 
 #'  L8.cube = select_bands(L8.cube, c("B04", "B05")) 

@@ -33,16 +33,16 @@ libgdalcubes_get_cube_view <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
 }
 
-libgdalcubes_update_cube_view <- function(pin, v) {
-    invisible(.Call('_gdalcubes_libgdalcubes_update_cube_view', PACKAGE = 'gdalcubes', pin, v))
-}
-
 libgdalcubes_open_image_collection <- function(filename) {
     .Call('_gdalcubes_libgdalcubes_open_image_collection', PACKAGE = 'gdalcubes', filename)
 }
 
 libgdalcubes_image_collection_info <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_image_collection_info', PACKAGE = 'gdalcubes', pin)
+}
+
+libgdalcubes_image_collection_extent <- function(pin, srs) {
+    .Call('_gdalcubes_libgdalcubes_image_collection_extent', PACKAGE = 'gdalcubes', pin, srs)
 }
 
 libgdalcubes_create_image_collection <- function(files, format_file, outfile, unroll_archives = TRUE) {

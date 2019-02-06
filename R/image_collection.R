@@ -31,6 +31,29 @@ is.image_collection <- function(obj) {
 }
 
 
+#' Derive the spatiotemporal extent of an image collection 
+#'
+#' @param x image collection object
+#' @param srs target spatial reference system
+#' @return a list with elements \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), and \code{t1} (end date/time)
+#' @examples 
+#'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                         ".TIF", recursive = TRUE, full.names = TRUE)
+#'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#'  extent(L8.col,"EPSG:32618")
+#'  cube_view(extent=extent(L8.col,"EPSG:32618"), 
+#'            bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'            srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' @export
+extent <- function(x, srs="EPSG:4326") {
+  stopifnot(is.image_collection(x))
+  return(libgdalcubes_image_collection_extent(x, srs))
+}
+
+
+
+
+
 #' @export
 print.image_collection <- function(x, ..., n=6) {
   stopifnot(is.image_collection(x))

@@ -2,12 +2,12 @@
 % Please edit documentation in R/apply_pixel.R
 \name{apply_pixel}
 \alias{apply_pixel}
-\title{Apply a function over (multiband) pixels}
+\title{Apply a function over (multi-band) pixels}
 \usage{
 apply_pixel(x, ...)
 }
 \arguments{
-\item{x}{object to be reduced}
+\item{x}{input data}
 
 \item{...}{additional arguments passed to method implementations}
 }
@@ -15,7 +15,7 @@ apply_pixel(x, ...)
 return value and type depend on the class of x
 }
 \description{
-This generic function applies a  function on pixels of a data cube, an R array, or other classes if implemented.
+This generic function applies a function on pixels of a data cube, an R array, or other classes if implemented.
 }
 \seealso{
 \code{\link{apply_pixel.cube}}

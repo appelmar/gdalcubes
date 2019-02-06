@@ -1,149 +1,415 @@
 
-
-
-#' 
-#' Create a spatiotemporal data cube view
-#' 
-#' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and projection how to look at the data.
+#' Create, update, or query a spatiotemporal data cube view
+#'
+#' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs) how to look at the data.
 #' They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
-#' extent, read image data at the defined resolution, and warp to the output projection automatically. All parameters
-#' are optional. By default gdalcubes tries to derive a view that covers the whole image collection at course resolution, which
-#' may or may not make sense in practice. It is recommended to at least spcify the spatial and temporal extent, the resolution (nx, ny, dt) 
-#' and the output projection.
+#' extent, read image data at the defined resolution, and warp to the output srs automatically. 
 #' 
-#' @note All arguments are optional
-#' 
-#' @param cube Return the view of the specified data cube, other arguments will be ignored
+#' @param cube return the view of the specified data cube, other arguments will be ignored
 #' @param view if provided, update the view object instead of creating a new data cube view where fields that are already set will be overwritten
-#' @param proj output projection as string, can be proj4 definition, WKT, or in the form "EPSG:XXXX"
+#' @param extent spatioptemporal extent as a list e.g. from \code{\link{extent}}, see Details
+#' @param srs target spatial reference system as string, can be a proj4 definition, WKT, or in the form "EPSG:XXXX"
 #' @param nx number of pixels in x-direction (longitude / easting)
 #' @param ny number of pixels in y-direction (latitude / northing)
 #' @param dx size of pixels in x-direction (longitude / easting)
 #' @param dy size of pixels  in y-direction (latitude / northing)
-#' @param l left boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)
-#' @param r right boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)
-#' @param t top boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)
-#' @param b bottom boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)
 #' @param dt size of pixels in time-direction, expressed as ISO8601 period string (only 1 number and unit is allowed) such as "P16D"
-#' @param t0 start date/time of the temporal extent (expressed as ISO8601 datetime string)
 #' @param nt number of pixels in t-direction
-#' @param t1 end date/time of the temporal extent (expressed as ISO8601 datetime string)
+#' @param keep.asp if TRUE, derive ny or dy automatically from nx or dx (or vice versa) based on the aspect ratio of the spatial extent
 #' @param aggregation aggregation method as string, defining how to deal with pixels with data from multiple images, can be "min", "max", "mean", "median", "first"
 #' @param resampling resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://www.gdal.org/gdalwarp.html})
-#' @examples 
-#' # 1. full manual specification
-#' cube_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40, 
-#'           t0="2018-01-01", t1="2018-09-30", dt="P1M", nx=1000, 
-#'           ny=500, aggregation = "mean", resampling="bilinear")
-#'           
-#' # 2. read existing data cube
+#' @details 
+#' The \code{extent} argument is a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time). Datetimes are expressed as ISO8601 datetime strings.
+#' The \code{\link{extent}} function can be used to derive the extent of an image collection.
+#' 
+#' The function can be used in three different ways. First, if the cube argument is given, the function simply returns the sata cube view of the provided cube and ignores any other values. Second, the function can
+#' be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
+#' Third, the function can update am existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
+#'
+#' @examples
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  v = cube_view(data_cube(L8.col)) 
-#'  
-#' # 3. overwrite parts of an existing data cube view
-#' vnew = cube_view(view = v, dt="P1M")  
-#' @return A list with view properties
+#'  L8.col = create_image_collection(L8_files, "L8_L1TP")
+#'  # 1. Create a new data cube view specification
+#'  cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
+#'            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
+#'
+#'  # 2. read existing data cube
+#'  v = cube_view(data_cube(L8.col))
+#'
+#'  # 3. overwrite parts of an existing data cube view
+#'  vnew = cube_view(view = v, dt="P1M")
+#' @return A list with data cube view properties
 #' @export
-cube_view <- function(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, t1, aggregation,resampling)  {
+cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation, resampling, keep.asp=TRUE) {
+  
+ 
   if (!missing(cube)) {
     if (length(as.list(match.call())) > 2) {
-      warning("Provided arguments except cube will be ignored")
+      warning("provided arguments except cube will be ignored")
     }
     stopifnot(is.cube(cube))
     x = libgdalcubes_get_cube_view(cube)
     class(x) <- c("cube_view", class(x))
     return(x)
   }
-  xx = NULL
-  if (missing(view)) {
-    xx = list(space =
-                list(left = NULL,
-                     right = NULL,
-                     top = NULL,
-                     bottom = NULL,
-                     nx = NULL,
-                     dx = NULL,
-                     ny = NULL,
-                     dy = NULL,
-                     proj=NULL),
-              time = list(
-                t0 = NULL,
-                t1 = NULL,
-                dt = NULL,
-                nt = NULL
-              ),
-              aggregation = NULL,
-              resampling = NULL
-              )
+  
+  # general parameter checks
+  if (!missing(view)) stopifnot(is.cube_view(view))
+  if (!missing(extent)) stopifnot(is.list(extent))
+  if (!missing(nx)) stopifnot(length(nx) == 1, nx %% 1 == 0)
+  if (!missing(ny)) stopifnot(length(ny) == 1, ny %% 1 == 0)
+  if (!missing(nt)) stopifnot(length(nt) == 1, nt %% 1 == 0)
+  if (!missing(dx)) stopifnot(length(dx) == 1)
+  if (!missing(dy)) stopifnot(length(dy) == 1)
+  if (!missing(dt)) stopifnot(length(dt) == 1)
+  if (!missing(aggregation)) stopifnot(is.character(aggregation),  length(aggregation) == 1)
+  if (!missing(resampling)) stopifnot(is.character(resampling),  length(resampling) == 1)
+  if (!missing(srs)) stopifnot(is.character(srs),  length(srs) == 1)
+
+  xx = list(space =
+              list(left = NULL,
+                   right = NULL,
+                   top = NULL,
+                   bottom = NULL,
+                   nx = NULL,
+                   dx = NULL,
+                   ny = NULL,
+                   dy = NULL,
+                   srs=NULL),
+            time = list(
+              t0 = NULL,
+              t1 = NULL,
+              dt = NULL,
+              nt = NULL
+            ),
+            aggregation = NULL,
+            resampling = NULL)
+  
+  
+  
+  if (!missing(view)) {
+    # update existing view
+    extent_old=list(left   = view$space$left,
+                    right  = view$space$right,
+                    top    = view$space$top,
+                    bottom = view$space$bottom,
+                    t0     = view$time$t0,
+                    t1     = view$time$t1)
+    
+     # update extent first
+     if (missing(extent)) {
+       extent = extent_old
+     }
+    else {
+      if (is.null(extent$left)) extent$left = extent_old$left
+      if (is.null(extent$right)) extent$right = extent_old$right
+      if (is.null(extent$top)) extent$top = extent_old$top
+      if (is.null(extent$bottom)) extent$bottom = extent_old$bottom
+      if (is.null(extent$t0)) extent$t0 = extent_old$t0
+      if (is.null(extent$t1)) extent$t1 = extent_old$t1
+    }
+    
+    xx$space$left = extent$left
+    xx$space$right = extent$right
+    xx$space$top = extent$top
+    xx$space$bottom = extent$bottom
+    xx$time$t0 = extent$t0
+    xx$time$t1 = extent$t1
+    # now we have a well-defined extent (though we still should check for meaningful values here)
+    
+    if (missing(srs)) {
+      srs = view$space$srs
+    }
+    xx$space$srs = srs
+    
+    if (!missing(nx) && !missing(dx)) {
+      warning("conflicting arguments nx and dx, ignoring dx")
+    }
+    if (!missing(ny) && !missing(dy)) {
+      warning("conflicting arguments ny and dy, ignoring dy")
+    }
+    if (!missing(dt) && !missing(nt)) {
+      warning("conflicting arguments nt and dt, ignoring nt")
+    }
+
+    xres_defined = FALSE
+    yres_defined = FALSE
+    
+    if (!missing(nx) || !missing(dx)) {
+      if (missing(nx)) {
+        xx$space$dx = dx
+      }
+      else {
+        xx$space$nx = nx
+      }
+      xres_defined = TRUE
+    }
+    
+    if (!missing(ny) || !missing(dy)) {
+      if (missing(ny)) {
+        xx$space$dy = dy
+      }
+      else {
+        xx$space$ny = ny
+      }
+      yres_defined = TRUE
+    }
+    
+    # try to derive x resolution from y by keeping the aspcet ratio of the extent
+    if (!xres_defined) {
+      if (keep.asp) {
+        if (!missing(ny)) {
+          xx$space$nx = round(ny * (extent$right - extent$left)/(extent$top - extent$bottom) )
+          xres_defined = TRUE  
+        }
+        else if (!missing(dy)) {
+          xx$space$dx = dy
+          xres_defined = TRUE
+        }
+      }
+    }
+    
+    if (!yres_defined) {
+      if (keep.asp) {
+        if (!missing(nx)) {
+          xx$space$ny = round(nx * (extent$top - extent$bottom)/(extent$right - extent$left))
+          yres_defined = TRUE  
+        }
+        else if (!missing(dx)) {
+          xx$space$dy = dx
+          yres_defined = TRUE
+        }
+      }
+    }
+    
+    # use from input view
+    if (!xres_defined) {
+       if (!is.null(view$space$nx)) {
+         xx$space$nx = view$space$nx
+         xres_defined = TRUE 
+       } 
+      else if (!is.null(view$space$dx)) {
+        xx$space$dx = view$space$dx
+        xres_defined = TRUE 
+      } 
+    }
+    if (!yres_defined) {
+      if (!is.null(view$space$ny)) {
+        xx$space$ny = view$space$ny
+        yres_defined = TRUE 
+      } 
+      else if (!is.null(view$space$dy)) {
+        xx$space$dy = view$space$dy
+        yres_defined = TRUE 
+      } 
+    }
+    
+    
+    if (! xres_defined) {
+      stop("definition of x dimension is incomplete")
+    }
+    if (! yres_defined) {
+      stop("definition of y dimension is incomplete")
+    }
+    
+    
+    
+    if (!missing(nt) || !missing(dt)) {
+      if (missing(dt)) {
+        xx$time$nt = nt
+      }
+      else {
+        xx$time$dt = dt
+      }
+    }
+    else {
+      if (!is.null(view$time$dt)) {
+        xx$time$dt = view$time$dt
+      }
+      else if (!is.null(view$time$nt)) {
+        xx$time$nt = view$time$nt
+      }
+    }
+    
+    xx$aggregation = ifelse(missing(aggregation), view$aggregation, aggregation)
+    xx$resampling = ifelse(missing(resampling), view$resampling, resampling)
+  
+
   }
   else {
-    stopifnot(is.cube_view(view))
-    xx = view
-  }
-
-  if (!(missing(l) && missing(r) && missing(t) && missing(b)) && missing(proj)) {
-    warning("Spatial extent without coordinate system given, assuming WGS84")
-    proj = "EPSG:4326"
-  }
-  
-  if (!missing(proj)) xx$space$proj = proj
-  if (!missing(nx)) xx$space$nx = as.integer(nx)
-  if (!missing(ny)) xx$space$ny = as.integer(ny)
-  if (!missing(dx)) xx$space$dx = as.double(dx)
-  if (!missing(dy)) xx$space$dy = as.double(dy)
-  if (!missing(l)) xx$space$left = as.double(l)
-  if (!missing(r)) xx$space$right = as.double(r)
-  if (!missing(b)) xx$space$bottom = as.double(b)
-  if (!missing(t)) xx$space$top = as.double(t)
-  if (!missing(t0)) {
-    if (is.character(t0)) {
-      xx$time$t0 = as.character(t0)
+    # create a new data cube view from scratch
+    
+    if (missing(extent)) {
+      stop("argument extent is required")
     }
-    else if ("POSIXt" %in% class(t0)) {
-      xx$time$t0 = format(t0, "%Y-%m-%dT%H:%M:%S")
+    if (is.null(extent$left)) {
+      stop("argument extent does not contain left boundary")
     }
-    else if ("Date" %in% class(t0)) {
-      xx$time$t0 = format(t0, "%Y-%m-%d")
+    if (is.null(extent$right)) {
+      stop("argument extent does not contain right boundary")
+    }
+    if (is.null(extent$bottom)) {
+      stop("argument extent does not contain bottom boundary")
+    }
+    if (is.null(extent$top)) {
+      stop("argument extent does not contain top boundary")
+    }
+    if (is.null(extent$t0)) {
+      stop("argument extent does not contain t0 (start date/time) boundary")
+    }
+    if (is.null(extent$t1)) {
+      stop("argument extent does not contain t1 (end date/time) boundary")
+    }
+    xx$space$left = extent$left
+    xx$space$right = extent$right
+    xx$space$top = extent$top
+    xx$space$bottom = extent$bottom
+    xx$time$t0 = extent$t0
+    xx$time$t1 = extent$t1
+    # now we have a well-defined extent (though we still should check for meaningful values here)
+    
+    if (missing(srs)) {
+      warning("argument srs is missing, assuming WGS84")
+      srs = "EPSG:4326"
+    }
+    xx$space$srs = srs
+    
+    if (!missing(nx) && !missing(dx)) {
+      warning("conflicting arguments nx and dx, ignoring dx")
+    }
+    if (!missing(ny) && !missing(dy)) {
+      warning("conflicting arguments ny and dy, ignoring dy")
+    }
+    if (!missing(dt) && !missing(nt)) {
+      warning("conflicting arguments nt and dt, ignoring nt")
+    }
+    
+    xres_defined = FALSE
+    yres_defined = FALSE
+    
+    if (!missing(nx) || !missing(dx)) {
+      if (missing(nx)) {
+        xx$space$dx = dx
+      }
+      else {
+        xx$space$nx = nx
+      }
+      xres_defined = TRUE
+    }
+    
+    if (!missing(ny) || !missing(dy)) {
+      if (missing(ny)) {
+        xx$space$dy = dy
+      }
+      else {
+        xx$space$ny = ny
+      }
+      yres_defined = TRUE
+    }
+    
+    # try to derive x resolution from y by keeping the aspcet ratio of the extent
+    if (!xres_defined) {
+      if (keep.asp) {
+        if (!missing(ny)) {
+          xx$space$nx = round(ny * (extent$right - extent$left)/(extent$top - extent$bottom) )
+          xres_defined = TRUE  
+        }
+        else if (!missing(dy)) {
+          xx$space$dx = dy
+          xres_defined = TRUE
+        }
+      }
+    }
+    
+    if (!yres_defined) {
+      if (keep.asp) {
+        if (!missing(nx)) {
+          xx$space$ny = round(nx * (extent$top - extent$bottom)/(extent$right - extent$left))
+          yres_defined = TRUE  
+        }
+        else if (!missing(dx)) {
+          xx$space$dy = dx
+          yres_defined = TRUE
+        }
+      }
+    }
+    
+    if (! xres_defined) {
+      stop("definition of x dimension is incomplete, one of nx and dx is required")
+    }
+    if (! yres_defined) {
+      stop("definition of y dimension is incomplete, one of ny and dy is required")
+    }
+    
+    
+    if (!missing(nt) || !missing(dt)) {
+      if (missing(dt)) {
+        xx$time$nt = nt
+      }
+      else {
+        xx$time$dt = dt
+      }
     }
     else {
-      warning("Invalid type for t0, expected ISO 8601 character, POSIXt, or Date object, value will be ignored")
+      stop("definition of t dimension is incomplete, one of nt and dt is required")
     }
+    
+    xx$aggregation = ifelse(missing(aggregation), "first", aggregation)
+    xx$resampling = ifelse(missing(resampling), "nearest", resampling)
+    
   }
-  if (!missing(t1)) {
-    if (is.character(t1)) {
-      xx$time$t1 = as.character(t1)
-    }
-    else if ("POSIXt" %in% class(t1)) {
-      xx$time$t1 = format(t1, "%Y-%m-%dT%H:%M:%S")
-    }
-    else if ("Date" %in% class(t1)) {
-      xx$time$t1 = format(t1, "%Y-%m-%d")
-    }
-    else {
-      warning("Invalid type for t1, expected ISO 8601 character, POSIXt, or Date object, value will be ignored")
-    }
-  }
-  if (!missing(dt)) {
-    dt = toupper(as.character(dt))
-    if (substr(dt[1],1,1) != "P") {
-      dt[1] = paste("P", dt[1], sep="")
-    }
-    xx$time$dt = dt[1]
-  }
-  if (!missing(nt)) xx$time$nt = as.integer(nt)
-  
-  if (!missing(aggregation)) xx$aggregation = aggregation
-  if (!missing(resampling)) xx$resampling = resampling
   
   class(xx) <- c("cube_view", class(xx))
   return(xx)
-}
 
+}
 
 
 is.cube_view <- function(obj) {
- return("cube_view" %in% class(obj))
+  return("cube_view" %in% class(obj))
 }
 
+
+#' @export
+print.cube_view <- function(x, ...) {
+  
+  
+  
+  stopifnot(is.cube_view(x))
+  cat("A data cube view object\n")
+  cat(paste("SRS: \"", x$space$srs, "\"\n", sep=""))
+  cat("Extent:\n")
+  cat(paste("x  [", x$space$left, ", ", x$space$right, "]\n", sep=""))
+  cat(paste("y  [", x$space$bottom, ", ", x$space$top, "]\n", sep=""))
+  cat(paste("t  [", x$time$t0, ", ", x$time$t1, "]\n", sep=""))
+  
+  cat("Resolution: ")
+  if (!is.null(x$space$nx)) {
+    cat(paste(x$space$nx  ,"(nx) ", sep=""))
+  }
+  else if (!is.null(x$space$dx)) {
+    cat(paste(x$space$dx  ,"(dx) ", sep=""))
+  }
+  
+  if (!is.null(x$space$ny)) {
+    cat(paste(x$space$ny  ,"(ny) ", sep=""))
+  }
+  else if (!is.null(x$space$dy)) {
+    cat(paste(x$space$dy  ,"(dy) ", sep=""))
+  }
+ 
+  if (!is.null(x$time$nt)) {
+    cat(paste(x$time$nt  ,"(nt) ", sep=""))
+  }
+  else if (!is.null(x$time$dt)) {
+    cat(paste(x$time$dt  ,"(dt) ", sep=""))
+  }
+  cat("\n")
+  
+  if (!is.null(x$aggregation))
+    cat(paste("Temporal aggregation method: \"", x$aggregation, "\"\n", sep=""))
+  if(!is.null(x$resampling))
+    cat(paste("Spatial resampling method: \"", x$resampling, "\"\n", sep=""))
+  cat("\n")
+}
