@@ -7,7 +7,7 @@
 extent(x, srs = "EPSG:4326")
 }
 \arguments{
-\item{x}{image collection object}
+\item{x}{image collection proxy object}
 
 \item{srs}{target spatial reference system}
 }

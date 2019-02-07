@@ -2,18 +2,20 @@
 % Please edit documentation in R/streaming.R
 \name{write_chunk_from_array}
 \alias{write_chunk_from_array}
-\title{Write chunk data of a cube to stdout}
+\title{Write chunk data of a cube to stdout or a file}
 \usage{
 write_chunk_from_array(v)
 }
 \arguments{
-\item{v}{A four-dimensional array with dimensions band, time, y, and x}
+\item{v}{four-dimensional array with dimensions band, time, y, and x}
 }
 \description{
-gdalcubes stream cubes write chunk data to stdin of external processes (such as R) and 
-reads result data from stdout. 
-This function can be used to write an R array as a reuslt chunk to stdout.
+This function can be used within function passed to \code{\link{chunk_apply}} in order to pass four-dimensional R arrays as a
+data cube chunk to the gdalcubes C++ library. It works only for R processes, which have been started from the gdalcubes C++ library. 
+The input array must have dimensions band, time, y, x (in this order).
 }
 \note{
-This function only works in R sessions started from gdalcubes streaming
+Call this function ONLY from a function passed to \code{\link{chunk_apply}}.
+
+This function only works in R sessions started from gdalcubes streaming.
 }

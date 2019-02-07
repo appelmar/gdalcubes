@@ -2,13 +2,13 @@
 #' Filter data cube pixels by a user-defined predicate on band values
 #' 
 #' Create a proxy data cube, which evaluates a predicate over all pixels of a data cube. For all pixels that fulfill the predicate, the original
-#' band values are returned. Other pixels are simply filled with NANs. The predicate may access band values by their name.
+#' band values are returned. Other pixels are simply filled with NANs. The predicate may access band values by name.
 #'
-#' @param cube Source data cube
+#' @param cube source data cube
 #' @param pred predicate to be evaluated over all pixels
-#' @return A proxy data cube object
+#' @return a proxy data cube object
 #' @details gdalcubes uses and extends the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
-#' to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
+#' to see what kind of expressions you can execute. Pixel band values can be accessed by name.
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)

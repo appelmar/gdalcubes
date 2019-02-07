@@ -26,3 +26,4 @@
 ^src/gdalcubes/src/external/catch.hpp$
 ^cran-comments.md$
 ^travis-tool.sh.cmd$
+^S2_demo.R$

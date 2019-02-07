@@ -3,9 +3,9 @@
 #' Create a proxy data cube, which selects specific bands of a data cube. The resulting cube
 #' will drop any other bands.
 #'
-#' @param cube Input data cube
+#' @param cube source data cube
 #' @param bands character vector with band names
-#' @return A proxy data cube object
+#' @return proxy data cube object
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
@@ -19,8 +19,8 @@
 #'  L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #'  plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @note For performance reasons, select_bands should always be called directly on a image collection cube created with cube and 
-#' drop all unneded bands.This allows to reduce GDAL RasterIO and warp operations.
+#' @note For performance reasons, \code{select_bands} should always be called directly on a cube created with \code{\link{data_cube}} and 
+#' drop all unneded bands. This allows to reduce RasterIO and warp operations in GDAL.
 #' @export
 select_bands <- function(cube, bands) {
   stopifnot(is.cube(cube))

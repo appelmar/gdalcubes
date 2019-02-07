@@ -7,7 +7,7 @@
 \method{reduce_space}{array}(x, FUN, ...)
 }
 \arguments{
-\item{x}{four-dimensional input bands with dimension order band, time, y, x}
+\item{x}{four-dimensional input array with dimensions band, time, y, x (in this order)}
 
 \item{FUN}{function which receives one spatial slice in a three-dimensional array with dimensions bands, y, x as input}
 
@@ -17,17 +17,18 @@
 Apply a function over space and bands in a four-dimensional (band, time, y, x) array
 }
 \details{
-FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
+FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 }
 \note{
 This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 the application of R functions e.g. over spatial slices in a data cube.
 }
 \examples{
-\dontrun{
-load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-y = reduce_space(sample_chunk, function(x) {
- ndvi <- (x[8,,]-x[4,,])/(x[8,,]+x[4,,])
- return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-})}
+d <- c(4,16,128,128)
+x <- array(rnorm(prod(d)), d)
+# reduce individual bands over spatial slices 
+y <- reduce_space(x, function(v) {
+  apply(v, 1, mean)
+})
+dim(y)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/streaming.R
 \name{read_chunk_as_array}
 \alias{read_chunk_as_array}
-\title{Read chunk data of a cube from stdin}
+\title{Read chunk data of a data cube from stdin or a file}
 \usage{
 read_chunk_as_array(with.dimnames = TRUE)
 }
@@ -13,10 +13,12 @@ read_chunk_as_array(with.dimnames = TRUE)
 four-dimensional array
 }
 \description{
-gdalcubes stream cubes write chunk data to stdin of external processes (such as R)
-This function can be used to read the data from stdin as four-dimensional R array with dimensions
-(band, time, y, x).
+This function can be used within function passed to \code{\link{chunk_apply}} in order to read a data cube chunk as a four-dimensional R array.
+It works only for R processes, which have been started from the gdalcubes C++ library. 
+The resulting array has dimensions band, time, y, x (in this order).
 }
 \note{
-This function only works in R sessions started from gdalcubes streaming
+Call this function ONLY from a function passed to \code{\link{chunk_apply}}.
+
+This function only works in R sessions started from gdalcubes streaming.
 }

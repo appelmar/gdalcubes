@@ -19,10 +19,10 @@ RoxygenNote: 6.1.1
 LinkingTo: Rcpp, RcppProgress
 Suggests: 
     knitr,
-    rmarkdown,
+    magrittr,
     processx,
-    stars,
-    magrittr
+    rmarkdown,
+    stars
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

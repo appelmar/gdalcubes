@@ -8,13 +8,13 @@ cube_view(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
   resampling, keep.asp = TRUE)
 }
 \arguments{
-\item{cube}{return the view of the specified data cube, other arguments will be ignored}
+\item{cube}{data cube object; if provided, return the view of this data cube and ignore other arguments}
 
-\item{view}{if provided, update the view object instead of creating a new data cube view where fields that are already set will be overwritten}
+\item{view}{if provided, update this cube_view object instead of creating a new data cube view where fields that are already set will be overwritten}
 
-\item{extent}{spatioptemporal extent as a list e.g. from \code{\link{extent}}, see Details}
+\item{extent}{spatioptemporal extent as a list e.g. from \code{\link{extent}} or an image collection object, see Details}
 
-\item{srs}{target spatial reference system as string, can be a proj4 definition, WKT, or in the form "EPSG:XXXX"}
+\item{srs}{target spatial reference system as a string; can be a proj4 definition, WKT, or in the form "EPSG:XXXX"}
 
 \item{nx}{number of pixels in x-direction (longitude / easting)}
 
@@ -24,11 +24,11 @@ cube_view(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
 
 \item{dx}{size of pixels in x-direction (longitude / easting)}
 
-\item{dy}{size of pixels  in y-direction (latitude / northing)}
+\item{dy}{size of pixels in y-direction (latitude / northing)}
 
 \item{dt}{size of pixels in time-direction, expressed as ISO8601 period string (only 1 number and unit is allowed) such as "P16D"}
 
-\item{aggregation}{aggregation method as string, defining how to deal with pixels with data from multiple images, can be "min", "max", "mean", "median", "first"}
+\item{aggregation}{aggregation method as string, defining how to deal with pixels containing data from multiple images, can be "min", "max", "mean", "median", or "first"}
 
 \item{resampling}{resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://www.gdal.org/gdalwarp.html})}
 
@@ -40,20 +40,22 @@ A list with data cube view properties
 \description{
 Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs) how to look at the data.
 They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
-extent, read image data at the defined resolution, and warp to the output srs automatically.
+extent, read image data at the defined resolution, and warp / reproject images to the target srs automatically.
 }
 \details{
-The \code{extent} argument is a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time). Datetimes are expressed as ISO8601 datetime strings.
-The \code{\link{extent}} function can be used to derive the extent of an image collection.
+The \code{extent} argument expects a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time) or an image collection object.
+In the latter case, the \code{\link{extent}} function is automatically called on the image collection object to get the full spatiotemporal extent of the collection. In the former case, datetimes 
+are expressed as ISO8601 datetime strings.
 
-The function can be used in three different ways. First, if the cube argument is given, the function simply returns the sata cube view of the provided cube and ignores any other values. Second, the function can
+The function can be used in three different ways. First, if the cube argument is given, the function simply returns the data cube view of the provided cube and ignores any other values. Second, the function can
 be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
-Third, the function can update am existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing.
+Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                         ".TIF", recursive = TRUE, full.names = TRUE)
  L8.col = create_image_collection(L8_files, "L8_L1TP")
+ 
  # 1. Create a new data cube view specification
  cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")

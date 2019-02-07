@@ -7,19 +7,19 @@
 \method{window_time}{cube}(x, window, expr, ...)
 }
 \arguments{
-\item{x}{Source data cube}
+\item{x}{source data cube}
 
-\item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size ofof the window is window[1] + 1 + window[2]}
+\item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]}
 
-\item{expr}{Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
+\item{expr}{either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
 
-\item{...}{Optional additional expressions (if expr is not a vector)}
+\item{...}{pptional additional expressions (if expr is not a vector)}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies one ore more moving window reducer functions over selected bands of pixel time series of a data cube
+Create a proxy data cube, which applies one ore more moving window reducer functions to selected bands over pixel time series of a data cube
 }
 \details{
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
@@ -28,7 +28,7 @@ more complex functions or arguments.
 Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median".
 }
 \note{
-Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
+Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }

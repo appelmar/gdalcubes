@@ -12,25 +12,25 @@
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
 
-\item{y}{_not used_}
+\item{y}{__not used__}
 
 \item{...}{further arguments passed to \code{image.default}}
 
 \item{nbreaks}{number of breaks, should be one more than the number of colors given}
 
-\item{breaks}{actual breaks used to assign colors to values, if missing, the function subsamples values and uses equally sized intervals between min and max or zlim[0] and zlim[1] if provided}
+\item{breaks}{actual breaks used to assign colors to values; if missing, the function subsamples values and uses equally sized intervals between min and max or zlim[0] and zlim[1] if defined}
 
-\item{col}{color definition, can be a character vector with nbreaks - 1 elements or a function such as heat.colors}
+\item{col}{color definition, can be a character vector with nbreaks - 1 elements or a function such as \code{heat.colors}}
 
-\item{key.pos}{position for the legend, 1 (bottom), 2 (left), 3 (top), or 4 (right). If NULL, do not plot a legend.}
+\item{key.pos}{position for the legend, 1 (bottom), 2 (left), 3 (top), or 4 (right). If NULL (the default), do not plot a legend.}
 
-\item{bands}{integer vector with band numbers to plot (currently this must be band numbers, not band names)}
+\item{bands}{integer vector with band numbers to plot (this must be band numbers, not band names)}
 
-\item{t}{integer vector time indexes to plot (currently this must be time index, not date / time)}
+\item{t}{integer vector with time indexes to plot (this must be time indexes, not date / time)}
 
-\item{rgb}{bands used to assign RGB color channels, vector of length 3  (currently this must be band numbers, not band names)}
+\item{rgb}{bands used to assign RGB color channels, vector of length 3 (this must be band numbers, not band names)}
 
-\item{zlim}{vector of length 2, defining the maximum and minimum values to either derive breaks, or define black and white values in RGB plots}
+\item{zlim}{vector of length 2, defining the minimum and maximum values to either derive breaks, or define black and white values in RGB plots}
 
 \item{periods.in.title}{logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string}
 
@@ -40,5 +40,5 @@
 Plot a gdalcubes data cube
 }
 \note{
-There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube
+There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube.
 }

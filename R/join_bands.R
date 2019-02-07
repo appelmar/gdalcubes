@@ -1,18 +1,18 @@
 #' Join bands of two identically shaped data cubes 
 #' 
-#' Create a proxy data cube, which joins the bands two identically shaped data cubes. The resulting cube
+#' Create a proxy data cube, which joins the bands of two identically shaped data cubes. The resulting cube
 #' will have bands from both input cubes.
 #'
-#' @param A The first source data cube
-#' @param B The second source data cube
-#' @return A proxy data cube object
+#' @param A first source data cube
+#' @param B second source data cube
+#' @return proxy data cube object
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#' ".TIF", recursive = TRUE, full.names = TRUE) 
+#'                         ".TIF", recursive = TRUE, full.names = TRUE) 
 #' 
 #' v = cube_view(extent=list(left=388941.2, right=766552.4,
 #'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#'                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.col = create_image_collection(L8_files, "L8_L1TP")
 #' L8.cube = data_cube(L8.col, v)
 #' L8.cube.b04 = select_bands(data_cube(L8.col, v), c("B04"))

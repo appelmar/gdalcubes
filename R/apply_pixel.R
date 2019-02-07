@@ -17,15 +17,15 @@ apply_pixel <- function(x, ...) {
 
 #' Apply arithmetic expressions over all pixels of a data cube
 #' 
-#' Create a proxy data cube, which applies arithmetics expressions over all pixels of a data cube. Expressions may access band values by their name.
+#' Create a proxy data cube, which applies arithmetic expressions over all pixels of a data cube. Expressions may access band values by name.
 #'
-#' @param x Source data cube
+#' @param x source data cube
 #' @param expr character vector with one or more arithmetic expressions (see Details)
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
 #' @param ... not used
-#' @return A proxy data cube object
+#' @return a proxy data cube object
 #' @details gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
-#' to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
+#' to see what kind of expressions you can execute. Pixel band values can be accessed by name.
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)

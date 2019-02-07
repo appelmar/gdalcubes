@@ -7,15 +7,15 @@
 image_collection(path)
 }
 \arguments{
-\item{path}{Path to an existing image collection file}
+\item{path}{path to an existing image collection file}
 }
 \value{
-An image collection proxy object, which can be used to create a data cube using \code{cube}
+an image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
 }
 \description{
-This function will load an image collection from an SQLite file. These files
-index / reference existing imagery. To create a collection from files on disk,
-use \code{create_collection}.
+This function will load an image collection from an SQLite file. Image collection files
+index and reference existing imagery. To create a collection from files on disk,
+use \code{\link{create_image_collection}}.
 }
 \examples{
 L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),

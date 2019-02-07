@@ -3,33 +3,35 @@
 #'
 #' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs) how to look at the data.
 #' They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
-#' extent, read image data at the defined resolution, and warp to the output srs automatically. 
+#' extent, read image data at the defined resolution, and warp / reproject images to the target srs automatically. 
 #' 
-#' @param cube return the view of the specified data cube, other arguments will be ignored
-#' @param view if provided, update the view object instead of creating a new data cube view where fields that are already set will be overwritten
-#' @param extent spatioptemporal extent as a list e.g. from \code{\link{extent}}, see Details
-#' @param srs target spatial reference system as string, can be a proj4 definition, WKT, or in the form "EPSG:XXXX"
+#' @param cube data cube object; if provided, return the view of this data cube and ignore other arguments
+#' @param view if provided, update this cube_view object instead of creating a new data cube view where fields that are already set will be overwritten
+#' @param extent spatioptemporal extent as a list e.g. from \code{\link{extent}} or an image collection object, see Details
+#' @param srs target spatial reference system as a string; can be a proj4 definition, WKT, or in the form "EPSG:XXXX"
 #' @param nx number of pixels in x-direction (longitude / easting)
 #' @param ny number of pixels in y-direction (latitude / northing)
 #' @param dx size of pixels in x-direction (longitude / easting)
-#' @param dy size of pixels  in y-direction (latitude / northing)
+#' @param dy size of pixels in y-direction (latitude / northing)
 #' @param dt size of pixels in time-direction, expressed as ISO8601 period string (only 1 number and unit is allowed) such as "P16D"
 #' @param nt number of pixels in t-direction
 #' @param keep.asp if TRUE, derive ny or dy automatically from nx or dx (or vice versa) based on the aspect ratio of the spatial extent
-#' @param aggregation aggregation method as string, defining how to deal with pixels with data from multiple images, can be "min", "max", "mean", "median", "first"
+#' @param aggregation aggregation method as string, defining how to deal with pixels containing data from multiple images, can be "min", "max", "mean", "median", or "first"
 #' @param resampling resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://www.gdal.org/gdalwarp.html})
 #' @details 
-#' The \code{extent} argument is a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time). Datetimes are expressed as ISO8601 datetime strings.
-#' The \code{\link{extent}} function can be used to derive the extent of an image collection.
+#' The \code{extent} argument expects a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time) or an image collection object.
+#' In the latter case, the \code{\link{extent}} function is automatically called on the image collection object to get the full spatiotemporal extent of the collection. In the former case, datetimes 
+#' are expressed as ISO8601 datetime strings.
 #' 
-#' The function can be used in three different ways. First, if the cube argument is given, the function simply returns the sata cube view of the provided cube and ignores any other values. Second, the function can
+#' The function can be used in three different ways. First, if the cube argument is given, the function simply returns the data cube view of the provided cube and ignores any other values. Second, the function can
 #' be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
-#' Third, the function can update am existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
+#' Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
 #'
 #' @examples
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP")
+#'  
 #'  # 1. Create a new data cube view specification
 #'  cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
 #'            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
@@ -56,7 +58,7 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
   
   # general parameter checks
   if (!missing(view)) stopifnot(is.cube_view(view))
-  if (!missing(extent)) stopifnot(is.list(extent))
+  if (!missing(extent)) stopifnot(is.list(extent) || is.image_collection(extent))
   if (!missing(nx)) stopifnot(length(nx) == 1, nx %% 1 == 0)
   if (!missing(ny)) stopifnot(length(ny) == 1, ny %% 1 == 0)
   if (!missing(nt)) stopifnot(length(nt) == 1, nt %% 1 == 0)
@@ -89,6 +91,11 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
   
   
   if (!missing(view)) {
+    if (missing(srs)) {
+      srs = view$space$srs
+    }
+    xx$space$srs = srs
+    
     # update existing view
     extent_old=list(left   = view$space$left,
                     right  = view$space$right,
@@ -102,12 +109,17 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
        extent = extent_old
      }
     else {
-      if (is.null(extent$left)) extent$left = extent_old$left
-      if (is.null(extent$right)) extent$right = extent_old$right
-      if (is.null(extent$top)) extent$top = extent_old$top
-      if (is.null(extent$bottom)) extent$bottom = extent_old$bottom
-      if (is.null(extent$t0)) extent$t0 = extent_old$t0
-      if (is.null(extent$t1)) extent$t1 = extent_old$t1
+      if (is.image_collection(extent)) {
+        extent = extent(extent, srs) # wow!
+      }
+      else {
+        if (is.null(extent$left)) extent$left = extent_old$left
+        if (is.null(extent$right)) extent$right = extent_old$right
+        if (is.null(extent$top)) extent$top = extent_old$top
+        if (is.null(extent$bottom)) extent$bottom = extent_old$bottom
+        if (is.null(extent$t0)) extent$t0 = extent_old$t0
+        if (is.null(extent$t1)) extent$t1 = extent_old$t1
+      }
     }
     
     xx$space$left = extent$left
@@ -118,10 +130,7 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
     xx$time$t1 = extent$t1
     # now we have a well-defined extent (though we still should check for meaningful values here)
     
-    if (missing(srs)) {
-      srs = view$space$srs
-    }
-    xx$space$srs = srs
+    
     
     if (!missing(nx) && !missing(dx)) {
       warning("conflicting arguments nx and dx, ignoring dx")
@@ -240,26 +249,38 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
   else {
     # create a new data cube view from scratch
     
+    if (missing(srs)) {
+      warning("argument srs is missing, assuming WGS84")
+      srs = "EPSG:4326"
+    }
+    xx$space$srs = srs
+    
     if (missing(extent)) {
       stop("argument extent is required")
     }
-    if (is.null(extent$left)) {
-      stop("argument extent does not contain left boundary")
+    
+    if (is.image_collection(extent)) {
+      extent = extent(extent, srs) # wow!
     }
-    if (is.null(extent$right)) {
-      stop("argument extent does not contain right boundary")
-    }
-    if (is.null(extent$bottom)) {
-      stop("argument extent does not contain bottom boundary")
-    }
-    if (is.null(extent$top)) {
-      stop("argument extent does not contain top boundary")
-    }
-    if (is.null(extent$t0)) {
-      stop("argument extent does not contain t0 (start date/time) boundary")
-    }
-    if (is.null(extent$t1)) {
-      stop("argument extent does not contain t1 (end date/time) boundary")
+    else {
+      if (is.null(extent$left)) {
+        stop("argument extent does not contain left boundary")
+      }
+      if (is.null(extent$right)) {
+        stop("argument extent does not contain right boundary")
+      }
+      if (is.null(extent$bottom)) {
+        stop("argument extent does not contain bottom boundary")
+      }
+      if (is.null(extent$top)) {
+        stop("argument extent does not contain top boundary")
+      }
+      if (is.null(extent$t0)) {
+        stop("argument extent does not contain t0 (start date/time) boundary")
+      }
+      if (is.null(extent$t1)) {
+        stop("argument extent does not contain t1 (end date/time) boundary")
+      }
     }
     xx$space$left = extent$left
     xx$space$right = extent$right
@@ -267,13 +288,10 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
     xx$space$bottom = extent$bottom
     xx$time$t0 = extent$t0
     xx$time$t1 = extent$t1
+    
     # now we have a well-defined extent (though we still should check for meaningful values here)
     
-    if (missing(srs)) {
-      warning("argument srs is missing, assuming WGS84")
-      srs = "EPSG:4326"
-    }
-    xx$space$srs = srs
+  
     
     if (!missing(nx) && !missing(dx)) {
       warning("conflicting arguments nx and dx, ignoring dx")

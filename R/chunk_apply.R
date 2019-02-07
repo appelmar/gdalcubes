@@ -10,17 +10,16 @@ serialize_function <- function(f) {
 #' 
 #' @details 
 #' This function internally creates a gdalcubes stream data cube, which streams
-#' data of a chunk to a new R process. For reading data the function typically 
+#' data of a chunk to a new R process. For reading data, the function typically 
 #' calls \code{x <- read_chunk_as_array()} which then results in a 4 dimensional (band, time, y, x) array.
 #' Similarly \code{write_chunk_from_array(x)} will write a result array as a chunk in the resulting data cube.
-#' The chunk size of the input cube is important to control how the function will be exposed on the data cube. For example,
+#' The chunk size of the input cube is important to control how the function will be exposed to the data cube. For example,
 #' if you want to apply an R function over complete pixel time series, you must define the chunk size argument in \code{data_cube()}
 #' to make sure that chunk contain the correct parts of the data. 
 #' 
-#'
-#' @param cube Source data cube
+#' @param cube source data cube
 #' @param f R function to apply over all chunks
-#' @return A proxy data cube object
+#' @return a proxy data cube object
 #' @examples 
 #' \dontrun{
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 

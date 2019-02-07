@@ -9,9 +9,6 @@ gdalcubes_set_threads(n = 1)
 \arguments{
 \item{n}{number of threads}
 }
-\value{
-nothing / invisible
-}
 \description{
 Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 than the number of chunks of a cube thus has no effect and will not furhter reduce computation times.

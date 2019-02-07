@@ -1,10 +1,10 @@
 #' Load an existing image collection from a file
 #'
-#' This function will load an image collection from an SQLite file. These files
-#' index / reference existing imagery. To create a collection from files on disk,
-#' use \code{create_collection}.
-#' @param path Path to an existing image collection file
-#' @return An image collection proxy object, which can be used to create a data cube using \code{cube}
+#' This function will load an image collection from an SQLite file. Image collection files
+#' index and reference existing imagery. To create a collection from files on disk,
+#' use \code{\link{create_image_collection}}.
+#' @param path path to an existing image collection file
+#' @return an image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)
@@ -33,7 +33,7 @@ is.image_collection <- function(obj) {
 
 #' Derive the spatiotemporal extent of an image collection 
 #'
-#' @param x image collection object
+#' @param x image collection proxy object 
 #' @param srs target spatial reference system
 #' @return a list with elements \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), and \code{t1} (end date/time)
 #' @examples 
@@ -77,12 +77,12 @@ print.image_collection <- function(x, ..., n=6) {
 #' 
 #' @details
 #' An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
-#' @param files A character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
-#' @param out_file Optional name of the output SQLite database file, defaults to a temporary file
-#' @param format Collection format, can be either a name to use predefined formats (as output from \code{collection_formats}) or a path to a custom JSON format description file.
-#' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of files  
+#' @param files character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
+#' @param out_file pptional name of the output SQLite database file, defaults to a temporary file
+#' @param format collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file
+#' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files  
 #' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
-#' @return An image collection proxy object, which can be used to create a data cube using \code{cube}
+#' @return image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)
@@ -101,17 +101,17 @@ create_image_collection <-function(files, format, out_file=tempfile(fileext = ".
 
 #' List predefined image collection formats
 #'
-#' gdalcubes comes with some predefined collection formats e.g. to scan Sentinel 2 data. This function lists available formats and a brief description.
+#' gdalcubes comes with some predefined collection formats e.g. to scan Sentinel 2 data. This function lists available formats  including brief descriptions.
 #' 
 #' @details 
-#' Image collection formats define how individul files / GDALDatasets relate to a collection, i.e., 
-#' which bands they contain, to which image they belong, and how the derive date/time.
+#' Image collection formats define how individual files / GDAL datasets relate to an image collection, i.e., 
+#' which bands they contain, to which image they belong, and how to derive aquisition date/time.
 #' They are described as a set of regular expressions in a JSON file and used by gdalcubes to extract this information 
 #' from the paths and/or filenames. 
 #' 
-#' @param print Should available formats and their descriptions be printed nicely?
-#' @return A data.frame with columns name and description where the former describes the unique identifier that can be used in \code{create_image_collection} and the
-#' latter gives a brief description of the format.
+#' @param print logical; should available formats and their descriptions be printed nicely, defaults to TRUE
+#' @return data.frame with columns \code{name} and \code{description} where the former describes the unique identifier that can be used in \code{create_image_collection} and the
+#' latter gives a brief description of the format. 
 #' @examples 
 #' collection_formats()
 #' @export

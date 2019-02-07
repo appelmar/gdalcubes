@@ -7,8 +7,12 @@
 as_stars(from)
 }
 \arguments{
-\item{from}{object to coerce}
+\item{from}{data cube object to coerce}
+}
+\value{
+stars object
 }
 \description{
-Coerce gdalcubes object into a stars object
+The function materializes a data cube as a temporary NetCDF file and loads the file 
+with the stars package.
 }

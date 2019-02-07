@@ -7,17 +7,17 @@
 \method{reduce_time}{cube}(x, expr, ...)
 }
 \arguments{
-\item{x}{Source data cube}
+\item{x}{source data cube}
 
-\item{expr}{Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
+\item{expr}{either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube}
 
-\item{...}{Optional additional expressions (if expr is not a vector)}
+\item{...}{optional additional expressions (if \code{expr} is not a vector)}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies one ore more reducer functions over selected bands of pixel time series of a data cube
+Create a proxy data cube, which applies one or more reducer functions to selected bands over pixel time series of a data cube
 }
 \details{
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add

@@ -2,27 +2,27 @@
 % Please edit documentation in R/reduce.R
 \name{reduce}
 \alias{reduce}
-\title{Reduce a data cube over the time dimension}
+\title{Reduce all bands of a data cube over the time dimension with a single reducer function}
 \usage{
 reduce(cube, reducer = c("mean", "median", "min", "max"))
 }
 \arguments{
-\item{cube}{Source data cube}
+\item{cube}{source data cube}
 
-\item{reducer}{Reducer function, currently "min", "max", "median", "mean", "count", "sd", "var", or "sum"}
+\item{reducer}{reducer function, currently "min", "max", "median", "mean", "count", "sd", "var", or "sum"}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies a reducer function over pixel time series of a data cube
+Create a proxy data cube, which applies a single reducer function over per-band pixel time series of a data cube
 }
 \note{
-Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
+Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 
-This function is deprecated and will be replaced by the more flexible reduce_time.
+This function is deprecated and will be replaced by the more flexible \code{\link{reduce_time}}.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),

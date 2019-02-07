@@ -12,7 +12,7 @@ window_time(x, ...)
 \item{...}{further arguments passed to specific implementations}
 }
 \value{
-Value and type depend on the class of x
+value and type depend on the class of x
 }
 \description{
 This generic function applies a reducer function over a moving window over the time dimension of a data cube, an R array, or other classes if implemented.

@@ -7,20 +7,20 @@
 filter_predicate(cube, pred)
 }
 \arguments{
-\item{cube}{Source data cube}
+\item{cube}{source data cube}
 
 \item{pred}{predicate to be evaluated over all pixels}
 }
 \value{
-A proxy data cube object
+a proxy data cube object
 }
 \description{
 Create a proxy data cube, which evaluates a predicate over all pixels of a data cube. For all pixels that fulfill the predicate, the original
-band values are returned. Other pixels are simply filled with NANs. The predicate may access band values by their name.
+band values are returned. Other pixels are simply filled with NANs. The predicate may access band values by name.
 }
 \details{
 gdalcubes uses and extends the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
-to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
+to see what kind of expressions you can execute. Pixel band values can be accessed by name.
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

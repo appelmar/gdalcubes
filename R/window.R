@@ -3,7 +3,7 @@
 #' This generic function applies a reducer function over a moving window over the time dimension of a data cube, an R array, or other classes if implemented.
 #' @param x object to be reduced 
 #' @param ... further arguments passed to specific implementations
-#' @return Value and type depend on the class of x
+#' @return value and type depend on the class of x
 #' @seealso \code{\link{window_time.cube}} 
 #' @export
 window_time <- function(x, ...) {
@@ -13,14 +13,14 @@ window_time <- function(x, ...) {
 
 #' Apply a moving window function over the time dimension of a data cube
 #' 
-#' Create a proxy data cube, which applies one ore more moving window reducer functions over selected bands of pixel time series of a data cube
+#' Create a proxy data cube, which applies one ore more moving window reducer functions to selected bands over pixel time series of a data cube
 #'
-#' @param x Source data cube
-#' @param expr Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube
-#' @param window integer vector with two elements defining the size of the window before and after a cell, the total size ofof the window is window[1] + 1 + window[2]
-#' @param ... Optional additional expressions (if expr is not a vector)
-#' @return A proxy data cube object
-#' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
+#' @param x source data cube
+#' @param expr either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube
+#' @param window integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]
+#' @param ... pptional additional expressions (if expr is not a vector)
+#' @return proxy data cube object
+#' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)

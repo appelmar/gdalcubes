@@ -4,7 +4,6 @@
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not furhter reduce computation times.
 #' @param n number of threads
-#' @return nothing / invisible
 #' @export
 gdalcubes_set_threads <- function(n=1) {
   stopifnot(n >= 1)

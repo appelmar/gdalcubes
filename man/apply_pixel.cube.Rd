@@ -7,7 +7,7 @@
 \method{apply_pixel}{cube}(x, expr, names = NULL, ...)
 }
 \arguments{
-\item{x}{Source data cube}
+\item{x}{source data cube}
 
 \item{expr}{character vector with one or more arithmetic expressions (see Details)}
 
@@ -16,14 +16,14 @@
 \item{...}{not used}
 }
 \value{
-A proxy data cube object
+a proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies arithmetics expressions over all pixels of a data cube. Expressions may access band values by their name.
+Create a proxy data cube, which applies arithmetic expressions over all pixels of a data cube. Expressions may access band values by name.
 }
 \details{
 gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
-to see what kind of expressions you can execute. Pixel band values can be accessed by their name.
+to see what kind of expressions you can execute. Pixel band values can be accessed by name.
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

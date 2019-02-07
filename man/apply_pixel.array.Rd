@@ -7,9 +7,9 @@
 \method{apply_pixel}{array}(x, FUN, ...)
 }
 \arguments{
-\item{x}{four-dimensional input bands with dimension order band, time, y, x}
+\item{x}{four-dimensional input array with dimensions band, time, y, x (in this order)}
 
-\item{FUN}{function which receives a vector of band values in a one-dimensional array}
+\item{FUN}{function that receives a vector of band values in a one-dimensional array}
 
 \item{...}{further arguments passed to FUN}
 }
@@ -17,17 +17,18 @@
 Apply a function over pixels in a four-dimensional (band, time, y, x) array
 }
 \details{
-FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
+FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 }
 \note{
-This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
+This is a helper function that uses the same dimension ordering as gdalcubes. It can be used to simplify 
 the application of R functions e.g. over time series in a data cube.
 }
 \examples{
-\dontrun{
-load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-y = apply_pixel(sample_chunk, function(x) {
- ndvi <- (x[8]-x[4])/(x[8]+x[4])
- return(c(ndvi=(x[8]-x[4])/(x[8]+x[4]), nir=x[8]))
-})}
+d <- c(4,16,128,128)
+x <- array(rnorm(prod(d)), d)
+# reduce individual bands over pixel time series
+y <- apply_pixel(x, function(v) {
+  v[1] + v[2] + v[3] - v[4]
+})
+dim(y)
 }
