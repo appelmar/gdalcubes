@@ -246,7 +246,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
 
   return Rcpp::List::create(Rcpp::Named("bands") = bands,
                             Rcpp::Named("dimensions") = dims,
-                            Rcpp::Named("srs") = x->st_reference()->proj(),
+                            Rcpp::Named("srs") = x->st_reference()->srs(),
                             Rcpp::Named("graph") = x->make_constructible_json().dump(2),
                             Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3]));
 
@@ -269,7 +269,7 @@ Rcpp::List libgdalcubes_get_cube_view( SEXP pin) {
       Rcpp::Named("bottom") = x->st_reference()->bottom(),
       Rcpp::Named("nx") = x->st_reference()->nx(),
       Rcpp::Named("ny") = x->st_reference()->ny(),
-      Rcpp::Named("srs") = x->st_reference()->proj(),
+      Rcpp::Named("srs") = x->st_reference()->srs(),
       Rcpp::Named("dx") = R_NilValue,
       Rcpp::Named("dy") = R_NilValue
     ),
@@ -523,7 +523,7 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
         cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-        cv.proj() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+        cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
