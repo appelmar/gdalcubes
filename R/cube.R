@@ -247,7 +247,7 @@ nx <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @export
-graph <- function(obj) {
+as_json <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$graph)
