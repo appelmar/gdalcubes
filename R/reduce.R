@@ -39,7 +39,7 @@ reduce_space <- function(x, ...) {
 #'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  L8.cube = data_cube(L8.col, v) 
+#'  L8.cube = raster_cube(L8.col, v) 
 #'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #'  L8.rgb.median = reduce(L8.rgb, "median")  
 #'  L8.rgb.median
@@ -72,7 +72,7 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  L8.cube = data_cube(L8.col, v) 
+#'  L8.cube = raster_cube(L8.col, v) 
 #'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #'  L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #'  L8.rgb.median
@@ -118,7 +118,7 @@ reduce_time.cube <- function(x, expr, ...) {
 #'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  L8.cube = data_cube(L8.col, v) 
+#'  L8.cube = raster_cube(L8.col, v) 
 #'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #'  L8.rgb.median = reduce_space(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #'  L8.rgb.median

@@ -29,8 +29,8 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 L8.col = create_image_collection(L8_files, "L8_L1TP")
-L8.cube = data_cube(L8.col, v)
-L8.cube.b04 = select_bands(data_cube(L8.col, v), c("B04"))
-L8.cube.b05 = select_bands(data_cube(L8.col, v), c("B05"))
+L8.cube = raster_cube(L8.col, v)
+L8.cube.b04 = select_bands(raster_cube(L8.col, v), c("B04"))
+L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
 join_bands(L8.cube.b04,L8.cube.b05)
 }

@@ -4,7 +4,7 @@
 #' index and reference existing imagery. To create a collection from files on disk,
 #' use \code{\link{create_image_collection}}.
 #' @param path path to an existing image collection file
-#' @return an image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
+#' @return an image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)
@@ -82,7 +82,7 @@ print.image_collection <- function(x, ..., n=6) {
 #' @param format collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file
 #' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files  
 #' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
-#' @return image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
+#' @return image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)

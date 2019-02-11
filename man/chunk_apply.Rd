@@ -23,7 +23,7 @@ data of a chunk to a new R process. For reading data, the function typically
 calls \code{x <- read_chunk_as_array()} which then results in a 4 dimensional (band, time, y, x) array.
 Similarly \code{write_chunk_from_array(x)} will write a result array as a chunk in the resulting data cube.
 The chunk size of the input cube is important to control how the function will be exposed to the data cube. For example,
-if you want to apply an R function over complete pixel time series, you must define the chunk size argument in \code{data_cube()}
+if you want to apply an R function over complete pixel time series, you must define the chunk size argument in \code{\link{raster_cube}}
 to make sure that chunk contain the correct parts of the data.
 }
 \note{
@@ -38,7 +38,7 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 L8.col = create_image_collection(L8_files, "L8_L1TP")
-L8.cube = data_cube(L8.col, v)
+L8.cube = raster_cube(L8.col, v)
 L8.cube = select_bands(L8.cube, c("B04", "B05"))
 f <- function() {
   x <- read_chunk_as_array()

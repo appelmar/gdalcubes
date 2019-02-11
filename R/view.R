@@ -37,7 +37,7 @@
 #'            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
 #'
 #'  # 2. read existing data cube
-#'  v = cube_view(data_cube(L8.col))
+#'  v = cube_view(raster_cube(L8.col))
 #'
 #'  # 3. overwrite parts of an existing data cube view
 #'  vnew = cube_view(view = v, dt="P1M")

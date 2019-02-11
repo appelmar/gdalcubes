@@ -10,7 +10,7 @@ image_collection(path)
 \item{path}{path to an existing image collection file}
 }
 \value{
-an image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
+an image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 }
 \description{
 This function will load an image collection from an SQLite file. Image collection files

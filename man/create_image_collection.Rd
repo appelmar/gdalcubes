@@ -19,7 +19,7 @@ create_image_collection(files, format, out_file = tempfile(fileext =
 \item{quiet}{logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable}
 }
 \value{
-image collection proxy object, which can be used to create a data cube using \code{\link{data_cube}}
+image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 }
 \description{
 This function iterates over files or GDAL dataset identifiers and extracts datetime, image_id, and band information according to a given
