@@ -159,7 +159,7 @@ bands <- function(obj) {
 srs <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
-  return(x$proj)
+  return(x$srs)
 }
 
 #' Query data cube properties 
