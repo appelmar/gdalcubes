@@ -19,38 +19,38 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This document presents a first brief vignette to illustrate basic ideas of the gdalcubes R package and library. 
+The gdalcubes R package aims at making the work with large collections of Earth observation (EO) imagery (e.g. from [Sentinel 2](https://sentinel.esa.int/web/sentinel/missions/sentinel-2)) **easier** and **faster**. Typical challenges with these data such as overlapping images, different spatial resolutions of spectral bands, irregular temporal sampling, and different spatial reference systems become invisible to users by reading the data as a raster data cube and letting users define the shape of the cube (spatiotemporal extent, resolution, and  spatial reference system). Working with EO imagery then becomes more interactive: going from "_try my method on low resolution and get the result asap_" to "_apply my final method to the full resolution dataset over night_" becomes straightforward.  
 
-We will process satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough even for older machines. The data come as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files. Please make sure that your GDAL installation supports the HDF4 driver (e.g. by running `gdalinfo --format HDF4` in the command line). We assume that you have successfully installed the gdalcubes R package.
+This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. by running `gdalinfo --format HDF4` in the command line).
 
-In the following, We will follow a typical workflow by
+In the following, we will follow a typical workflow in gdalcubes by
 
-1. indexing image files in an image collection,
+1. indexing image files in an __image collection__,
 2. creating data cubes at various spatiotemporal resolutions and extents, 
-3. apply simple operations on data cubes including band selection, application of pixel-wise functions, reduction over time, and data cube joins.
-
+3. applying simple operations on data cubes including band selection, application of pixel-wise functions, reduction over time, data cube joins, and 
+4. applying user-defined R functions over data cube chunks.
 
 # Downloading the sample data
 
-The vignette will use two different MODIS datasets. The first dataset contains monthly aggregated vegetation indexes over Europe from the MODIS product [MOD13A3](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 360 megabytes. The second dataset contains 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) for the same area and time, summing to a zip archive of approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use two different MODIS datasets. The first dataset contains monthly aggregated vegetation indexes over Europe from the MODIS product [MOD13A3](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 360 megabytes. The second dataset contains 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) for the same area and time, summing to a zip archive of approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
-if (!file.exists("MOD11A2.zip"))
+if (!dir.exists("MOD11A2"))
   download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile="MOD11A2.zip",mode = "wb")
-if (!file.exists("MOD13A3.zip"))
+if (!dir.exists("MOD13A3"))
   download.file("https://uni-muenster.sciebo.de/s/jK90qk4FdlNtY21/download", destfile="MOD13A3.zip",mode = "wb")
 
 unzip("MOD11A2.zip", exdir = "MOD11A2")
+unlink("MOD11A2.zip")
 unzip("MOD13A3.zip", exdir = "MOD13A3")
+unlink("MOD13A3.zip")
 ```
-
-This will generate two directories MOD11A2 and MOD13A3 with HDF files from the corresponding MODIS product.
 
 
 # Creating an image collection
 
-As a first step, we need to tell gdalcubes how the products are organized in files. For MODIS data, each file is a complete image, i.e. it contains all bands. Other satellite imagery such as Landsat or Sentinel 2 can be organized quite differently with band data coming from multiple files. Furthermore gdalcubes must know how to derive the image aquisition date / time. All this needed information is specified in an _image collection format_, which is a set of regular expressions in a JSON file. gdalcubes comes with a set of predefined formats, including both MODIS products. The following command gives a list with identifiers and short descriptions of available predefined image collection formats. 
-
+As a first step, we must combine the set of files for the first MODIS product (MOD11A2) in a single _image collection_.
+The image collection is a simple index, pointing to files and storing the spatial extent, spatial reference system, aquisition date/time of images and how files relate to image bands. The package comes with a set of predefined rules (called _image collection formats_), how this information can be extracted from filenames for selected EO products. A list of available collection formats including a short description can be printed with:
 
 
 ```{r}
@@ -59,10 +59,12 @@ collection_formats()
 ```
 
 
+In this case, `MxD11A2` is the correct format for our datasets. Internally, collection formats are defined in relatively simple JSON files, presets for other products will be added continuously.   
 
-Since the MODIS data are HDF4 files, reading the data with GDAL is a bit tricky, as we must know how to identify the corresponding subdatasets in addition to the filenames. 
-For MOD11A2, the pattern for the subdatasets is `HDF4_EOS:EOS_GRID:"/path/to/file":MODIS_Grid_8Day_1km_LST:BAND`, where `BAND` can be e.g. `"LST_Day_1km"`.
-The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL dataset identifiers, which then can be put as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
+To create the image collection, we must pass a list of our files and the collection format to the `create_image_collection()` function.
+However, since MODIS comes as HDF4 files where GDAL interprets bands as subdatasets, reading the data with GDAL is little more complex. 
+Instead of just filenames (as it would work for Landsat or Sentinel 2 imagery), we will not only provide filenames, but the subdataset names. For MOD11A2, the pattern for the subdatasets is `HDF4_EOS:EOS_GRID:"/path/to/file":MODIS_Grid_8Day_1km_LST:BAND`, where `BAND` can be e.g. "LST_Day_1km".
+The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL datasets, which then can be passed as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
 
 ```{r}
 file_subdatasets = expand.grid(file=list.files("MOD11A2", pattern=".hdf$", full.names = TRUE), 
@@ -76,7 +78,7 @@ create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
 
 # Creating a data cube
 
-The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. The `raster_cube()` function creates a data cube from an image collection. This function up to three arguments:
+The created image collection has references to original images on disk and knows about the datetime, spatial extent, and coordinate reference system of images. The `raster_cube()` function creates a data cube from an image collection. This function expects up to three arguments:
 
 1. an image collection object as created above, 
 2. a data cube view defining the spatiotemporal resolution and extent and the spatial reference system of the target cube, and 
@@ -108,7 +110,8 @@ MOD11A2.cube
 
 # Data cube operations
 
-The package comes with a few operations on data cubes to (i) select bands (`select_bands`), (ii) apply pixel-wise arithmetic expressions (`apply_pixel`), (iii) reduce data cubes over space and time (`reduce_time`, `reduce_space`), apply a moving-window function over time (`window_time`),  (iv) apply an R function over chunks of a data cube (`chunk_apply`), and (v) join bands of identically shaped data cubes (`join_bands`). The following code demonstrates some of these operations and how data cubes can be plotted.
+## Simple operations and chaining
+The package comes with a few operations on data cubes to (i) select bands (`select_bands()`), (ii) apply pixel-wise arithmetic expressions (`apply_pixel()`), (iii) reduce data cubes over space and time (`reduce_time()`, `reduce_space()`), apply a moving-window function over time (`window_time()`),  (iv) apply an R function over chunks of a data cube (`chunk_apply()`), and (v) join bands of identically shaped data cubes (`join_bands()`). All of these functions produce a proxy data cube, storing the shape of the result cube but not any data. They all take a (proxy) data cube as first argument and can be chained. The following code demonstrates some of the operations and how data cubes can be plotted.
 
 ```{r}
 MOD11A2.bandselect = select_bands(MOD11A2.cube, c("LST_DAY","LST_NIGHT"))
@@ -133,8 +136,8 @@ raster_cube(image_collection("MOD11A2.db"), v) %>%
   plot(col=heat.colors, key.pos=1)
 ```
 
-
 ## Joining data cubes
+
 To join the land surface temperature data with vegetation index data, we have to repeat some of the steps for the MOD13A3 dataset. Below, we will create an image collection and a data cube with identical shape and afterwards join it with the land surface temperature cube.
 
 
@@ -147,13 +150,10 @@ file_subdatasets = expand.grid(file=list.files("MOD13A3", pattern=".hdf$", full.
 gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MOD_Grid_monthly_1km_VI:",file_subdatasets$subdataset, sep="")
 create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
 
-
-
 # create data cube for vegetion index data using the same view as above
 MOD11A2.cube = raster_cube(image_collection("MOD11A2.db"), v)
 MOD13A3.cube = raster_cube(image_collection("MOD13A3.db"), v)
 MOD13A3.cube
-
 
 joined.cube = join_bands(
   select_bands(MOD13A3.cube, "NDVI"), 
@@ -161,13 +161,14 @@ joined.cube = join_bands(
 joined.cube
 ```
 
+The resulting cube contains three bands from both datasets.
+
 ## Applying R functions over chunks
 
-Data cubes are processed chunk-wise, where users can specify the size of chunks as an argument to the `raster_cube()` fnuction.
+Data cubes are processed chunk-wise, where users can specify the size of chunks as an argument to the `raster_cube()` function.
 The function `chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
-in separate R processes and first must read the data as array with `read_chunk_as_array()`.
-This function returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written to stdout using `write_chunk_from_array()`. In the example below, we use the joined data cube and compute
-pixel-wise rank correlations between all three pairs of bands. The result is a map with three correlation coefficients between NDVI, LST_DAY, and LST_NIGHT. Results are of course not very meaningful but this example illustrates how R functions can be applied on the data.
+in separate R processes and first must read the data as array with `read_chunk_as_array()`. It returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written back to the gdalcubes library using `write_chunk_from_array()`. In the example below, we use the joined data cube and compute
+pixel-wise rank correlations between all three pairs of bands. The result is a map with three correlation coefficients between NDVI, LST_DAY, and LST_NIGHT. Results are of course not very meaningful but should illustrate how R functions can be applied on the data.
 
 ```{r}
 f <- function() {
@@ -182,10 +183,10 @@ f <- function() {
 plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
 ```
 
-# Multithreading
-gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_set_threads(n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for small cubes with less than `n` chunks.
+## Multithreading
+gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_set_threads(n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
 
 
 # Future work
-This vignette presented a very simple first example with a small dataset. Future vignettes will demonstrate how to process larger imagery as from Sentinel 2 and how to run gdalcubes in the cloud. 
+This vignette presents a very simple example with a small dataset. Future vignettes will demonstrate how to process larger imagery as from Sentinel 2 and how to run gdalcubes in the cloud. 
 

@@ -41,4 +41,6 @@ Plot a gdalcubes data cube
 }
 \note{
 There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube.
+
+Some parts of the function have been copied from the stars package (c) Edzer Pebesma
 }

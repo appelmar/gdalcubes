@@ -29,6 +29,10 @@ libgdalcubes_cube_info <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_cube_info', PACKAGE = 'gdalcubes', pin)
 }
 
+libgdalcubes_dimension_values <- function(pin, dt_unit = "") {
+    .Call('_gdalcubes_libgdalcubes_dimension_values', PACKAGE = 'gdalcubes', pin, dt_unit)
+}
+
 libgdalcubes_get_cube_view <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
 }

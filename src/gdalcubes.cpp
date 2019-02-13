@@ -169,6 +169,7 @@ void libgdalcubes_cleanup() {
   config::instance()->gdalcubes_cleanup();
 }
 
+// This function is also covered by libgdalcubes_dimension_values() and should be deprecated
 // [[Rcpp::export]]
 Rcpp::StringVector libgdalcubes_datetime_values(SEXP pin) {
   Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
@@ -243,17 +244,82 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
                             Rcpp::Named("scale")=b_scale,
                             Rcpp::Named("nodata")=b_nodata,
                             Rcpp::Named("unit")=b_unit);
-
+  
+  // extract proj4 string 
+  char* proj4 = NULL;
+  std::string sproj4 = "";
+  if (x->st_reference()->srs_ogr().exportToProj4(&proj4) == OGRERR_NONE) {
+    sproj4 = proj4;  
+    CPLFree(proj4);
+  }
+ 
   return Rcpp::List::create(Rcpp::Named("bands") = bands,
                             Rcpp::Named("dimensions") = dims,
                             Rcpp::Named("srs") = x->st_reference()->srs(),
+                            Rcpp::Named("proj4") = sproj4,
                             Rcpp::Named("graph") = x->make_constructible_json().dump(2),
                             Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3]));
 
 }
 
+
+
+
+
+
+
+
+// [[Rcpp::export]]
+Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
+  
+  Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+  
+  std::shared_ptr<cube> x = *aa;
+  Rcpp::CharacterVector dimt(x->st_reference()->nt());
+  Rcpp::NumericVector dimx(x->st_reference()->nx());
+  Rcpp::NumericVector dimy(x->st_reference()->ny());
+  
+  
+  datetime_unit u = x->st_reference()->dt().dt_unit;
+  if (dt_unit == "Y") {
+    u = datetime_unit::YEAR;
+  }
+  else if (dt_unit == "m") {
+    u = datetime_unit::MONTH;
+  }
+  else if (dt_unit == "d") {
+    u = datetime_unit::DAY;
+  }
+  else if (dt_unit == "H") {
+    u = datetime_unit::HOUR;
+  }
+  else if (dt_unit == "M") {
+    u = datetime_unit::MINUTE;
+  }
+  else if (dt_unit == "S") {
+    u = datetime_unit::SECOND;
+  }
+  
+  for (int i = 0; i < x->st_reference()->nt(); ++i) {
+    dimt[i] = (x->st_reference()->t0() + x->st_reference()->dt() * i).to_string(u); 
+  }
+  for (int i = 0; i < x->st_reference()->ny(); ++i) {
+    dimy[i] = (x->st_reference()->win().bottom + x->st_reference()->dy() * i); 
+  }
+  for (int i = 0; i < x->st_reference()->nx(); ++i) {
+    dimx[i] = (x->st_reference()->win().left + x->st_reference()->dx() * i); 
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("t") = dimt,
+                            Rcpp::Named("y") = dimy,
+                            Rcpp::Named("x") = dimx);
+  
+}
+
+
 // [[Rcpp::export]]
 Rcpp::List libgdalcubes_get_cube_view( SEXP pin) {
+  
   
   Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
   

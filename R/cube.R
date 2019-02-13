@@ -164,6 +164,19 @@ srs <- function(obj) {
 
 #' Query data cube properties 
 #' 
+#' @return The spatial reference system expressed as proj4 string
+#' 
+#' @param obj a data cube proxy object (class cube)
+#' @export
+proj4 <- function(obj) {
+  stopifnot(is.cube(obj))
+  x = libgdalcubes_cube_info(obj)
+  return(x$proj4)
+}
+
+
+#' Query data cube properties 
+#' 
 #' @return Total data size of data cube values expressed in the given unit
 #' 
 #' @param obj a data cube proxy object (class cube)
@@ -271,6 +284,21 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 
 
 
+#' Query coordinate values for all dimensions of a data cube 
+#' 
+#' Dimension values give the coordinates along the spatial and temporal axes of a data cube.
+#' 
+#' @param obj a data cube proxy object (class cube)
+#' @param datetime_unit unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.
+#' @return list with elements t,y,x
+#' @export
+dimension_values <- function(obj, datetime_unit=NULL) {
+  stopifnot(is.cube(obj))
+  if (is.null(datetime_unit)) {
+    datetime_unit = ""
+  }
+  return(libgdalcubes_dimension_values(obj, datetime_unit)) # add datetime unit
+}
 
 
 
