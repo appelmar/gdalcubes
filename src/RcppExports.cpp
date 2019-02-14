@@ -207,9 +207,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// libgdalcubes_create_window_time_cube
-SEXP libgdalcubes_create_window_time_cube(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands);
-RcppExport SEXP _gdalcubes_libgdalcubes_create_window_time_cube(SEXP pinSEXP, SEXP windowSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
+// libgdalcubes_create_window_time_cube_reduce
+SEXP libgdalcubes_create_window_time_cube_reduce(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_window_time_cube_reduce(SEXP pinSEXP, SEXP windowSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -217,7 +217,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::vector<int> >::type window(windowSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type reducers(reducersSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type bands(bandsSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_window_time_cube(pin, window, reducers, bands));
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_window_time_cube_reduce(pin, window, reducers, bands));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_create_window_time_cube_kernel
+SEXP libgdalcubes_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::vector<double> kernel);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_window_time_cube_kernel(SEXP pinSEXP, SEXP windowSEXP, SEXP kernelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type window(windowSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type kernel(kernelSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_window_time_cube_kernel(pin, window, kernel));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -333,7 +346,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_reduce_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_cube, 2},
     {"_gdalcubes_libgdalcubes_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_time_cube, 3},
     {"_gdalcubes_libgdalcubes_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_space_cube, 3},
-    {"_gdalcubes_libgdalcubes_create_window_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_window_time_cube_reduce", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_reduce, 4},
+    {"_gdalcubes_libgdalcubes_create_window_time_cube_kernel", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_kernel, 3},
     {"_gdalcubes_libgdalcubes_create_join_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_join_bands_cube, 2},
     {"_gdalcubes_libgdalcubes_create_select_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_select_bands_cube, 2},
     {"_gdalcubes_libgdalcubes_create_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_apply_pixel_cube, 3},

@@ -4,24 +4,33 @@
 \alias{window_time.cube}
 \title{Apply a moving window function over the time dimension of a data cube}
 \usage{
-\method{window_time}{cube}(x, window, expr, ...)
+\method{window_time}{cube}(x, expr, ..., kernel, window)
 }
 \arguments{
 \item{x}{source data cube}
 
-\item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]}
-
 \item{expr}{either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
 
-\item{...}{pptional additional expressions (if expr is not a vector)}
+\item{...}{optional additional expressions (if expr is not a vector)}
+
+\item{kernel}{numeric vector with elements of the kernel}
+
+\item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]}
 }
 \value{
 proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies one ore more moving window reducer functions to selected bands over pixel time series of a data cube
+Create a proxy data cube, which applies one ore more moving window functions to selected bands over pixel time series of a data cube.
+The fuction can either use a predefined agggregation function or apply a custom convolution kernel.
 }
 \details{
+The function either applies a kernel convolution (if the \code{kernel} argument is provided) or a general reducer function 
+over moving temporal windows. In the former case, the kernel convolution will be applied over all bands of the input 
+cube, i.e., the output cube will have the same number of bands as the input cubes. If a kernel is given and the \code{window} argument is missing, 
+the window will be symmetric to the center pixel with the size of the provided kernel. For general reducer functions, the window argument must be provided and
+several expressions can be used to create multiple bands in the output cube.
+
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 more complex functions or arguments.
 
@@ -41,8 +50,12 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 L8.col = create_image_collection(L8_files, "L8_L1TP") 
 L8.cube = raster_cube(L8.col, v) 
 L8.nir = select_bands(L8.cube, c("B08"))
-L8.nir.min = window_time(L8.nir, c(2,2), "min(B02)")  
+L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B02)")  
 L8.nir.min
+plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
+
+L8.nir.kernel = window_time(L8.nir, kernel=c(-1,2,-1))  
+L8.nir.kernel
 plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 
 }

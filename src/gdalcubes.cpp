@@ -207,13 +207,14 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
   d_high[1] = x->st_reference()->top();
   d_n[1] = x->st_reference()->ny();
   d_chunk[1] = x->chunk_size()[1];
-
+  
   d_name[2] = "x";
   d_low[2] = x->st_reference()->left();
   d_high[2] = x->st_reference()->right();
   d_n[2] = x->st_reference()->nx();
   d_chunk[2] = x->chunk_size()[2];
 
+  
   Rcpp::DataFrame dims =
     Rcpp::DataFrame::create(Rcpp::Named("name")=d_name,
                             Rcpp::Named("low")=d_low,
@@ -239,7 +240,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
 
   Rcpp::DataFrame bands =
     Rcpp::DataFrame::create(Rcpp::Named("name")=b_names,
-                           // Rcpp::Named("type")=b_type,
+                            Rcpp::Named("type")=b_type,
                             Rcpp::Named("offset")=b_offset,
                             Rcpp::Named("scale")=b_scale,
                             Rcpp::Named("nodata")=b_nodata,
@@ -280,7 +281,7 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
   Rcpp::NumericVector dimy(x->st_reference()->ny());
   
   
-  datetime_unit u = x->st_reference()->dt().dt_unit;
+  datetime_unit u = x->st_reference()->dt_unit();
   if (dt_unit == "Y") {
     u = datetime_unit::YEAR;
   }
@@ -300,13 +301,13 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
     u = datetime_unit::SECOND;
   }
   
-  for (int i = 0; i < x->st_reference()->nt(); ++i) {
+  for (uint32_t i = 0; i < x->st_reference()->nt(); ++i) {
     dimt[i] = (x->st_reference()->t0() + x->st_reference()->dt() * i).to_string(u); 
   }
-  for (int i = 0; i < x->st_reference()->ny(); ++i) {
+  for (uint32_t i = 0; i < x->st_reference()->ny(); ++i) {
     dimy[i] = (x->st_reference()->win().bottom + x->st_reference()->dy() * i); 
   }
-  for (int i = 0; i < x->st_reference()->nx(); ++i) {
+  for (uint32_t i = 0; i < x->st_reference()->nx(); ++i) {
     dimx[i] = (x->st_reference()->win().left + x->st_reference()->dx() * i); 
   }
   
@@ -604,7 +605,7 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-        cv.dt() = duration::from_string(tmp);
+        cv.dt(duration::from_string(tmp));
         cv.t0().unit() = cv.dt().dt_unit; 
         cv.t1().unit() = cv.dt().dt_unit; 
       }
@@ -699,7 +700,7 @@ SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> re
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_window_time_cube(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP libgdalcubes_create_window_time_cube_reduce(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -720,6 +721,20 @@ SEXP libgdalcubes_create_window_time_cube(SEXP pin, std::vector<int> window, std
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::vector<double> kernel) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::shared_ptr<window_time_cube>* x = new std::shared_ptr<window_time_cube>(window_time_cube::create(*aa, kernel, window[0], window[1]));
+    Rcpp::XPtr< std::shared_ptr<window_time_cube> > p(x, true) ;
+    return p;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]

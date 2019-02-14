@@ -13,12 +13,14 @@ window_time <- function(x, ...) {
 
 #' Apply a moving window function over the time dimension of a data cube
 #' 
-#' Create a proxy data cube, which applies one ore more moving window reducer functions to selected bands over pixel time series of a data cube
+#' Create a proxy data cube, which applies one ore more moving window functions to selected bands over pixel time series of a data cube.
+#' The fuction can either use a predefined agggregation function or apply a custom convolution kernel. 
 #'
 #' @param x source data cube
+#' @param kernel numeric vector with elements of the kernel 
 #' @param expr either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube
 #' @param window integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]
-#' @param ... pptional additional expressions (if expr is not a vector)
+#' @param ... optional additional expressions (if expr is not a vector)
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 #' @examples 
@@ -30,34 +32,79 @@ window_time <- function(x, ...) {
 #' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.nir = select_bands(L8.cube, c("B08"))
-#' L8.nir.min = window_time(L8.nir, c(2,2), "min(B02)")  
+#' L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B02)")  
 #' L8.nir.min
 #' plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 #' 
+#' L8.nir.kernel = window_time(L8.nir, kernel=c(-1,2,-1))  
+#' L8.nir.kernel
+#' plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
+#' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
+#' @details 
+#' The function either applies a kernel convolution (if the \code{kernel} argument is provided) or a general reducer function 
+#' over moving temporal windows. In the former case, the kernel convolution will be applied over all bands of the input 
+#' cube, i.e., the output cube will have the same number of bands as the input cubes. If a kernel is given and the \code{window} argument is missing, 
+#' the window will be symmetric to the center pixel with the size of the provided kernel. For general reducer functions, the window argument must be provided and
+#' several expressions can be used to create multiple bands in the output cube.
+#' 
+#' Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median".
+#'
+#' 
 #' @export
-window_time.cube <- function(x, window, expr,  ...) {
+window_time.cube <- function(x, expr,  ..., kernel, window) {
   stopifnot(is.cube(x))
-  stopifnot(is.character(expr))
-  stopifnot(length(window) == 2)
-  stopifnot(window[1] %% 1 == 0)
-  stopifnot(window[2] %% 1 == 0)
-  if (length(list(...))> 0) {
-    stopifnot(all(sapply(list(...), is.character)))
-    expr = c(expr, unlist(list(...)))
+  
+  
+  if (!missing(kernel)) {
+    if (!missing(expr)) {
+      warning("argument expr will be ignored, using applying convolution")
+    }
+    if (length(list(...))> 0) {
+      warning("additional arguments will be ignored, applying kernel convolution")
+    }
+    if (!missing(window)) {
+      stopifnot(window[1] %% 1 == 0)
+      stopifnot(window[2] %% 1 == 0)
+      stopifnot(window[1] + 1 + window[2] == length(kernel))
+    }
+    else if (length(kernel) %% 2 == 0) {
+      window =  c(length(kernel) / 2, length(kernel) / 2 - 1)
+      warning(paste("length of kernel is even, using an asymmetric window (", window[1], ",", window[2], ")", sep=""))
+    }
+    else {
+      # default
+      window = rep((length(kernel) - 1) / 2 ,2)
+    }
+    x = libgdalcubes_create_window_time_cube_kernel(x, as.integer(window), as.double(kernel))
+    class(x) <- c("window_time_cube", "cube", "xptr")
+    return(x)
+  }
+  else {
+    stopifnot(is.character(expr))
+    stopifnot(length(window) == 2)
+    stopifnot(window[1] %% 1 == 0)
+    stopifnot(window[2] %% 1 == 0)
+    
+    if (length(list(...))> 0) {
+      stopifnot(all(sapply(list(...), is.character)))
+      expr = c(expr, unlist(list(...)))
+    }
+  
+    # parse expr to separate reducers and bands
+    reducers = gsub("\\(.*\\)", "", expr)
+    bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
+    stopifnot(length(reducers) == length(bands))
+    x = libgdalcubes_create_window_time_cube_reduce(x, as.integer(window), reducers, bands)
+    class(x) <- c("window_time_cube", "cube", "xptr")
+    return(x)
   }
   
-  # parse expr to separate reducers and bands
-  reducers = gsub("\\(.*\\)", "", expr)
-  bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
-  stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_window_time_cube(x, as.integer(window), reducers, bands)
-  class(x) <- c("window_time_cube", "cube", "xptr")
-  return(x)
+ 
+  
 }
 
 
