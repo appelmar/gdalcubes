@@ -378,6 +378,10 @@ cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregati
     
   }
   
+  
+  # 
+  xx = libgdalcubes_create_view(xx)
+  
   class(xx) <- c("cube_view", class(xx))
   return(xx)
 
@@ -395,36 +399,16 @@ print.cube_view <- function(x, ...) {
   
   
   stopifnot(is.cube_view(x))
-  cat("A data cube view object\n")
-  cat(paste("SRS: \"", x$space$srs, "\"\n", sep=""))
-  cat("Extent:\n")
-  cat(paste("x  [", x$space$left, ", ", x$space$right, "]\n", sep=""))
-  cat(paste("y  [", x$space$bottom, ", ", x$space$top, "]\n", sep=""))
-  cat(paste("t  [", x$time$t0, ", ", x$time$t1, "]\n", sep=""))
-  
-  cat("Resolution: ")
-  if (!is.null(x$space$nx)) {
-    cat(paste(x$space$nx  ,"(nx) ", sep=""))
-  }
-  else if (!is.null(x$space$dx)) {
-    cat(paste(x$space$dx  ,"(dx) ", sep=""))
-  }
-  
-  if (!is.null(x$space$ny)) {
-    cat(paste(x$space$ny  ,"(ny) ", sep=""))
-  }
-  else if (!is.null(x$space$dy)) {
-    cat(paste(x$space$dy  ,"(dy) ", sep=""))
-  }
- 
-  if (!is.null(x$time$nt)) {
-    cat(paste(x$time$nt  ,"(nt) ", sep=""))
-  }
-  else if (!is.null(x$time$dt)) {
-    cat(paste(x$time$dt  ,"(dt) ", sep=""))
-  }
-  cat("\n")
-  
+  cat("A data cube view object\n\n")
+  cat("Dimensions:\n")
+  dims = data.frame(low   = c(x$space$left, x$space$bottom, x$time$t0),
+                    high  = c(x$space$right, x$space$top, x$time$t1),
+                    count = c(x$space$nx, x$space$ny, x$time$nt),
+                    size  = c(x$space$dx, x$space$dy, x$time$dt))
+  rownames(dims) <- c("x", "y", "t")
+  dims = dims[3:1, ] # reverse rows
+  print(dims)
+  cat(paste("\nSRS: \"", x$space$srs, "\"\n", sep=""))
   if (!is.null(x$aggregation))
     cat(paste("Temporal aggregation method: \"", x$aggregation, "\"\n", sep=""))
   if(!is.null(x$resampling))

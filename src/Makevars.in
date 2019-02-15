@@ -16,6 +16,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/stream.o \
 			gdalcubes/src/swarm.o \
 			gdalcubes/src/view.o \
+			gdalcubes/src/dummy.o \
 			gdalcubes/src/external/tinyexpr/tinyexpr.o \
 			gdalcubes/src/external/tiny-process-library/process.o \
 			gdalcubes/src/external/tiny-process-library/process_unix.o \
