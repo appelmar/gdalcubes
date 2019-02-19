@@ -49,7 +49,11 @@ are expressed as ISO8601 datetime strings.
 
 The function can be used in three different ways. First, if the cube argument is given, the function simply returns the data cube view of the provided cube and ignores any other values. Second, the function can
 be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
-Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing.
+Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
+
+In some cases, the extent of the view is automatically extended if the provided resolution would end within a pixel. For example,
+if the spatial extent covers an area of 1km x 1km and dx = dy = 300m, the extent would be enlarged to 1.2 km x 1.2km. The alignment will be reported to the user in 
+a diagnostic message.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),

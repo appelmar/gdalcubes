@@ -25,7 +25,7 @@ struct error_handling_r {
   static void do_output() {
     _m_errhandl.lock();
     _defer = false;
-    Rcpp::Rcout << _err_stream.str() << std::endl;
+    Rcpp::Rcerr << _err_stream.str() << std::endl;
     _err_stream.str(""); 
     _m_errhandl.unlock();
   }
@@ -35,16 +35,16 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "ERROR" << code << ": " << msg << where_str << std::endl;
+      _err_stream << "Error message:\n"  << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "WARNING" << code << ": " << msg << where_str << std::endl;
+      _err_stream << "Warning message:\n" << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "INFO" << code << ": " << msg << where_str << std::endl;
+      _err_stream << "Info: " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "DEBUG" << code << ": " << msg << where_str << std::endl;
+      _err_stream << "Debug message: "  << msg << where_str << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcout << _err_stream.str() << std::endl;
+      Rcpp::Rcerr << _err_stream.str() << std::endl;
       _err_stream.str(""); 
     }
     _m_errhandl.unlock();
@@ -55,14 +55,14 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "ERROR" << code << ": " << msg << std::endl;
+      _err_stream << "Error message:\n" << msg << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "WARNING" << code << ": " << msg  << std::endl;
+      _err_stream << "Warning message:\n" << msg  << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "INFO" << code << ": " << msg << std::endl;
+      _err_stream << "Info: " <<  msg << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcout << _err_stream.str() << std::endl;
+      Rcpp::Rcerr << _err_stream.str() << std::endl;
       _err_stream.str(""); 
     }
     _m_errhandl.unlock();
@@ -114,7 +114,7 @@ private:
   double _p;
   Progress *_rp;
   
-  void _set(double p) {
+  void _set(double p) { // call this function only with a lock on _m
     //Rcpp::checkUserInterrupt();
     // if (Progress::check_abort()) {
     //   throw std::string("Operation has been interrupted by user");
