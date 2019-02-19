@@ -35,15 +35,17 @@ In the following, we will follow a typical workflow in gdalcubes by
 We will use two different MODIS datasets. The first dataset contains monthly aggregated vegetation indexes over Europe from the MODIS product [MOD13A3](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 360 megabytes. The second dataset contains 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) for the same area and time, summing to a zip archive of approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
-if (!dir.exists("MOD11A2"))
+if (!dir.exists("MOD11A2")) {
   download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile="MOD11A2.zip",mode = "wb")
-if (!dir.exists("MOD13A3"))
+  unzip("MOD11A2.zip", exdir = "MOD11A2")
+  unlink("MOD11A2.zip")
+}
+  
+if (!dir.exists("MOD13A3")) {
   download.file("https://uni-muenster.sciebo.de/s/jK90qk4FdlNtY21/download", destfile="MOD13A3.zip",mode = "wb")
-
-unzip("MOD11A2.zip", exdir = "MOD11A2")
-unlink("MOD11A2.zip")
-unzip("MOD13A3.zip", exdir = "MOD13A3")
-unlink("MOD13A3.zip")
+  unzip("MOD13A3.zip", exdir = "MOD13A3")
+  unlink("MOD13A3.zip")
+}
 ```
 
 
@@ -125,9 +127,9 @@ Notice that no data is actually read until we call `plot()`, i.e. all operations
 Replacing the plot function with `write_ncdf(MOD11A2.reduce, "test.nc")` would write the result as a NetCDF file to disk.  
 
 Operations on data cubes are designed such that they can be used with the [pipe operator](https://r4ds.had.co.nz/pipes.html). The following
-code performs the same operation but might be easier to read.
+code would perform the same operation but might be easier to read.
 
-```{r}
+```{r, eval=FALSE}
 library(magrittr) # get the pipe
 raster_cube(image_collection("MOD11A2.db"), v) %>%
   select_bands(c("LST_DAY","LST_NIGHT")) %>%
