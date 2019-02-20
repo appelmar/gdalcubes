@@ -7,12 +7,12 @@
 select_bands(cube, bands)
 }
 \arguments{
-\item{cube}{Input data cube}
+\item{cube}{source data cube}
 
 \item{bands}{character vector with band names}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
 Create a proxy data cube, which selects specific bands of a data cube. The resulting cube
@@ -21,17 +21,17 @@ will drop any other bands.
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 
-For performance reasons, select_bands should always be called directly on a image collection cube created with cube and 
-drop all unneded bands.This allows to reduce GDAL RasterIO and warp operations.
+For performance reasons, \code{select_bands} should always be called directly on a cube created with \code{\link{raster_cube}} and 
+drop all unneded bands. This allows to reduce RasterIO and warp operations in GDAL.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                         ".TIF", recursive = TRUE, full.names = TRUE)
- v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-         proj="EPSG:32618",
-         nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+ v = cube_view(extent=list(left=388941.2, right=766552.4, 
+               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
- L8.cube = data_cube(L8.col, v) 
+ L8.cube = raster_cube(L8.col, v) 
  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
  L8.rgb
  L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  

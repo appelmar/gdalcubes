@@ -3,7 +3,7 @@ Title: Earth Observation Data Cubes from GDAL Image Collections
 Version: 0.0.1.0
 Authors@R: person("Marius", "Appel", email = "marius.appel@uni-muenster.de", role = c("aut", "cre"), comment=c(ORCID = "0000-0001-5281-3896"))
 Description: Reading and processing collections of Earth Observation images as on-demand multispectral, multitemporal data cubes. Users
-    define cubes by spatiotemporal extent, resolution, and spatial projection and let gdalcubes automatically apply cropping, reprojection, and 
+    define cubes by spatiotemporal extent, resolution, and spatial reference system and let gdalcubes automatically apply cropping, reprojection, and 
     resampling on imagery using gdalwarp. Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
     moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as NetCDF files,
     and plotting. Furthermore, user-defined R functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
@@ -19,10 +19,10 @@ RoxygenNote: 6.1.1
 LinkingTo: Rcpp, RcppProgress
 Suggests: 
     knitr,
-    rmarkdown,
+    magrittr,
     processx,
-    stars,
-    magrittr
+    rmarkdown,
+    stars
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

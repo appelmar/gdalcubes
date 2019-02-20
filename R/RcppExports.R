@@ -29,12 +29,12 @@ libgdalcubes_cube_info <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_cube_info', PACKAGE = 'gdalcubes', pin)
 }
 
-libgdalcubes_get_cube_view <- function(pin) {
-    .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
+libgdalcubes_dimension_values <- function(pin, dt_unit = "") {
+    .Call('_gdalcubes_libgdalcubes_dimension_values', PACKAGE = 'gdalcubes', pin, dt_unit)
 }
 
-libgdalcubes_update_cube_view <- function(pin, v) {
-    invisible(.Call('_gdalcubes_libgdalcubes_update_cube_view', PACKAGE = 'gdalcubes', pin, v))
+libgdalcubes_get_cube_view <- function(pin) {
+    .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
 }
 
 libgdalcubes_open_image_collection <- function(filename) {
@@ -45,6 +45,10 @@ libgdalcubes_image_collection_info <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_image_collection_info', PACKAGE = 'gdalcubes', pin)
 }
 
+libgdalcubes_image_collection_extent <- function(pin, srs) {
+    .Call('_gdalcubes_libgdalcubes_image_collection_extent', PACKAGE = 'gdalcubes', pin, srs)
+}
+
 libgdalcubes_create_image_collection <- function(files, format_file, outfile, unroll_archives = TRUE) {
     invisible(.Call('_gdalcubes_libgdalcubes_create_image_collection', PACKAGE = 'gdalcubes', files, format_file, outfile, unroll_archives))
 }
@@ -53,8 +57,16 @@ libgdalcubes_list_collection_formats <- function() {
     .Call('_gdalcubes_libgdalcubes_list_collection_formats', PACKAGE = 'gdalcubes')
 }
 
+libgdalcubes_create_view <- function(v) {
+    .Call('_gdalcubes_libgdalcubes_create_view', PACKAGE = 'gdalcubes', v)
+}
+
 libgdalcubes_create_image_collection_cube <- function(pin, chunk_sizes, v = NULL) {
     .Call('_gdalcubes_libgdalcubes_create_image_collection_cube', PACKAGE = 'gdalcubes', pin, chunk_sizes, v)
+}
+
+libgdalcubes_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
+    .Call('_gdalcubes_libgdalcubes_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }
 
 libgdalcubes_create_reduce_cube <- function(pin, reducer) {
@@ -69,12 +81,16 @@ libgdalcubes_create_reduce_space_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_space_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }
 
-libgdalcubes_create_window_time_cube <- function(pin, window, reducers, bands) {
-    .Call('_gdalcubes_libgdalcubes_create_window_time_cube', PACKAGE = 'gdalcubes', pin, window, reducers, bands)
+libgdalcubes_create_window_time_cube_reduce <- function(pin, window, reducers, bands) {
+    .Call('_gdalcubes_libgdalcubes_create_window_time_cube_reduce', PACKAGE = 'gdalcubes', pin, window, reducers, bands)
 }
 
-libgdalcubes_create_join_bands_cube <- function(pinA, pinB) {
-    .Call('_gdalcubes_libgdalcubes_create_join_bands_cube', PACKAGE = 'gdalcubes', pinA, pinB)
+libgdalcubes_create_window_time_cube_kernel <- function(pin, window, kernel) {
+    .Call('_gdalcubes_libgdalcubes_create_window_time_cube_kernel', PACKAGE = 'gdalcubes', pin, window, kernel)
+}
+
+libgdalcubes_create_join_bands_cube <- function(pinA, pinB, prefix_A, prefix_B) {
+    .Call('_gdalcubes_libgdalcubes_create_join_bands_cube', PACKAGE = 'gdalcubes', pinA, pinB, prefix_A, prefix_B)
 }
 
 libgdalcubes_create_select_bands_cube <- function(pin, bands) {

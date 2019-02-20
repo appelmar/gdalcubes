@@ -1,6 +1,10 @@
 #' Coerce gdalcubes object into a stars object
 #' 
-#' @param from object to coerce
+#' The function materializes a data cube as a temporary NetCDF file and loads the file 
+#' with the stars package.
+#' 
+#' @param from data cube object to coerce
+#' @return stars object
 #' @export
 as_stars <- function(from) { 
   stopifnot(inherits(from, "cube"))

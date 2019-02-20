@@ -7,18 +7,18 @@
 collection_formats(print = TRUE)
 }
 \arguments{
-\item{print}{Should available formats and their descriptions be printed nicely?}
+\item{print}{logical; should available formats and their descriptions be printed nicely, defaults to TRUE}
 }
 \value{
-A data.frame with columns name and description where the former describes the unique identifier that can be used in \code{create_image_collection} and the
+data.frame with columns \code{name} and \code{description} where the former describes the unique identifier that can be used in \code{create_image_collection} and the
 latter gives a brief description of the format.
 }
 \description{
-gdalcubes comes with some predefined collection formats e.g. to scan Sentinel 2 data. This function lists available formats and a brief description.
+gdalcubes comes with some predefined collection formats e.g. to scan Sentinel 2 data. This function lists available formats  including brief descriptions.
 }
 \details{
-Image collection formats define how individul files / GDALDatasets relate to a collection, i.e., 
-which bands they contain, to which image they belong, and how the derive date/time.
+Image collection formats define how individual files / GDAL datasets relate to an image collection, i.e., 
+which bands they contain, to which image they belong, and how to derive aquisition date/time.
 They are described as a set of regular expressions in a JSON file and used by gdalcubes to extract this information 
 from the paths and/or filenames.
 }

@@ -4,23 +4,37 @@
 \alias{join_bands}
 \title{Join bands of two identically shaped data cubes}
 \usage{
-join_bands(A, B)
+join_bands(X, Y)
 }
 \arguments{
-\item{A}{The first source data cube}
+\item{X}{first source data cube}
 
-\item{B}{The second source data cube}
+\item{Y}{second source data cube}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
-Create a proxy data cube, which joins the bands two identically shaped data cubes. The resulting cube
+Create a proxy data cube, which joins the bands of two identically shaped data cubes. The resulting cube
 will have bands from both input cubes.
+}
+\details{
+Names of bands will be taken from the input cubes. If both cubes, however, have bands with identical name, prefixes are added to all band names. Prefixes
+are tried to derive from names of provided X and Y arguments (derived with \code{substitute}) or simply set to "X." and "Y.".
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
-\dontrun{join_bands(XXXX, YYYY)}
+ L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+                        ".TIF", recursive = TRUE, full.names = TRUE) 
+
+v = cube_view(extent=list(left=388941.2, right=766552.4,
+                          bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+                          srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+L8.col = create_image_collection(L8_files, "L8_L1TP")
+L8.cube = raster_cube(L8.col, v)
+L8.cube.b04 = select_bands(raster_cube(L8.col, v), c("B04"))
+L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
+join_bands(L8.cube.b04,L8.cube.b05)
 }

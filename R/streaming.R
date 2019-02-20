@@ -1,15 +1,17 @@
-#' Read chunk data of a cube from stdin
+#' Read chunk data of a data cube from stdin or a file
 #' 
-#' gdalcubes stream cubes write chunk data to stdin of external processes (such as R)
-#' This function can be used to read the data from stdin as four-dimensional R array with dimensions
-#' (band, time, y, x).
-#' 
-#' @note This function only works in R sessions started from gdalcubes streaming
-#' 
+#' This function can be used within function passed to \code{\link{chunk_apply}} in order to read a data cube chunk as a four-dimensional R array.
+#' It works only for R processes, which have been started from the gdalcubes C++ library. 
+#' The resulting array has dimensions band, time, y, x (in this order).
+#'
+#' @note Call this function ONLY from a function passed to \code{\link{chunk_apply}}.
+#' @note This function only works in R sessions started from gdalcubes streaming.
+#'
 #' @param with.dimnames if TRUE, the resulting array will contain dimnames with coordinates, datetime, and band names
+#' 
 #' @return four-dimensional array
 #' @export
-read_stream_as_array <-function(with.dimnames=TRUE) {
+read_chunk_as_array <-function(with.dimnames=TRUE) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
@@ -54,17 +56,19 @@ read_stream_as_array <-function(with.dimnames=TRUE) {
 
 
 
-#' Write chunk data of a cube to stdout
+#' Write chunk data of a cube to stdout or a file
 #' 
-#' gdalcubes stream cubes write chunk data to stdin of external processes (such as R) and 
-#' reads result data from stdout. 
-#' This function can be used to write an R array as a reuslt chunk to stdout.
 #' 
-#' @note This function only works in R sessions started from gdalcubes streaming
+#' This function can be used within function passed to \code{\link{chunk_apply}} in order to pass four-dimensional R arrays as a
+#' data cube chunk to the gdalcubes C++ library. It works only for R processes, which have been started from the gdalcubes C++ library. 
+#' The input array must have dimensions band, time, y, x (in this order).
 #' 
-#' @param v A four-dimensional array with dimensions band, time, y, and x
+#' @note Call this function ONLY from a function passed to \code{\link{chunk_apply}}.
+#' @note This function only works in R sessions started from gdalcubes streaming.
+#'
+#' @param v four-dimensional array with dimensions band, time, y, and x
 #' @export
-write_stream_from_array <- function(v) {
+write_chunk_from_array <- function(v) {
   if(!.is_streaming()) {
     stop("This function only works in streaming mode")
   }
@@ -89,18 +93,19 @@ write_stream_from_array <- function(v) {
 
 #' Apply a function over time and bands in a four-dimensional (band, time, y, x) array
 #' 
-#' @param x four-dimensional input bands with dimension order band, time, y, x
+#' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
 #' @param FUN function which receives one time series in a two-dimensional array with dimensions bands, time as input
 #' @param ... further arguments passed to FUN
 #' @details 
-#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
+#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 #' @examples
-#' \dontrun{
-#' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-#' strm_reduce_time(sample_chunk, function(x) {
-#'   ndvi <- (x[8,]-x[4,])/(x[8,]+x[4,])
-#'   return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-#' })}
+#' d <- c(4,16,128,128)
+#' x <- array(rnorm(prod(d)), d)
+#' # reduce individual bands over pixel time series
+#' y <- reduce_time(x, function(v) {
+#'   apply(v, 1, mean)
+#' })
+#' dim(y)
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
@@ -120,19 +125,20 @@ reduce_time.array <- function(x, FUN, ...) {
 
 #' Apply a function over pixels in a four-dimensional (band, time, y, x) array
 #' 
-#' @param x four-dimensional input bands with dimension order band, time, y, x
-#' @param FUN function which receives a vector of band values in a one-dimensional array
+#' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
+#' @param FUN function that receives a vector of band values in a one-dimensional array
 #' @param ... further arguments passed to FUN
 #' @details 
-#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
+#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 #' @examples
-#' \dontrun{
-#' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-#' y = apply_pixel(sample_chunk, function(x) {
-#'  ndvi <- (x[8]-x[4])/(x[8]+x[4])
-#'  return(c(ndvi=(x[8]-x[4])/(x[8]+x[4]), nir=x[8]))
-#' })}
-#' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
+#' d <- c(4,16,128,128)
+#' x <- array(rnorm(prod(d)), d)
+#' # reduce individual bands over pixel time series
+#' y <- apply_pixel(x, function(v) {
+#'   v[1] + v[2] + v[3] - v[4]
+#' })
+#' dim(y)
+#' @note This is a helper function that uses the same dimension ordering as gdalcubes. It can be used to simplify 
 #' the application of R functions e.g. over time series in a data cube.
 #' @export
 apply_pixel.array <- function(x, FUN, ...) {
@@ -146,20 +152,21 @@ apply_pixel.array <- function(x, FUN, ...) {
 
 #' Apply a function over space and bands in a four-dimensional (band, time, y, x) array
 #' 
-#' @param x four-dimensional input bands with dimension order band, time, y, x
+#' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
 #' @param FUN function which receives one spatial slice in a three-dimensional array with dimensions bands, y, x as input
 #' @param ... further arguments passed to FUN
 #' @details 
-#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result
+#' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over spatial slices in a data cube.
 #' @examples
-#' \dontrun{
-#' load(system.file("extdata","sample_chunk.Rdata", package="gdalcubes"))
-#' y = reduce_space(sample_chunk, function(x) {
-#'  ndvi <- (x[8,,]-x[4,,])/(x[8,,]+x[4,,])
-#'  return(c(min(ndvi, na.rm=TRUE),max(ndvi, na.rm=T)))
-#' })}
+#' d <- c(4,16,128,128)
+#' x <- array(rnorm(prod(d)), d)
+#' # reduce individual bands over spatial slices 
+#' y <- reduce_space(x, function(v) {
+#'   apply(v, 1, mean)
+#' })
+#' dim(y)
 #' @export
 reduce_space.array <- function(x, FUN, ...) {
   stopifnot(is.array(x))

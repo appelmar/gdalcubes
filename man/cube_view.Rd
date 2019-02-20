@@ -2,72 +2,71 @@
 % Please edit documentation in R/view.R
 \name{cube_view}
 \alias{cube_view}
-\title{Create a spatiotemporal data cube view}
+\title{Create, update, or query a spatiotemporal data cube view}
 \usage{
-cube_view(cube, view, proj, nx, ny, dx, dy, l, r, t, b, dt, nt, t0, t1,
-  aggregation, resampling)
+cube_view(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
+  resampling, keep.asp = TRUE)
 }
 \arguments{
-\item{cube}{Return the view of the specified data cube, other arguments will be ignored}
+\item{cube}{data cube object; if provided, return the view of this data cube and ignore other arguments}
 
-\item{view}{if provided, update the view object instead of creating a new data cube view where fields that are already set will be overwritten}
+\item{view}{if provided, update this cube_view object instead of creating a new data cube view where fields that are already set will be overwritten}
 
-\item{proj}{output projection as string, can be proj4 definition, WKT, or in the form "EPSG:XXXX"}
+\item{extent}{spatioptemporal extent as a list e.g. from \code{\link{extent}} or an image collection object, see Details}
+
+\item{srs}{target spatial reference system as a string; can be a proj4 definition, WKT, or in the form "EPSG:XXXX"}
 
 \item{nx}{number of pixels in x-direction (longitude / easting)}
 
 \item{ny}{number of pixels in y-direction (latitude / northing)}
 
+\item{nt}{number of pixels in t-direction}
+
 \item{dx}{size of pixels in x-direction (longitude / easting)}
 
-\item{dy}{size of pixels  in y-direction (latitude / northing)}
-
-\item{l}{left boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)}
-
-\item{r}{right boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)}
-
-\item{t}{top boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)}
-
-\item{b}{bottom boundary of the spatial extent (expressed in the coordinate system defined by proj or WGS84 by default)}
+\item{dy}{size of pixels in y-direction (latitude / northing)}
 
 \item{dt}{size of pixels in time-direction, expressed as ISO8601 period string (only 1 number and unit is allowed) such as "P16D"}
 
-\item{nt}{number of pixels in t-direction}
-
-\item{t0}{start date/time of the temporal extent (expressed as ISO8601 datetime string)}
-
-\item{t1}{end date/time of the temporal extent (expressed as ISO8601 datetime string)}
-
-\item{aggregation}{aggregation method as string, defining how to deal with pixels with data from multiple images, can be "min", "max", "mean", "median", "first"}
+\item{aggregation}{aggregation method as string, defining how to deal with pixels containing data from multiple images, can be "min", "max", "mean", "median", or "first"}
 
 \item{resampling}{resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://www.gdal.org/gdalwarp.html})}
+
+\item{keep.asp}{if TRUE, derive ny or dy automatically from nx or dx (or vice versa) based on the aspect ratio of the spatial extent}
 }
 \value{
-A list with view properties
+A list with data cube view properties
 }
 \description{
-Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and projection how to look at the data.
+Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs) how to look at the data.
 They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
-extent, read image data at the defined resolution, and warp to the output projection automatically. All parameters
-are optional. By default gdalcubes tries to derive a view that covers the whole image collection at course resolution, which
-may or may not make sense in practice. It is recommended to at least spcify the spatial and temporal extent, the resolution (nx, ny, dt) 
-and the output projection.
+extent, read image data at the defined resolution, and warp / reproject images to the target srs automatically.
 }
-\note{
-All arguments are optional
+\details{
+The \code{extent} argument expects a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time) or an image collection object.
+In the latter case, the \code{\link{extent}} function is automatically called on the image collection object to get the full spatiotemporal extent of the collection. In the former case, datetimes 
+are expressed as ISO8601 datetime strings.
+
+The function can be used in three different ways. First, if the cube argument is given, the function simply returns the data cube view of the provided cube and ignores any other values. Second, the function can
+be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
+Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
+
+In some cases, the extent of the view is automatically extended if the provided resolution would end within a pixel. For example,
+if the spatial extent covers an area of 1km x 1km and dx = dy = 300m, the extent would be enlarged to 1.2 km x 1.2km. The alignment will be reported to the user in 
+a diagnostic message.
 }
 \examples{
-# 1. full manual specification
-cube_view(proj="EPSG:4326", l = -20, r = 20, t = 60, b=40, 
-          t0="2018-01-01", t1="2018-09-30", dt="P1M", nx=1000, 
-          ny=500, aggregation = "mean", resampling="bilinear")
-          
-# 2. read existing data cube
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                         ".TIF", recursive = TRUE, full.names = TRUE)
- L8.col = create_image_collection(L8_files, "L8_L1TP") 
- v = cube_view(data_cube(L8.col)) 
+ L8.col = create_image_collection(L8_files, "L8_L1TP")
  
-# 3. overwrite parts of an existing data cube view
-vnew = cube_view(view = v, dt="P1M")  
+ # 1. Create a new data cube view specification
+ cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
+           nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
+
+ # 2. read existing data cube
+ v = cube_view(raster_cube(L8.col))
+
+ # 3. overwrite parts of an existing data cube view
+ vnew = cube_view(view = v, dt="P1M")
 }

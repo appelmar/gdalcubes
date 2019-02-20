@@ -1,7 +1,7 @@
 
 #' Create a data cube from an image collection
 #' 
-#' Create a proxy data cube, which loads data from a given image collection
+#' Create a proxy data cube, which loads data from a given image collection according to a data cube view
 #'
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
@@ -17,15 +17,15 @@
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-#'          proj="EPSG:32618",
-#'          nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+#'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  data_cube(L8.col, v)
+#'  raster_cube(L8.col, v)
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-data_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
+raster_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
 
   stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
@@ -85,8 +85,8 @@ print.cube <- function(x, ...) {
 
 #' Query data cube properties 
 #' 
-#' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso dim.cube
+#' @return size of a data cube (number of cells) as integer vector in the order t, y, x
+#' @seealso \code{\link{dim.cube}}
 #' @param obj a data cube proxy object (class cube)
 #' @export
 size <- function(obj) {
@@ -99,8 +99,8 @@ size <- function(obj) {
 
 #' Query data cube properties 
 #' 
-#' @return Size of a data cube (number of cells) as integer vector in the order t, y, x
-#' @seealso size
+#' @return size of a data cube (number of cells) as integer vector in the order t, y, x
+#' @seealso \code{\link{size}}
 #' @param x a data cube proxy object (class cube)
 #' @export
 dim.cube <- function(x) {
@@ -156,11 +156,24 @@ bands <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @export
-get_projection <- function(obj) {
+srs <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
-  return(x$proj)
+  return(x$srs)
 }
+
+#' Query data cube properties 
+#' 
+#' @return The spatial reference system expressed as proj4 string
+#' 
+#' @param obj a data cube proxy object (class cube)
+#' @export
+proj4 <- function(obj) {
+  stopifnot(is.cube(obj))
+  x = libgdalcubes_cube_info(obj)
+  return(x$proj4)
+}
+
 
 #' Query data cube properties 
 #' 
@@ -238,7 +251,7 @@ nx <- function(obj) {
 
 #' Query data cube properties 
 #' 
-#' gdalcubes uses a graph (currently a tree) to represent / serialize data cube chains. This function gives a JSON
+#' gdalcubes uses a graph (currently a tree) to serialize data cubes (including chains of cubes). This function gives a JSON
 #' representation, which will be communicated to gdalcubes_server instances to create identical cube instances 
 #' remotely.
 #' 
@@ -247,22 +260,13 @@ nx <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @export
-graph <- function(obj) {
+as_json <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   return(x$graph)
 }
 
 
-
-#"cube_view<-" <-function(x,value) {
-#   stopifnot(is.cube(x))
-#   stopifnot(is.cube_view(value))
-#   if (!is.image_collection_cube)
-#     stop("x is no image_collection_cube, updating the data cube view is currently only implemented for image_collection_cube")
-#   libgdalcubes_update_cube_view(x,value)
-#   return(x)
-# }
 
 
 #' Materialize a data cube as a NetCDF file
@@ -271,7 +275,7 @@ graph <- function(obj) {
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
-#' @details The resulting NetCDF file contains three dimensions (d, y, x) and bands as variables.
+#' @details The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
   stopifnot(is.cube(x))
@@ -280,6 +284,21 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 
 
 
+#' Query coordinate values for all dimensions of a data cube 
+#' 
+#' Dimension values give the coordinates along the spatial and temporal axes of a data cube.
+#' 
+#' @param obj a data cube proxy object (class cube)
+#' @param datetime_unit unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.
+#' @return list with elements t,y,x
+#' @export
+dimension_values <- function(obj, datetime_unit=NULL) {
+  stopifnot(is.cube(obj))
+  if (is.null(datetime_unit)) {
+    datetime_unit = ""
+  }
+  return(libgdalcubes_dimension_values(obj, datetime_unit)) # add datetime unit
+}
 
 
 

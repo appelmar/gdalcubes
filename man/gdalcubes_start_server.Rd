@@ -8,11 +8,11 @@ gdalcubes_start_server(port = 1111, endpoint = "/gdalcubes/api",
   whitelist = NULL, threads = 1, n = 1)
 }
 \arguments{
-\item{port}{port number(s) where gdalcubes server(s) will listen for inccoming requests}
+\item{port}{port number(s) where gdalcubes server(s) will listen for incoming requests}
 
 \item{endpoint}{base path where the API sets up its endpoints}
 
-\item{whitelist}{character vector with hosts that are allowed to connect to the server, if null, all incoming requests will be accepted}
+\item{whitelist}{character vector with hosts that are allowed to connect to the server, if NULL (the default), all incoming requests will be accepted}
 
 \item{threads}{number of threads running to process parallel chunk read requests}
 

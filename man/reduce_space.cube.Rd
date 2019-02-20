@@ -7,17 +7,17 @@
 \method{reduce_space}{cube}(x, expr, ...)
 }
 \arguments{
-\item{x}{Source data cube}
+\item{x}{source data cube}
 
-\item{expr}{Either a single string, or a vector of strings defining which reducers wlil be applied over which bands of the input cube}
+\item{expr}{either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube}
 
-\item{...}{Optional additional expressions (if expr is not a vector)}
+\item{...}{optional additional expressions (if \code{expr} is not a vector)}
 }
 \value{
-A proxy data cube object
+proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies one ore more reducer functions over selected bands of spatial slices of a data cube
+Create a proxy data cube, which applies one or more reducer functions to selected bands over spatial slices of a data cube
 }
 \details{
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
@@ -26,18 +26,18 @@ more complex functions or arguments.
 Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
 }
 \note{
-Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
+Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                         ".TIF", recursive = TRUE, full.names = TRUE)
- v = cube_view(l=388941.2, r=766552.4, b=4345299, t=4744931, 
-         proj="EPSG:32618",
-         nx = 497, ny=526, t0="2018-01", t1="2018-12", dt="P1M")
+ v = cube_view(extent=list(left=388941.2, right=766552.4, 
+               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
- L8.cube = data_cube(L8.col, v) 
+ L8.cube = raster_cube(L8.col, v) 
  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
  L8.rgb.median = reduce_space(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
  L8.rgb.median

@@ -8,18 +8,18 @@ create_image_collection(files, format, out_file = tempfile(fileext =
   ".sqlite"), unroll_archives = TRUE, quiet = FALSE)
 }
 \arguments{
-\item{files}{A character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)}
+\item{files}{character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)}
 
-\item{format}{Collection format, can be either a name to use predefined formats (as output from \code{collection_formats}) or a path to a custom JSON format description file.}
+\item{format}{collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file}
 
-\item{out_file}{Optional name of the output SQLite database file, defaults to a temporary file}
+\item{out_file}{pptional name of the output SQLite database file, defaults to a temporary file}
 
-\item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of files}
+\item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files}
 
 \item{quiet}{logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable}
 }
 \value{
-An image collection proxy object, which can be used to create a data cube using \code{cube}
+image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 }
 \description{
 This function iterates over files or GDAL dataset identifiers and extracts datetime, image_id, and band information according to a given
