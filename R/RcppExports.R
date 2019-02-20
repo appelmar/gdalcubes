@@ -89,8 +89,8 @@ libgdalcubes_create_window_time_cube_kernel <- function(pin, window, kernel) {
     .Call('_gdalcubes_libgdalcubes_create_window_time_cube_kernel', PACKAGE = 'gdalcubes', pin, window, kernel)
 }
 
-libgdalcubes_create_join_bands_cube <- function(pinA, pinB) {
-    .Call('_gdalcubes_libgdalcubes_create_join_bands_cube', PACKAGE = 'gdalcubes', pinA, pinB)
+libgdalcubes_create_join_bands_cube <- function(pinA, pinB, prefix_A, prefix_B) {
+    .Call('_gdalcubes_libgdalcubes_create_join_bands_cube', PACKAGE = 'gdalcubes', pinA, pinB, prefix_A, prefix_B)
 }
 
 libgdalcubes_create_select_bands_cube <- function(pin, bands) {

@@ -3,8 +3,8 @@
 #' Create a proxy data cube, which joins the bands of two identically shaped data cubes. The resulting cube
 #' will have bands from both input cubes.
 #'
-#' @param A first source data cube
-#' @param B second source data cube
+#' @param X first source data cube
+#' @param Y second source data cube
 #' @return proxy data cube object
 #' @examples 
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
@@ -19,12 +19,28 @@
 #' L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
 #' join_bands(L8.cube.b04,L8.cube.b05)
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
+#' @details 
+#' Names of bands will be taken from the input cubes. If both cubes, however, have bands with identical name, prefixes are added to all band names. Prefixes
+#' are tried to derive from names of provided X and Y arguments (derived with \code{substitute}) or simply set to "X." and "Y.". 
 #' @export 
-join_bands <- function(A, B) {
-  stopifnot(is.cube(A))
-  stopifnot(is.cube(B))
+join_bands <- function(X, Y) {
+  stopifnot(is.cube(X))
+  stopifnot(is.cube(Y))
   
-  x = libgdalcubes_create_join_bands_cube(A, B)
+  prefix_X = ""
+  prefix_Y = ""
+  if (anyDuplicated(c(names(X),names(Y))) > 0) {
+    prefix_X = "X"
+    prefix_Y = "Y"
+    if (is.name(substitute(X))) {
+      prefix_X = as.character(substitute(X))
+    }
+    if (is.name(substitute(Y))) {
+      prefix_Y = as.character(substitute(Y))
+    }
+  }
+  
+  x = libgdalcubes_create_join_bands_cube(X, Y, prefix_X, prefix_Y)
   class(x) <- c("join_bands_cube", "cube", "xptr")
   return(x)
 }

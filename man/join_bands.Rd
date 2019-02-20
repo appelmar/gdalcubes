@@ -4,12 +4,12 @@
 \alias{join_bands}
 \title{Join bands of two identically shaped data cubes}
 \usage{
-join_bands(A, B)
+join_bands(X, Y)
 }
 \arguments{
-\item{A}{first source data cube}
+\item{X}{first source data cube}
 
-\item{B}{second source data cube}
+\item{Y}{second source data cube}
 }
 \value{
 proxy data cube object
@@ -17,6 +17,10 @@ proxy data cube object
 \description{
 Create a proxy data cube, which joins the bands of two identically shaped data cubes. The resulting cube
 will have bands from both input cubes.
+}
+\details{
+Names of bands will be taken from the input cubes. If both cubes, however, have bands with identical name, prefixes are added to all band names. Prefixes
+are tried to derive from names of provided X and Y arguments (derived with \code{substitute}) or simply set to "X." and "Y.".
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
