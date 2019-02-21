@@ -7,7 +7,7 @@
 \method{plot}{cube}(x, y, ..., nbreaks = 11, breaks = NULL,
   col = grey(1:(nbreaks - 1)/nbreaks), key.pos = NULL, bands = NULL,
   t = NULL, rgb = NULL, zlim = NULL, periods.in.title = TRUE,
-  join.timeseries = FALSE)
+  join.timeseries = FALSE, axes = TRUE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -35,12 +35,15 @@
 \item{periods.in.title}{logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string}
 
 \item{join.timeseries}{logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?}
+
+\item{axes}{logical, if TRUE, plots include axes}
 }
 \description{
 Plot a gdalcubes data cube
 }
 \note{
-There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube.
+If caching is enabled for the package (see \code{\link{gdalcubes_cache}}), repeated calls of plot
+for the same data cube will not reevaluate the cube. Instead, the temporary result file will be reused, if possible.
 
 Some parts of the function have been copied from the stars package (c) Edzer Pebesma
 }

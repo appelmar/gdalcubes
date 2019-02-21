@@ -14,7 +14,8 @@
 #' @param join.timeseries logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?
 #' @param axes logical, if TRUE, plots include axes
 #' @param ... further arguments passed to \code{image.default}
-#' @note There is currently no way to plot the result of \code{write_ncdf} without reevaluating the cube.
+#' @note If caching is enabled for the package (see \code{\link{gdalcubes_cache}}), repeated calls of plot
+#' for the same data cube will not reevaluate the cube. Instead, the temporary result file will be reused, if possible.
 #' @note Some parts of the function have been copied from the stars package (c) Edzer Pebesma
 #' @export
 plot.cube  <-
@@ -49,8 +50,24 @@ plot.cube  <-
       dtvalues = libgdalcubes_datetime_values(x)
       #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
       
-      fn = tempfile(fileext = ".nc")
-      write_ncdf(x, fn)
+      
+      
+      if (.pkgenv$use_cube_cache) {
+        j = as_json(x)
+        if (!is.null(.pkgenv$cube_cache[[j]])
+            && file.exists(.pkgenv$cube_cache[[j]])) {
+          fn = .pkgenv$cube_cache[[j]]
+        }
+        else {
+          fn = tempfile(fileext = ".nc")
+          libgdalcubes_eval_cube(x, fn)
+          .pkgenv$cube_cache[[j]] = fn
+        }
+      }
+      else {
+        fn = tempfile(fileext = ".nc")
+        libgdalcubes_eval_cube(x, fn)
+      }
       
       
       def.par <-
@@ -273,10 +290,30 @@ plot.cube  <-
           }
         }
       }
+  
+      
+      if (.pkgenv$use_cube_cache) {
+        j = as_json(x)
+        if (!is.null(.pkgenv$cube_cache[[j]])
+            && file.exists(.pkgenv$cube_cache[[j]])) {
+          fn = .pkgenv$cube_cache[[j]]
+        }
+        else {
+          fn = tempfile(fileext = ".nc")
+          libgdalcubes_eval_cube(x, fn)
+          .pkgenv$cube_cache[[j]] = fn
+        }
+      }
+      else {
+        fn = tempfile(fileext = ".nc")
+        libgdalcubes_eval_cube(x, fn)
+      }
+      
+     
       
       
-      fn = tempfile(fileext = ".nc")
-      write_ncdf(x, fn)
+      
+      
       
       # read nc and plot individual slices as table, x = band, y = t
       def.par <-
