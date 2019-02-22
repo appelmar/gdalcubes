@@ -279,7 +279,21 @@ as_json <- function(obj) {
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
   stopifnot(is.cube(x))
-  libgdalcubes_eval_cube(x, fname)
+  
+  if (.pkgenv$use_cube_cache) {
+    j = as_json(x)
+    if (!is.null(.pkgenv$cube_cache[[j]])
+        && file.exists(.pkgenv$cube_cache[[j]])) {
+      file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
+    }
+    else {
+      libgdalcubes_eval_cube(x, fname)
+    }
+  }
+  else {
+    libgdalcubes_eval_cube(x, fname)
+  }
+  invisible()
 }
 
 

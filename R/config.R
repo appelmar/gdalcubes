@@ -28,3 +28,19 @@ gdalcubes_debug_output <- function(debug=TRUE) {
   invisible()
 }
 
+
+
+#' Enable or disable caching of cubes.
+#' 
+#' @details
+#' Caching has no effect on disk or memory consumption, 
+#' it simply tries to reuse existing temporary files where possible.
+#' For example, changing only parameters to \code{plot} will not require
+#' rerunning the full data cube operation chain.
+#' 
+#' @param enable logical, TRUE if you want to use the data cube cache
+#' @export
+gdalcubes_use_cache <- function(enable=TRUE) {
+  .pkgenv$use_cube_cache = enable
+}
+

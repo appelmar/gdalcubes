@@ -35,7 +35,7 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
                -DCURL_STATICLIB -DR_PACKAGE
  
 
-PKG_LIBS = -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
+PKG_LIBS = -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
   -lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
 	-ljson-c -lnetcdf -lmariadbclient -lpq -lintl -lwebp -lcurl -lssh2 -lssl -lcrypto \
 	-lkea -lhdf5_cpp -lhdf5_hl -lhdf5 -lexpat -lfreexl -lcfitsio \

@@ -7,6 +7,10 @@
     libgdalcubes_init()
     libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
   }
+  
+  .pkgenv$cube_cache = new.env()
+  .pkgenv$use_cube_cache = TRUE
+  
   # for windows, rwinlib includes GDAL data and PROJ data in the package and we must set the environment variables
   # PROJ_LIB and GDAL_DATA to make sure GDAL finds the data at the package location
   if (dir.exists(system.file("proj", package="gdalcubes"))) {

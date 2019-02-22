@@ -154,3 +154,31 @@ collection_formats <-function(print=TRUE)
   }
   return(invisible(df[,c("name","description")]))
 }
+
+
+
+#' Download and install an image collection format from a URL
+#' 
+#' @param url URL pointing to the collection format JSON file
+#' @param name optional name used to refer to the collection format
+#' @details 
+#' By default, the collection format name will be derived from the basename of the URL.
+#' @export
+add_collection_format <- function(url, name=NULL) {
+  if (is.null(name)) {
+    name = basename(url)
+  }
+  else {
+    if (!endsWith(name, ".json")) {
+      name = paste(name, ".json", sep="")
+    }
+  }
+  destfile = file.path(system.file(package="gdalcubes"), "formats", name)
+  download.file(url, destfile = destfile)
+  if(!jsonlite::validate(readLines(destfile))) {
+    file.remove(destfile)
+    stop("downloaded file is not valid json")
+  }
+  cat(paste("Collection format '", gsub(pattern = ".json",replacement = "", x = name), "' has been successfully downloaded.", sep="" ),"\n")
+  invisible()
+}

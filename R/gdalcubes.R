@@ -18,6 +18,7 @@
 #' @importFrom graphics legend lines
 #' @importFrom stats quantile rnorm
 #' @importFrom utils head 
+#' @importFrom utils download.file
 #' @import RcppProgress jsonlite ncdf4 
 #' 
 #' 
