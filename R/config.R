@@ -40,7 +40,7 @@ gdalcubes_debug_output <- function(debug=TRUE) {
 #' 
 #' @param enable logical, TRUE if you want to use the data cube cache
 #' @export
-gdalcubes_cache <- function(enable=TRUE) {
+gdalcubes_use_cache <- function(enable=TRUE) {
   .pkgenv$use_cube_cache = enable
 }
 
