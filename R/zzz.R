@@ -42,6 +42,6 @@
   }
   else {
     x = libgdalcubes_version()
-    packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, " (", x$GIT_COMMIT, ")", sep=""))
+    packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, sep=""))
   }
 }

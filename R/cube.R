@@ -182,7 +182,7 @@ proj4 <- function(obj) {
 #' @param obj a data cube proxy object (class cube)
 #' @param unit Unit of data size, can be "B", "KB", "KiB", "MB", "MiB", "GB", "GiB", "TB", "TiB", "PB", "PiB"
 #' @export
-get_cubesize <- function(obj, unit="MiB") {
+memsize <- function(obj, unit="MiB") {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
   size_bytes = prod(x$size) * 8 # assuming everything is double
