@@ -8,6 +8,7 @@
     libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
   }
   
+  .pkgenv$compression_level = 0
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
   

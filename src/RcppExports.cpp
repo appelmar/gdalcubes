@@ -321,13 +321,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_eval_cube
-void libgdalcubes_eval_cube(SEXP pin, std::string outfile);
-RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP) {
+void libgdalcubes_eval_cube(SEXP pin, std::string outfile, uint8_t compression_level);
+RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP, SEXP compression_levelSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
-    libgdalcubes_eval_cube(pin, outfile);
+    Rcpp::traits::input_parameter< uint8_t >::type compression_level(compression_levelSEXP);
+    libgdalcubes_eval_cube(pin, outfile, compression_level);
     return R_NilValue;
 END_RCPP
 }
@@ -382,7 +383,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_apply_pixel_cube, 3},
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},
-    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 2},
+    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 3},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {NULL, NULL, 0}

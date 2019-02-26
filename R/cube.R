@@ -287,11 +287,11 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
       file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
     }
     else {
-      libgdalcubes_eval_cube(x, fname)
+      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
     }
   }
   else {
-    libgdalcubes_eval_cube(x, fname)
+    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
   }
   invisible()
 }

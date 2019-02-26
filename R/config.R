@@ -29,6 +29,17 @@ gdalcubes_debug_output <- function(debug=TRUE) {
 }
 
 
+#' Set compression level for NetCDF files produced by gdalcubes
+#' @param level integer; compression level, 0 = no compression, 1=fast compression, 9=small compression
+#' @export
+gdalcubes_set_ncdf_compression <- function(level=2) {
+  stopifnot(level %% 1 == 0)
+  stopifnot(level >= 0 && level <= 9)
+  .pkgenv$compression_level = level
+  invisible()
+}
+
+
 
 #' Enable or disable caching of cubes.
 #' 

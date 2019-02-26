@@ -70,13 +70,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn)
+          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn)
+        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
       }
       
       
@@ -366,13 +366,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn)
+          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn)
+        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
       }
       
      

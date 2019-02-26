@@ -109,8 +109,8 @@ libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }
 
-libgdalcubes_eval_cube <- function(pin, outfile) {
-    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile))
+libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L) {
+    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level))
 }
 
 libgdalcubes_create_stream_cube <- function(pin, cmd) {
