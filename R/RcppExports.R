@@ -9,6 +9,14 @@ libgdalcubes_version <- function() {
     .Call('_gdalcubes_libgdalcubes_version', PACKAGE = 'gdalcubes')
 }
 
+libgdalcubes_gdalformats <- function() {
+    .Call('_gdalcubes_libgdalcubes_gdalformats', PACKAGE = 'gdalcubes')
+}
+
+libgdalcubes_gdalversion <- function() {
+    .Call('_gdalcubes_libgdalcubes_gdalversion', PACKAGE = 'gdalcubes')
+}
+
 libgdalcubes_add_format_dir <- function(dir) {
     invisible(.Call('_gdalcubes_libgdalcubes_add_format_dir', PACKAGE = 'gdalcubes', dir))
 }

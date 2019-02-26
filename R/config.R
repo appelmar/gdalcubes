@@ -39,6 +39,17 @@ gdalcubes_set_ncdf_compression <- function(level=2) {
   invisible()
 }
 
+#' Get available GDAL drivers
+#' @export
+gdalcubes_gdalformats <- function() {
+  return(libgdalcubes_gdalformats())
+}
+
+#' Get the GDAL version used by gdalcubes
+#' @export
+gdalcubes_gdalversion <- function() {
+  return(libgdalcubes_gdalversion())
+}
 
 
 #' Enable or disable caching of cubes.

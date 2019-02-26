@@ -149,6 +149,16 @@ Rcpp::List libgdalcubes_version() {
 }
 
 // [[Rcpp::export]]
+std::vector<std::string> libgdalcubes_gdalformats() {
+  return config::instance()->gdal_formats();
+}
+
+// [[Rcpp::export]]
+std::string libgdalcubes_gdalversion() {
+  return config::instance()->gdal_version_info();
+}
+
+// [[Rcpp::export]]
 void libgdalcubes_add_format_dir(std::string dir) {
   config::instance()->add_collection_format_preset_dir(dir);
 }

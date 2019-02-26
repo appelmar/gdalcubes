@@ -26,6 +26,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_gdalformats
+std::vector<std::string> libgdalcubes_gdalformats();
+RcppExport SEXP _gdalcubes_libgdalcubes_gdalformats() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_gdalformats());
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_gdalversion
+std::string libgdalcubes_gdalversion();
+RcppExport SEXP _gdalcubes_libgdalcubes_gdalversion() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_gdalversion());
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_add_format_dir
 void libgdalcubes_add_format_dir(std::string dir);
 RcppExport SEXP _gdalcubes_libgdalcubes_add_format_dir(SEXP dirSEXP) {
@@ -358,6 +378,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_is_null", (DL_FUNC) &_gdalcubes_libgdalcubes_is_null, 1},
     {"_gdalcubes_libgdalcubes_version", (DL_FUNC) &_gdalcubes_libgdalcubes_version, 0},
+    {"_gdalcubes_libgdalcubes_gdalformats", (DL_FUNC) &_gdalcubes_libgdalcubes_gdalformats, 0},
+    {"_gdalcubes_libgdalcubes_gdalversion", (DL_FUNC) &_gdalcubes_libgdalcubes_gdalversion, 0},
     {"_gdalcubes_libgdalcubes_add_format_dir", (DL_FUNC) &_gdalcubes_libgdalcubes_add_format_dir, 1},
     {"_gdalcubes_libgdalcubes_init", (DL_FUNC) &_gdalcubes_libgdalcubes_init, 0},
     {"_gdalcubes_libgdalcubes_cleanup", (DL_FUNC) &_gdalcubes_libgdalcubes_cleanup, 0},
