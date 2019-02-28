@@ -14,6 +14,14 @@ R package for [gdalcubes](https://github.com/appelmar/gdalcubes): Read and proce
 - Execute data cube operation chains using parallel processing and lazy evaluation.
 
 
+# Getting started
+
+- The package includes a vignette that illustrates the basic concepts and functionality on a 
+small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
+
+- A tutorial how to use the R package to process Sentinel 2 time series can be found at https://appelmar.github.io/gdalcubes/S2R.html.
+
+
 # Installation
 The package is not (yet) available from CRAN, you have to install it from sources with 
 
@@ -66,13 +74,6 @@ The package includes a Dockerfile that runs [RStudio Server](https://www.rstudio
 docker build -t appelmar/gdalcubes_R .
 docker run -d -p 8787:8787 appelmar/gdalcubes_R
 ```
-
-# Getting started
-
-- The package includes a vignette that illustrates the basic concepts and functionality on a 
-small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
-
-- A tutorial how to use the R package to process Sentinel 2 time series can be found at https://appelmar.github.io/gdalcubes/S2R.html.
 
 
 # Warning 

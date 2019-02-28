@@ -1,6 +1,6 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from GDAL Image Collections
-Version: 0.0.1.0
+Version: 0.1.0.0
 Authors@R: person("Marius", "Appel", email = "marius.appel@uni-muenster.de", role = c("aut", "cre"), comment=c(ORCID = "0000-0001-5281-3896"))
 Description: Reading and processing collections of Earth Observation images as on-demand multispectral, multitemporal data cubes. Users
     define cubes by spatiotemporal extent, resolution, and spatial reference system and let gdalcubes automatically apply cropping, reprojection, and 
