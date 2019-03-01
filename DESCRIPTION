@@ -10,7 +10,6 @@ Description: Process collections of Earth Observation images as on-demand multis
     and plotting. User-defined R functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
     multithreading. All computational parts are implemented in C++, linking to the GDAL, NetCDF, CURL, and SQLite libraries.
 Depends: R (>= 3.3.0), Rcpp, RcppProgress, jsonlite, ncdf4
-Maintainer: Marius Appel <marius.appel@uni-muenster.de>
 License: Apache License 2.0
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/

@@ -2,7 +2,7 @@
 % Please edit documentation in R/dummy.R
 \name{raster_cube_dummy}
 \alias{raster_cube_dummy}
-\title{Create a dummy data cube with a flil value}
+\title{Create a dummy data cube with a fill value}
 \usage{
 raster_cube_dummy(view, nbands = 1, fill = 1, chunking = c(16, 256,
   256))
@@ -29,6 +29,6 @@ This function returns a proxy object, i.e., it will not start any computations b
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
                          bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-L8.cube = raster_cube_dummy(v, 2, 2.345)
+L8.cube = raster_cube_dummy(v, 1, 2.345)
 plot(L8.cube, zlim=c(0,3), t=1)
 }
