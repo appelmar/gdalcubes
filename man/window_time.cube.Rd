@@ -45,8 +45,8 @@ This function returns a proxy object, i.e., it will not start any computations b
 L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                        ".TIF", recursive = TRUE, full.names = TRUE)
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
-              bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+                          bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+              srs="EPSG:32618", nx = 400, dt="P1M")
 L8.col = create_image_collection(L8_files, "L8_L1TP") 
 L8.cube = raster_cube(L8.col, v) 
 L8.nir = select_bands(L8.cube, c("B08"))
@@ -54,7 +54,7 @@ L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B02)")
 L8.nir.min
 plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 
-L8.nir.kernel = window_time(L8.nir, kernel=c(-1,2,-1))  
+L8.nir.kernel = window_time(L8.nir, kernel=c(-1,1), window=c(1,0))  
 L8.nir.kernel
 plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 

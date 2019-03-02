@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes-r)
+[![CRAN](https://www.r-pkg.org/badges/version/gdalcubes)](https://cran.r-project.org/package=gdalcubes)
 
 R package for [gdalcubes](https://github.com/appelmar/gdalcubes): Read and process collections of Earth observation image collection as on demand data cubes.
 
@@ -12,6 +13,14 @@ R package for [gdalcubes](https://github.com/appelmar/gdalcubes): Read and proce
 - Abstract from complexities in the data like different map projections for adjacent images and different resolutions for different bands.
 - Apply R functions on data cube chunks.
 - Execute data cube operation chains using parallel processing and lazy evaluation.
+
+
+# Getting started
+
+- The package includes a vignette that illustrates the basic concepts and functionality on a 
+small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
+
+- A tutorial how to use the R package to process Sentinel 2 time series can be found at https://appelmar.github.io/gdalcubes/S2R.html.
 
 
 # Installation
@@ -66,13 +75,6 @@ The package includes a Dockerfile that runs [RStudio Server](https://www.rstudio
 docker build -t appelmar/gdalcubes_R .
 docker run -d -p 8787:8787 appelmar/gdalcubes_R
 ```
-
-# Getting started
-
-- The package includes a vignette that illustrates the basic concepts and functionality on a 
-small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
-
-- A tutorial how to use the R package to process Sentinel 2 time series can be found at https://appelmar.github.io/gdalcubes/S2R.html.
 
 
 # Warning 

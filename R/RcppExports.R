@@ -9,6 +9,14 @@ libgdalcubes_version <- function() {
     .Call('_gdalcubes_libgdalcubes_version', PACKAGE = 'gdalcubes')
 }
 
+libgdalcubes_gdalformats <- function() {
+    .Call('_gdalcubes_libgdalcubes_gdalformats', PACKAGE = 'gdalcubes')
+}
+
+libgdalcubes_gdalversion <- function() {
+    .Call('_gdalcubes_libgdalcubes_gdalversion', PACKAGE = 'gdalcubes')
+}
+
 libgdalcubes_add_format_dir <- function(dir) {
     invisible(.Call('_gdalcubes_libgdalcubes_add_format_dir', PACKAGE = 'gdalcubes', dir))
 }
@@ -109,8 +117,8 @@ libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }
 
-libgdalcubes_eval_cube <- function(pin, outfile) {
-    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile))
+libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L) {
+    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level))
 }
 
 libgdalcubes_create_stream_cube <- function(pin, cmd) {

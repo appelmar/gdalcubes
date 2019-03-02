@@ -1,15 +1,24 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from GDAL Image Collections
-Version: 0.0.1.0
-Authors@R: person("Marius", "Appel", email = "marius.appel@uni-muenster.de", role = c("aut", "cre"), comment=c(ORCID = "0000-0001-5281-3896"))
-Description: Reading and processing collections of Earth Observation images as on-demand multispectral, multitemporal data cubes. Users
+Version: 0.1.0
+Date: 2019-03-02
+Authors@R: c(
+    person(given = "Marius",
+           family = "Appel",
+           role = c("aut", "cre"),
+           email = "marius.appel@uni-muenster.de",
+           comment = c(ORCID = "0000-0001-5281-3896")),
+    person(given = "Edzer",
+           family = "Pebesma",
+           role = "ctb",
+           comment = c(ORCID = "0000-0001-8049-7069")))
+Description: Processing collections of Earth observation images as on-demand multispectral, multitemporal data cubes. Users
     define cubes by spatiotemporal extent, resolution, and spatial reference system and let gdalcubes automatically apply cropping, reprojection, and 
     resampling on imagery using gdalwarp. Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
     moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as NetCDF files,
-    and plotting. Furthermore, user-defined R functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
+    and plotting. User-defined R functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
     multithreading. All computational parts are implemented in C++, linking to the GDAL, NetCDF, CURL, and SQLite libraries.
 Depends: R (>= 3.3.0), Rcpp, RcppProgress, jsonlite, ncdf4
-Maintainer: Marius Appel <marius.appel@uni-muenster.de>
 License: Apache License 2.0
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/

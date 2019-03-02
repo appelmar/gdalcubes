@@ -149,6 +149,16 @@ Rcpp::List libgdalcubes_version() {
 }
 
 // [[Rcpp::export]]
+std::vector<std::string> libgdalcubes_gdalformats() {
+  return config::instance()->gdal_formats();
+}
+
+// [[Rcpp::export]]
+std::string libgdalcubes_gdalversion() {
+  return config::instance()->gdal_version_info();
+}
+
+// [[Rcpp::export]]
 void libgdalcubes_add_format_dir(std::string dir) {
   config::instance()->add_collection_format_preset_dir(dir);
 }
@@ -1003,10 +1013,10 @@ void libgdalcubes_debug_output( bool debug) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_eval_cube( SEXP pin, std::string outfile) {
+void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    (*aa)->write_netcdf_file(outfile);
+    (*aa)->write_netcdf_file(outfile, compression_level);
   }
   catch (std::string s) {
     Rcpp::stop(s);

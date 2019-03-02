@@ -13,12 +13,20 @@
 #' @param periods.in.title logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string
 #' @param join.timeseries logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?
 #' @param axes logical, if TRUE, plots include axes
+#' @param ncol number of columns for arranging plots with  \code{layout()}, see Details 
+#' @param nrow number of rows for arranging plots with  \code{layout()}, see Details
 #' @param ... further arguments passed to \code{image.default}
 #' @note If caching is enabled for the package (see \code{\link{gdalcubes_use_cache}}), repeated calls of plot
 #' for the same data cube will not reevaluate the cube. Instead, the temporary result file will be reused, if possible.
 #' @note Some parts of the function have been copied from the stars package (c) Edzer Pebesma
+#' @details 
+#' The style of the plot depends on provided parameters and on the shape of the cube, i.e., whether it is a pure time series and whether it contains multiple bands or not.
+#' Multi-band, multi-temporal images will be arranged with \code{layout()} such that bands are represented by the x axis and time is represented by the y axis.
+#' Time series plots can be combined to a single plot by setting \code{join.timeseries = TRUE}. For other cases, a default arrangement of the plots is derived, trying to reach
+#' a square overall plot. The layout can be controlled with \code{ncol} and \code{nrow}, which define the number of rows and columns in the plot layout. Typically, only one of 
+#' \code{ncol} and \code{nrow} is provided. For multi-band, multi-temporal plots, the actual number of rows or columns can be less if the input cube has less bands or time slices.
 #' @export
-plot.cube  <-
+plot.cube  <- 
   function(x,
            y,
            ...,
@@ -32,7 +40,9 @@ plot.cube  <-
            zlim = NULL,
            periods.in.title = TRUE,
            join.timeseries = FALSE,
-           axes = TRUE) {
+           axes = TRUE,
+           ncol = NULL,
+           nrow = NULL) {
     stopifnot(is.cube(x))
     size = c(nbands(x), size(x))
     
@@ -60,13 +70,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn)
+          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn)
+        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
       }
       
       
@@ -94,6 +104,12 @@ plot.cube  <-
       
       if (join.timeseries) {
         # if not zlim, sample data to derive ylim
+        if (!is.null(ncol)) {
+          warning("producing a single time series plot, ignoring ncol")
+        }
+        if (!is.null(nrow)) {
+          warning("producing a single time series plot, ignoring nrow")
+        }
         val <- NULL
         if (is.null(zlim)) {
           for (b in vars) {
@@ -146,9 +162,32 @@ plot.cube  <-
         )
       }
       else {
-        # find a good layout
-        irow <- round(sqrt(size[1]))
-        icol <- ceiling(size[1] / irow)
+        
+        if (!is.null(ncol) && !is.null(nrow)) {
+          icol = ncol
+          irow = nrow
+          if (size[1] > icol*irow) {
+            warning("cube has more than ncol * nrow bands, some of the bands will not be plotted")
+            size[1] = icol*irow
+            vars=vars[1:(icol*irow)]
+          }
+        }
+        else if (!is.null(ncol)) {
+          # derive nrow
+          icol = ncol
+          irow = ceiling(size[1] / icol)
+        }
+        else if (!is.null(nrow)) {
+          # derive ncol
+          irow <- nrow
+          icol <- ceiling(size[1] / irow)
+        }
+        else {
+          # find a good layout
+          irow <- round(sqrt(size[1]))
+          icol <- ceiling(size[1] / irow)
+        }
+
         layout(matrix(c((1:size[1]), rep(
           0, irow * icol - size[1]
         )), irow, icol, byrow = T), respect = TRUE)
@@ -257,36 +296,63 @@ plot.cube  <-
         t <- 1:size[2]
       }
       if (is.null(rgb) & size[1] > 1 & size[2] > 1) {
-        if (size[1] > 5)
+        maxbands = ifelse(is.null(ncol), 5, ncol)
+        maxt = ifelse(is.null(nrow), 5, nrow)
+        if (size[1] > maxbands)
         {
-          warning("too many bands, plotting only bands 1 to 5")
-          bands = bands[1:5]
-          size[1] = 5
+          warning(paste("too many bands, plotting only bands 1 to", maxbands))
+          bands = bands[1:maxbands]
+          size[1] = maxbands
         }
-        if (size[2] > 5) {
-          warning("too many time instances, plotting only times 1 to 5")
-          t = t[1:5]
-          size[2] = 5
+        if (size[2] > maxt) {
+          warning(paste("too many time instances, plotting only times 1 to", maxt))
+          t = t[1:maxt]
+          size[2] = maxt
         }
       }
       
       else {
         if (is.null(rgb)) {
-          if (size[1] > 25) {
-            warning("too many bands, plotting only bands 1 to 25")
-            bands = bands[1:5]
-            size[1] = 5
+          if (!is.null(ncol) && !is.null(nrow)) {
+            maxplots = ncol * nrow
           }
-          else if (size[2] > 25) {
-            warning("too many time instances, plotting only times 1 to 25")
-            t = t[1:25]
+          else if (!is.null(ncol)) {
+            maxplots = size[1]*size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
+          }
+          else if (!is.null(nrow)) {
+            maxplots = size[1]*size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
+          }
+          else {
+            maxplots = 25
+          }
+            
+          if (size[1] > maxplots) {
+            warning(paste("too many bands, plotting only bands 1 to", maxplots))
+            bands = bands[1:maxplots]
+            size[1] = maxplots
+          }
+          else if (size[2] > maxplots) {
+            warning(paste("too many time instances, plotting only times 1 to", maxplots))
+            t = t[1:maxplots]
           }
         }
         else {
-          if (size[2] > 25) {
-            warning("too many time instances, plotting only times 1 to 25")
-            t = t[1:25]
-            size[2] = 25
+          if (!is.null(ncol) && !is.null(nrow)) {
+            maxplots = ncol * nrow
+          }
+          else if (!is.null(ncol)) {
+            maxplots = size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
+          } 
+          else if (!is.null(nrow)) {
+            maxplots = size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
+          }
+          else {
+            maxplots = 25
+          }
+          if (size[2] > maxplots) {
+            warning(paste("too many time instances, plotting only times 1 to", maxplots))
+            t = t[1:maxplots]
+            size[2] = maxplots
           }
         }
       }
@@ -300,13 +366,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn)
+          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn)
+        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
       }
       
      
@@ -320,26 +386,56 @@ plot.cube  <-
         par(no.readonly = TRUE) # save default, for resetting...
       par(mar = c(2, 2, 2, 2))
       if (!is.null(rgb)) {
-        ncol = min(5, size[2])
-        nrow = ceiling(size[2] / ncol)
+        if (!is.null(ncol) && !is.null(nrow)) {
+          icol = ncol
+          irow = nrow
+        }
+        else if (!is.null(ncol)) {
+          icol = ncol
+          irow = ceiling(size[2] / ncol)
+        }
+        else if (!is.null(nrow)) {
+          irow = nrow
+          icol = ceiling(size[2] / nrow)
+        }
+        else {
+          icol = min(5, size[2])
+          irow = ceiling(size[2] / icol)
+        }
         layout(matrix(c(1:size[2], rep(
-          0, nrow * ncol - size[2]
-        )), nrow, ncol, byrow = T), respect = TRUE)
+          0, irow * icol - size[2]
+        )), irow, icol, byrow = T), respect = TRUE)
       }
       else {
         if (is.null(key.pos)) {
           if (size[1] == 1 | size[2] == 1) {
-            # find a good layout
-            irow <- round(sqrt(size[1] * size[2]))
-            icol <- ceiling(size[1] * size[2] / irow)
+            if (!is.null(ncol) && !is.null(nrow)) {
+              icol = ncol
+              irow = nrow
+            }
+            else if (!is.null(ncol)) {
+              icol <- ncol
+              irow <- ceiling(size[1] * size[2] / icol)
+            }
+            else if (!is.null(nrow)) {
+              irow <-nrow
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
+            else {
+              # find a good layout
+              irow <- round(sqrt(size[1] * size[2]))
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
+
             layout(matrix(c(
               1:(size[1] * size[2]), rep(0, irow * icol - size[1] * size[2])
             ), irow, icol, byrow = TRUE), respect = TRUE)
           }
+          # general case, time dimension is vertical, bands horizontal
           else {
-            # general case, time dimension is vertical, bands horizontal
+           
             layout(matrix(1:(size[1] * size[2]), size[2], size[1], byrow =
-                            T), respect = TRUE)
+                            FALSE), respect = TRUE)
           }
         }
         else {
@@ -348,10 +444,24 @@ plot.cube  <-
           wh <- 1
           
           if (size[1] == 1 | size[2] == 1) {
-            # find a good layout
-            #layout(matrix(c(1:(size[1]*size[2]), rep(0, irow*icol - size[1]*size[2])), irow, icol, byrow = TRUE), respect = TRUE)
-            irow <- round(sqrt(size[1] * size[2]))
-            icol <- ceiling(size[1] * size[2] / irow)
+           
+            if (!is.null(ncol) && !is.null(nrow)) {
+              icol = ncol
+              irow = nrow
+            }
+            else if (!is.null(ncol)) {
+              icol <- ncol
+              irow <- ceiling(size[1] * size[2] / icol)
+            }
+            else if (!is.null(nrow)) {
+              irow <-nrow
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
+            else {
+              # find a good (close to square) layout
+              irow <- round(sqrt(size[1] * size[2]))
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
             switch (
               key.pos,
               layout(
@@ -394,7 +504,7 @@ plot.cube  <-
               key.pos,
               layout(
                 rbind(matrix(
-                  1:(size[1] * size[2]), size[2], size[1], byrow = T
+                  1:(size[1] * size[2]), size[2], size[1], byrow = FALSE
                 ), size[1] * size[2] + 1),
                 widths = rep.int(ww, size[1]),
                 heights = c(rep.int(wh, size[2]), s),
@@ -402,7 +512,7 @@ plot.cube  <-
               ),
               layout(
                 cbind(size[1] * size[2] + 1, matrix(
-                  1:(size[1] * size[2]), size[2], size[1], byrow = T
+                  1:(size[1] * size[2]), size[2], size[1], byrow = FALSE
                 )),
                 widths = c(s, rep.int(ww, size[1])),
                 heights = rep.int(wh, size[2]),
@@ -410,7 +520,7 @@ plot.cube  <-
               ),
               layout(
                 rbind(size[1] * size[2] + 1, matrix(
-                  1:(size[1] * size[2]), size[2], size[1], byrow = T
+                  1:(size[1] * size[2]), size[2], size[1], byrow = FALSE
                 )),
                 widths = rep.int(ww, size[1]),
                 heights = c(s, rep.int(wh, size[2])),
@@ -418,7 +528,7 @@ plot.cube  <-
               ),
               layout(
                 cbind(matrix(
-                  1:(size[1] * size[2]), size[2], size[1], byrow = T
+                  1:(size[1] * size[2]), size[2], size[1], byrow = FALSE
                 ), size[1] * size[2] + 1),
                 widths = c(rep.int(ww, size[1]), s),
                 heights = c(rep.int(wh, size[2])),
