@@ -302,16 +302,26 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' 
 #' Dimension values give the coordinates along the spatial and temporal axes of a data cube.
 #' 
-#' @param obj a data cube proxy object (class cube)
+#' @param obj a data cube proxy (class cube), or a data cube view object
 #' @param datetime_unit unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.
 #' @return list with elements t,y,x
 #' @export
 dimension_values <- function(obj, datetime_unit=NULL) {
-  stopifnot(is.cube(obj))
-  if (is.null(datetime_unit)) {
-    datetime_unit = ""
+  if (is.cube(obj)) {
+    if (is.null(datetime_unit)) {
+      datetime_unit = ""
+    }
+    return(libgdalcubes_dimension_values(obj, datetime_unit)) 
   }
-  return(libgdalcubes_dimension_values(obj, datetime_unit)) # add datetime unit
+  else if (is.cube_view(obj)) {
+    if (is.null(datetime_unit)) {
+      datetime_unit = ""
+    }    
+    return(libgdalcubes_dimension_values_from_view(obj, datetime_unit)) 
+  }
+  else {
+    stop("obj must be either from class cube or from class cube_view")
+  }
 }
 
 

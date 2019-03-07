@@ -7,7 +7,7 @@
 dimension_values(obj, datetime_unit = NULL)
 }
 \arguments{
-\item{obj}{a data cube proxy object (class cube)}
+\item{obj}{a data cube proxy (class cube), or a data cube view object}
 
 \item{datetime_unit}{unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.}
 }

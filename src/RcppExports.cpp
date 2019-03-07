@@ -96,6 +96,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_dimension_values_from_view
+Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string dt_unit);
+RcppExport SEXP _gdalcubes_libgdalcubes_dimension_values_from_view(SEXP viewSEXP, SEXP dt_unitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type view(viewSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dt_unit(dt_unitSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_dimension_values_from_view(view, dt_unit));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_dimension_values
 Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit);
 RcppExport SEXP _gdalcubes_libgdalcubes_dimension_values(SEXP pinSEXP, SEXP dt_unitSEXP) {
@@ -385,6 +397,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_cleanup", (DL_FUNC) &_gdalcubes_libgdalcubes_cleanup, 0},
     {"_gdalcubes_libgdalcubes_datetime_values", (DL_FUNC) &_gdalcubes_libgdalcubes_datetime_values, 1},
     {"_gdalcubes_libgdalcubes_cube_info", (DL_FUNC) &_gdalcubes_libgdalcubes_cube_info, 1},
+    {"_gdalcubes_libgdalcubes_dimension_values_from_view", (DL_FUNC) &_gdalcubes_libgdalcubes_dimension_values_from_view, 2},
     {"_gdalcubes_libgdalcubes_dimension_values", (DL_FUNC) &_gdalcubes_libgdalcubes_dimension_values, 2},
     {"_gdalcubes_libgdalcubes_get_cube_view", (DL_FUNC) &_gdalcubes_libgdalcubes_get_cube_view, 1},
     {"_gdalcubes_libgdalcubes_open_image_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_open_image_collection, 1},
