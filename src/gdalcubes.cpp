@@ -279,8 +279,106 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
   
 }
 
-
-
+// [[Rcpp::export]]
+Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string dt_unit="") {
+  
+  cube_view cv;
+  
+  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
+    cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
+    cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
+    cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
+    cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
+    cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
+    cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
+    cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
+    cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
+    cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
+    cv.t0() = datetime::from_string(tmp);
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
+    cv.t1() = datetime::from_string(tmp);
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
+    cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
+    cv.dt(duration::from_string(tmp));
+    cv.t0().unit() = cv.dt().dt_unit; 
+    cv.t1().unit() = cv.dt().dt_unit; 
+  }
+  
+  if (view["aggregation"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
+    cv.aggregation_method() = aggregation::from_string(tmp);
+  }
+  if (view["resampling"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
+    cv.resampling_method() = resampling::from_string(tmp);
+  }
+  
+  Rcpp::CharacterVector dimt(cv.nt());
+  Rcpp::NumericVector dimx(cv.nx());
+  Rcpp::NumericVector dimy(cv.ny());
+  
+  
+  datetime_unit u = cv.dt_unit();
+  if (dt_unit == "Y") {
+    u = datetime_unit::YEAR;
+  }
+  else if (dt_unit == "m") {
+    u = datetime_unit::MONTH;
+  }
+  else if (dt_unit == "d") {
+    u = datetime_unit::DAY;
+  }
+  else if (dt_unit == "H") {
+    u = datetime_unit::HOUR;
+  }
+  else if (dt_unit == "M") {
+    u = datetime_unit::MINUTE;
+  }
+  else if (dt_unit == "S") {
+    u = datetime_unit::SECOND;
+  }
+  
+  for (uint32_t i = 0; i < cv.nt(); ++i) {
+    dimt[i] = (cv.t0() + cv.dt() * i).to_string(u); 
+  }
+  for (uint32_t i = 0; i < cv.ny(); ++i) {
+    dimy[i] = (cv.win().bottom +cv.dy() * i); 
+  }
+  for (uint32_t i = 0; i < cv.nx(); ++i) {
+    dimx[i] = (cv.win().left + cv.dx() * i); 
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("t") = dimt,
+                            Rcpp::Named("y") = dimy,
+                            Rcpp::Named("x") = dimx);
+  
+  
+}
 
 
 

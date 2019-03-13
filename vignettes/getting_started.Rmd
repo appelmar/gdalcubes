@@ -21,30 +21,23 @@ knitr::opts_chunk$set(
 
 The gdalcubes R package aims at making the work with large collections of Earth observation (EO) imagery (e.g. from [Sentinel 2](https://sentinel.esa.int/web/sentinel/missions/sentinel-2)) **easier** and **faster**. Typical challenges with these data such as overlapping images, different spatial resolutions of spectral bands, irregular temporal sampling, and different spatial reference systems become invisible to users by reading the data as a raster data cube and letting users define the shape of the cube (spatiotemporal extent, resolution, and  spatial reference system). Working with EO imagery then becomes more interactive: going from "_try my method on low resolution and get the result asap_" to "_apply my final method to the full resolution dataset over night_" becomes straightforward.  
 
-This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. by running `gdalinfo --format HDF4` in the command line).
+This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
 
-In the following, we will follow a typical workflow in gdalcubes by
+In the following, we will follow a simple workflow by
 
 1. indexing image files in an __image collection__,
-2. creating data cubes at various spatiotemporal resolutions and extents, 
-3. applying simple operations on data cubes including band selection, application of pixel-wise functions, reduction over time, data cube joins, and 
-4. applying user-defined R functions over data cube chunks.
+2. creating data cubes at various spatiotemporal resolutions and extents, and
+3. applying simple operations on data cubes including band selection, application of pixel-wise functions, reduction over time, and time series filtering.
 
 # Downloading the sample data
 
-We will use two different MODIS datasets. The first dataset contains monthly aggregated vegetation indexes over Europe from the MODIS product [MOD13A3](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 360 megabytes. The second dataset contains 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) for the same area and time, summing to a zip archive of approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
 if (!dir.exists("MOD11A2")) {
   download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile="MOD11A2.zip",mode = "wb")
   unzip("MOD11A2.zip", exdir = "MOD11A2")
   unlink("MOD11A2.zip")
-}
-  
-if (!dir.exists("MOD13A3")) {
-  download.file("https://uni-muenster.sciebo.de/s/jK90qk4FdlNtY21/download", destfile="MOD13A3.zip",mode = "wb")
-  unzip("MOD13A3.zip", exdir = "MOD13A3")
-  unlink("MOD13A3.zip")
 }
 ```
 
@@ -102,17 +95,18 @@ Notice that `raster_cube()` will not run any computations besides deriving the s
 ```{r}
 srs="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
 MOD11A2.col = image_collection("MOD11A2.db")
-v = cube_view(srs=srs, extent=MOD11A2.col, nx = 633, ny = 413, dt="P1M")
+v = cube_view(srs=srs, extent=MOD11A2.col, nx = 400, dt="P1M", aggregation = "mean")
 v
 MOD11A2.cube = raster_cube(MOD11A2.col, v)
 MOD11A2.cube
 ```
 
+## Aggregation and resampling
+Besides the spatiotemporal extent, the resolution and the spatial reference system, the data cube view contains the two important parameters `aggregation` and `resampling`. Resampling here refers to how images are resampled in space during the warp operation.  The temporal aggregation method defines how values for the same cell from different images are combined in the target cube. For example, a data cube with monthly temporal resolution will contain values from multiple images. Currently, possible values are first, last, min, max, mean, and median. These functions are evaluated per data cube pixel.
 
 
 # Data cube operations
 
-## Simple operations and chaining
 The package comes with a few operations on data cubes to (i) select bands (`select_bands()`), (ii) apply pixel-wise arithmetic expressions (`apply_pixel()`), (iii) reduce data cubes over space and time (`reduce_time()`, `reduce_space()`), apply a moving-window function over time (`window_time()`),  (iv) apply an R function over chunks of a data cube (`chunk_apply()`), and (v) join bands of identically shaped data cubes (`join_bands()`). All of these functions produce a proxy data cube, storing the shape of the result cube but not any data. They all take a (proxy) data cube as first argument and can be chained. The following code demonstrates some of the operations and how data cubes can be plotted.
 
 ```{r}
@@ -127,68 +121,26 @@ Notice that no data is actually read until we call `plot()`, i.e. all operations
 Replacing the plot function with `write_ncdf(MOD11A2.reduce, "test.nc")` would write the result as a NetCDF file to disk.  
 
 Operations on data cubes are designed such that they can be used with the [pipe operator](https://r4ds.had.co.nz/pipes.html). The following
-code would perform the same operation but might be easier to read.
+code for example derives monthly differences of land surface temperature, from June to September 2018. The `window_time` function here applies the simple time series kernel filter $T_t - T_{t-1}$.
 
-```{r, eval=FALSE}
+
+
+```{r}
 library(magrittr) # get the pipe
-raster_cube(image_collection("MOD11A2.db"), v) %>%
-  select_bands(c("LST_DAY","LST_NIGHT")) %>%
-  apply_pixel("0.02*(LST_DAY-LST_NIGHT)", names = "LST_difference") %>%
-  reduce_time("median(LST_difference)") %>%
-  plot(col=heat.colors, key.pos=1)
+v1 = cube_view(view=v, extent=list(t0="2018-06", t1="2018-09"))
+raster_cube(image_collection("MOD11A2.db"), v1)  %>%
+  select_bands(c("LST_DAY")) %>%
+  window_time(kernel=c(-1,1), window=c(1,0)) %>%
+  plot(col=terrain.colors, key.pos=1, zlim=c(-25,25))
 ```
 
-## Joining data cubes
 
-To join the land surface temperature data with vegetation index data, we have to repeat some of the steps for the MOD13A3 dataset. Below, we will create an image collection and a data cube with identical shape and afterwards join it with the land surface temperature cube.
-
-
-```{r}
-file_subdatasets = expand.grid(file=list.files("MOD13A3", pattern=".hdf$", full.names = TRUE), 
-            subdataset=c("1 km monthly NDVI", "1 km monthly EVI", "1 km monthly VI Quality",
-                        "1 km monthly red reflectance", "1 km monthly NIR reflectance",
-                        "1 km monthly blue reflectance","1 km monthly MIR reflectance"))
-
-gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MOD_Grid_monthly_1km_VI:",file_subdatasets$subdataset, sep="")
-create_image_collection(gdal_datasets, "MxD13A3", "MOD13A3.db")
-
-# create data cube for vegetion index data using the same view as above
-MOD11A2.cube = raster_cube(image_collection("MOD11A2.db"), v)
-MOD13A3.cube = raster_cube(image_collection("MOD13A3.db"), v)
-MOD13A3.cube
-
-joined.cube = join_bands(
-  select_bands(MOD13A3.cube, "NDVI"), 
-  select_bands(MOD11A2.cube, c("LST_DAY", "LST_NIGHT")))
-joined.cube
-```
-
-The resulting cube contains three bands from both datasets.
-
-## Applying R functions over chunks
-
-Data cubes are processed chunk-wise, where users can specify the size of chunks as an argument to the `raster_cube()` function.
-The function `chunk_apply` allows to apply a user-defined R function on all chunks of the input data. The provided function is executed
-in separate R processes and first must read the data as array with `read_chunk_as_array()`. It returns a 4 dimensional array with data from one chunk (dimensions are in the order band, datetime, y, x). After doing something with the data, the result must be written back to the gdalcubes library using `write_chunk_from_array()`. In the example below, we use the joined data cube and compute
-pixel-wise rank correlations between all three pairs of bands. The result is a map with three correlation coefficients between NDVI, LST_DAY, and LST_NIGHT. Results are of course not very meaningful but should illustrate how R functions can be applied on the data.
-
-```{r}
-f <- function() {
-  x = read_chunk_as_array()
-  out <- reduce_time(x, function(y) {
-    c(cor(y[1,], y[2,] , use="na.or.complete", method="spearman"),
-    cor(y[1,], y[3,] , use="na.or.complete", method="spearman"),
-    cor(y[2,], y[3,] , use="na.or.complete", method="spearman"))
-  })
-  write_chunk_from_array(out)
-}
-plot(chunk_apply(joined.cube, f), zlim=c(-1,1), key.pos=1)
-```
 
 ## Multithreading
 gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_set_threads(n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
 
 
 # Future work
-This vignette presents a very simple example with a small dataset. Future vignettes will demonstrate how to process larger imagery as from Sentinel 2 and how to run gdalcubes in the cloud. 
+This vignette presents a very simple example with a small dataset. Future vignettes will focus on (i) how user-defined R functions can be applied on data cubes, (ii)
+how to process larger datasets (Sentinel 2) with overlapping images from different spatial reference systems, and (iii) how to run gdalcubes in the cloud. 
 
