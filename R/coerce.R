@@ -11,7 +11,14 @@ as_stars <- function(from) {
   if (!requireNamespace("stars", quietly = TRUE))
     stop("stars package not found, please install first") 
 
-  fname = tempfile(fileext = ".nc")
-  write_ncdf(from, fname)
-  return(stars::read_stars(fname))
+  outnc = tempfile(fileext = ".nc")
+  subdatasets = paste0("NETCDF:\"", outnc, "\":", names(from), sep="", collapse = NULL)
+  
+  write_ncdf(from, outnc)
+  out = stars::read_stars(subdatasets)
+  out = stars::st_set_dimensions(out, "x", point = FALSE)
+  out = stars::st_set_dimensions(out, "y", point = FALSE)
+  out = stars::st_set_dimensions(out, "time", point = FALSE, values=as.POSIXct(dimension_values(from, "S")$t, tz = "GMT"))
+ 
+  return(out)
 }

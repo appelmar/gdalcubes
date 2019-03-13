@@ -1,67 +1,68 @@
 {
-  "description" : "Image collection format for Sentinel 2 Level 1C data as downloaded from the Copernicus Open Access Hub, expects a list of file paths as input. The format works on original ZIP compressed as well as uncompressed imagery.",
+  "description" : "Image collection format for Sentinel 2 Level 1C data in AWS",
+  "references" : "https://roda.sentinel-hub.com/sentinel-s2-l1c/readme.html",
+  "example" : "/vsis3/sentinel-s2-l1c/tiles/1/C/CV/2016/1/10/0/B03.jp2",
   "tags" : ["Sentinel", "Copernicus", "ESA", "TOA"],
-  "pattern" : ".+/IMG_DATA/.+\\.jp2",
+  "pattern" : ".+.jp2",
   "images" : {
-    "pattern" : ".*/(.+)\\.SAFE.*"
+    "pattern" : ".*tiles((?:/[A-Za-z0-9]+){7})/.*"
   },
   "datetime" : {
-    "pattern" : ".*MSIL1C_(.+?)_.*",
-    "format" : "%Y%m%dT%H%M%S"
+    "pattern" : ".*tiles(?:/[A-Za-z0-9]+){3}((?:/[A-Za-z0-9]+){3}).*",
+    "format" : "/%Y/%m/%d"
   },
   "bands" : {
     "B01" : {
       "nodata" : 0,
-      "pattern" : ".+_B01\\.jp2"
+      "pattern" : ".+B01\\.jp2"
     },
     "B02" : {
       "nodata" : 0,
-      "pattern" : ".+_B02\\.jp2"
+      "pattern" : ".+B02\\.jp2"
     },
     "B03" : {
       "nodata" : 0,
-      "pattern" : ".+_B03\\.jp2"
+      "pattern" : ".+B03\\.jp2"
     },
     "B04" : {
       "nodata" : 0,
-      "pattern" : ".+_B04\\.jp2"
+      "pattern" : ".+B04\\.jp2"
     },
     "B05" : {
       "nodata" : 0,
-      "pattern" : ".+_B05\\.jp2"
+      "pattern" : ".+B05\\.jp2"
     },
     "B06" : {
       "nodata" : 0,
-      "pattern" : ".+_B06\\.jp2"
+      "pattern" : ".+B06\\.jp2"
     },
     "B07" : {
       "nodata" : 0,
-      "pattern" : ".+_B07\\.jp2"
+      "pattern" : ".+B07\\.jp2"
     },
     "B08" : {
       "nodata" : 0,
-      "pattern" : ".+_B08\\.jp2"
+      "pattern" : ".+B08\\.jp2"
     },
     "B8A" : {
       "nodata" : 0,
-      "pattern" : ".+_B8A\\.jp2"
+      "pattern" : ".+B8A\\.jp2"
     },
     "B09" : {
       "nodata" : 0,
-      "pattern" : ".+_B09\\.jp2"
+      "pattern" : ".+B09\\.jp2"
     },
     "B10" : {
       "nodata" : 0,
-      "pattern" : ".+_B10\\.jp2"
+      "pattern" : ".+B10\\.jp2"
     },
     "B11" : {
       "nodata" : 0,
-      "pattern" : ".+_B11\\.jp2"
+      "pattern" : ".+B11\\.jp2"
     },
     "B12" : {
       "nodata" : 0,
-      "pattern" : ".+_B12\\.jp2"
+      "pattern" : ".+B12\\.jp2"
     }
   }
-
 }
