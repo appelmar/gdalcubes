@@ -5,16 +5,18 @@
 #'
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
+#' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
 #' @param chunking Vector of length 3 defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
 #' 
-#'  1. Filter images from the input collection that intersect with the spatiotemporal extent of the chunk
-#'  2. For all resulting images, apply gdalwarp to reproject / warp the image to the target SRS and size to a GDAL MEM dataset
-#'  3. Read the resulting data to the chunk buffer and if pixels already contain non NAN values, apply an aggregation method (as defined in the view) 
+#'  1. Find images from the input collection that intersect with the spatiotemporal extent of the chunk
+#'  2. For all resulting images, apply gdalwarp to reproject, resize, and resample to an in-memory GDAL dataset
+#'  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
+#'  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
 #' 
-#' @examples 
+#' @examples
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
 #'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
@@ -22,6 +24,9 @@
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #'  raster_cube(L8.col, v)
+#'  
+#'  # using a mask on the Landsat quality bit band to filter out clouds
+#'  raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
@@ -62,13 +67,19 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=c(16, 256, 2
 #' Notice that masks are applied per image while reading images as a raster cube. They can be useful to eliminate e.g. cloudy pixels before applying the temporal aggregation to
 #' merge multiple values for the same data cube pixel.
 #' 
+#' @examples 
+#' image_mask("SCL", values = c(3,8,9)) # Sentinel 2 L2A: mask cloud and cloud shadows
+#' image_mask("BQA", bits=4, values=16) # Landsat 8: mask clouds
+#' image_mask("B10", min = 8000, max=65000) 
+#' 
 #' @param band name of the mask band
 #' @param min minimum value, values between \code{min} and \code{max} will be masked
 #' @param max maximum value, values between \code{min} and \code{max} will be masked 
 #' @param values numeric vector; specific values that will be masked. 
-#' @param inverse logical; invert mask
+#' @param bits for bitmasks, extract the given bits (integer vector) with a bitwise AND before filtering the mask values, bit indexes are zero-based
+#' @param invert logical; invert mask
 #' @export
-image_mask <- function(band, min=NULL, max=NULL, values=NULL, invert=FALSE) {
+image_mask <- function(band, min=NULL, max=NULL, values=NULL, bits=NULL, invert=FALSE) {
   if (is.null(values) && is.null(min) && is.null(max)) {
     stop("either values or min and max must be provided")
   } 
@@ -82,10 +93,10 @@ image_mask <- function(band, min=NULL, max=NULL, values=NULL, invert=FALSE) {
     if (!is.null(min) || !is.null(max)) {
       warning("using values instead of min / max")
     }
-    out = list(band=band,values=values,invert=invert)
+    out = list(band = band, values = values, invert = invert, bits = bits)
   }  
   else {
-    out = list(band=band,min=min,max=max,invert=invert)
+    out = list(band = band, min = min, max = max, invert = invert, bits = bits)
   }
   class(out) <- "image_mask"
   return(out)

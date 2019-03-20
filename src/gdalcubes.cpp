@@ -826,12 +826,18 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       
       if (Rcpp::as<Rcpp::List>(mask)["values"] != R_NilValue) {
         std::vector<double> values = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(mask)["values"]);
-        (*x)->set_mask(band_name, std::make_shared<value_mask>(std::unordered_set<double>(values.begin(), values.end()), invert));
+        std::vector<uint8_t> bits;
+        if (Rcpp::as<Rcpp::List>(mask)["bits"] != R_NilValue)
+          bits =  Rcpp::as<std::vector<uint8_t>>(Rcpp::as<Rcpp::List>(mask)["bits"]);
+        (*x)->set_mask(band_name, std::make_shared<value_mask>(std::unordered_set<double>(values.begin(), values.end()), invert, bits));
       }
       else {
         double min = Rcpp::as<Rcpp::List>(mask)["min"];
         double max = Rcpp::as<Rcpp::List>(mask)["max"];
-        (*x)->set_mask(band_name, std::make_shared<range_mask>(min, max, invert));
+        std::vector<uint8_t> bits;
+        if (Rcpp::as<Rcpp::List>(mask)["bits"] != R_NilValue)
+          bits =  Rcpp::as<std::vector<uint8_t>>(Rcpp::as<Rcpp::List>(mask)["bits"]);
+        (*x)->set_mask(band_name, std::make_shared<range_mask>(min, max, invert, bits));
       }
     }
     
