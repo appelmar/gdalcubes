@@ -57,6 +57,15 @@
     "B12" : {
       "nodata" : 0,
       "pattern" : ".+_B12_20m\\.jp2"
+    },
+    "SCL" : {
+      "pattern" : ".+_SCL_20m\\.jp2"
+    },
+    "AOT" : {
+      "pattern" : ".+_AOT_10m\\.jp2"
+    },
+    "WVP" : {
+      "pattern" : ".+_WVP_10m\\.jp2"
     }
   }
 }

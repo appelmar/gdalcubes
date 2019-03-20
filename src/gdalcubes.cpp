@@ -9,6 +9,7 @@
 #include <memory>
 
 using namespace Rcpp;
+using namespace gdalcubes;
 
 
 struct error_handling_r {
@@ -750,7 +751,7 @@ SEXP libgdalcubes_create_view(SEXP v) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP v = R_NilValue) {
+SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask, SEXP v = R_NilValue) {
 
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -817,6 +818,23 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa, cv));
     }
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    
+    
+    if (mask != R_NilValue) {
+      std::string band_name = Rcpp::as<Rcpp::List>(mask)["band"]; 
+      bool invert = Rcpp::as<Rcpp::List>(mask)["invert"];
+      
+      if (Rcpp::as<Rcpp::List>(mask)["values"] != R_NilValue) {
+        std::vector<double> values = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(mask)["values"]);
+        (*x)->set_mask(band_name, std::make_shared<value_mask>(std::unordered_set<double>(values.begin(), values.end()), invert));
+      }
+      else {
+        double min = Rcpp::as<Rcpp::List>(mask)["min"];
+        double max = Rcpp::as<Rcpp::List>(mask)["max"];
+        (*x)->set_mask(band_name, std::make_shared<range_mask>(min, max, invert));
+      }
+    }
+    
     
     Rcpp::XPtr< std::shared_ptr<image_collection_cube> > p(x, true) ;
     
@@ -1080,8 +1098,8 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
 SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-    std::shared_ptr<filter_predicate_cube>* x = new std::shared_ptr<filter_predicate_cube>(filter_predicate_cube::create(*aa, pred));
-    Rcpp::XPtr< std::shared_ptr<filter_predicate_cube> > p(x, true) ;
+    std::shared_ptr<filter_pixel_cube>* x = new std::shared_ptr<filter_pixel_cube>(filter_pixel_cube::create(*aa, pred));
+    Rcpp::XPtr< std::shared_ptr<filter_pixel_cube> > p(x, true) ;
     return p;
   }
   catch (std::string s) {
@@ -1138,6 +1156,18 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::shared_ptr<fill_time_cube>* x = new std::shared_ptr<fill_time_cube>( fill_time_cube::create(*aa, method));
+    Rcpp::XPtr< std::shared_ptr<fill_time_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {

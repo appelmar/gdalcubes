@@ -25,23 +25,77 @@
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-raster_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
+raster_cube <- function(image_collection, view, mask=NULL, chunking=c(16, 256, 256)) {
 
   stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
   chunking = as.integer(chunking)
   stopifnot(chunking[1] > 0 && chunking[2] > 0 && chunking[3] > 0)
+  if (!is.null(mask)) {
+    stopifnot(is.image_mask(mask))
+  }
   
   x = NULL
   if (!missing(view)) {
     stopifnot(is.cube_view(view))
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), view)
+    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask, view)
   }
   else {
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking))
+    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask)
   }
   class(x) <- c("image_collection_cube", "cube", "xptr")
   return(x)
+}
+
+
+#' Create a mask for images in a raster data cube 
+#'
+#' Create an image mask based on a band and provided values to filter pixels of images 
+#' read by \code{\link{raster_cube}}
+#'
+#' @details
+#' Values of the selected mask band can be based on a range (by passing \code{min} and \code{max}) or on a set of values (by passing \code{values}). By default
+#' pixels with mask values contained in the range or in the values are masked out, i.e. set to NA. Setting \code{invert = TRUE} will invert the masking behavior.
+#' Passing \code{values} will override \code{min} and \code{max}.
+#' 
+#' @note 
+#' Notice that masks are applied per image while reading images as a raster cube. They can be useful to eliminate e.g. cloudy pixels before applying the temporal aggregation to
+#' merge multiple values for the same data cube pixel.
+#' 
+#' @param band name of the mask band
+#' @param min minimum value, values between \code{min} and \code{max} will be masked
+#' @param max maximum value, values between \code{min} and \code{max} will be masked 
+#' @param values numeric vector; specific values that will be masked. 
+#' @param inverse logical; invert mask
+#' @export
+image_mask <- function(band, min=NULL, max=NULL, values=NULL, invert=FALSE) {
+  if (is.null(values) && is.null(min) && is.null(max)) {
+    stop("either values or min and max must be provided")
+  } 
+  if (is.null(values) && is.null(min) && !is.null(max)) {
+    stop("either values or min AND max must be provided")
+  } 
+  if (is.null(values) && !is.null(min) && is.null(max)) {
+    stop("either values or min AND max must be provided")
+  } 
+  if (!is.null(values)) {
+    if (!is.null(min) || !is.null(max)) {
+      warning("using values instead of min / max")
+    }
+    out = list(band=band,values=values,invert=invert)
+  }  
+  else {
+    out = list(band=band,min=min,max=max,invert=invert)
+  }
+  class(out) <- "image_mask"
+  return(out)
+}
+
+is.image_mask <- function(obj) {
+  if(!("image_mask" %in% class(obj))) {
+    return(FALSE)
+  }
+  return(TRUE)
 }
 
 
