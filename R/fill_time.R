@@ -16,7 +16,7 @@
 #' plot(L8.filled, rgb=3:1, zlim=c(5000,12000))
 #' 
 #' @param cube source data cube
-#' @param method interpolation method, can be "near" or "linear"
+#' @param method interpolation method, can be "near, "linear", "repead_prec", or "repeat_succ"
 #' @return a proxy data cube object
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
