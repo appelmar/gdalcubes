@@ -4,16 +4,22 @@
 \alias{write_ncdf}
 \title{Materialize a data cube as a NetCDF file}
 \usage{
-write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
+write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc",
+  write_json_descr = FALSE))
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
 
 \item{fname}{output file name}
+
+\item{write_json_descr}{logical; write a JSON description of x as additional file}
 }
 \description{
 This function will read chunks of a data cube and write them to a single NetCDF file.
 }
 \details{
 The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
+
+If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
+".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
 }

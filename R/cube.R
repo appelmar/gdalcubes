@@ -340,9 +340,16 @@ as_json <- function(obj) {
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
-#' @details The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
+#' @param write_json_descr logical; write a JSON description of x as additional file
+#' @details 
+#' 
+#' The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
+#' 
+#' If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
+#' ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
+#' 
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc", write_json_descr=FALSE)) {
   stopifnot(is.cube(x))
   
   if (.pkgenv$use_cube_cache) {
@@ -357,6 +364,9 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
   }
   else {
     libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+  }
+  if (write_json_descr) {
+    writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
   invisible()
 }
