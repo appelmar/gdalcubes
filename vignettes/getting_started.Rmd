@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 The gdalcubes R package aims at making the work with large collections of Earth observation (EO) imagery (e.g. from [Sentinel 2](https://sentinel.esa.int/web/sentinel/missions/sentinel-2)) **easier** and **faster**. Typical challenges with these data such as overlapping images, different spatial resolutions of spectral bands, irregular temporal sampling, and different spatial reference systems become invisible to users by reading the data as a raster data cube and letting users define the shape of the cube (spatiotemporal extent, resolution, and  spatial reference system). Working with EO imagery then becomes more interactive: going from "_try my method on low resolution and get the result asap_" to "_apply my final method to the full resolution dataset over night_" becomes straightforward.  
 
-This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
+This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://modis.gsfc.nasa.gov)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
 
 In the following, we will follow a simple workflow by
 
@@ -31,7 +31,7 @@ In the following, we will follow a simple workflow by
 
 # Downloading the sample data
 
-We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/land-surface-temperature-and-emissivity/MOD11A2) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
 if (!dir.exists("MOD11A2")) {
