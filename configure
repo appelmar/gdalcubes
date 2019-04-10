@@ -2099,6 +2099,8 @@ fi
 
 NEED_DEPS=no
 LIBS="${INLIBS} ${GDAL_LIBS}"
+CPPFLAGS="${INCPPFLAGS} ${GDAL_CPPFLAGS}"
+
 cat > gdal_test.cc <<_EOCONF
 #include <gdal.h>
 #ifdef __cplusplus
