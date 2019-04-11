@@ -349,7 +349,7 @@ as_json <- function(obj) {
 #' ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
 #' 
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc", write_json_descr=FALSE)) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), write_json_descr=FALSE) {
   stopifnot(is.cube(x))
   
   if (.pkgenv$use_cube_cache) {
