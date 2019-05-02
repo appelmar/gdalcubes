@@ -39,7 +39,7 @@ This function returns a proxy object, i.e., it will not start any computations b
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
  L8.cube = raster_cube(L8.col, v) 
  L8.b02 = select_bands(L8.cube, c("B02"))
- L8.b02.median = reduce_space(L8.rgb, "median(B02)")  
+ L8.b02.median = reduce_space(L8.b02, "median(B02)")  
  L8.b02.median
  plot(L8.b02.median)
 }
