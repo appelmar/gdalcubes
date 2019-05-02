@@ -38,8 +38,8 @@ This function returns a proxy object, i.e., it will not start any computations b
                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
  L8.col = create_image_collection(L8_files, "L8_L1TP") 
  L8.cube = raster_cube(L8.col, v) 
- L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
- L8.rgb.median = reduce_space(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
- L8.rgb.median
- plot(L8.rgb.median)
+ L8.b02 = select_bands(L8.cube, c("B02"))
+ L8.b02.median = reduce_space(L8.rgb, "median(B02)")  
+ L8.b02.median
+ plot(L8.b02.median)
 }
