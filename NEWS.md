@@ -1,3 +1,3 @@
-# gdalcubes 0.1.0 (2019-04-17)
+# gdalcubes 0.1.0 (2019-05-02)
 
 * First release

@@ -69,7 +69,7 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                         ".TIF", recursive = TRUE, full.names = TRUE)
 #'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #'  L8.cube = raster_cube(L8.col, v) 
@@ -119,10 +119,10 @@ reduce_time.cube <- function(x, expr, ...) {
 #'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #'  L8.cube = raster_cube(L8.col, v) 
-#'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
-#'  L8.rgb.median = reduce_space(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
-#'  L8.rgb.median
-#'  plot(L8.rgb.median)
+#'  L8.b02 = select_bands(L8.cube, c("B02"))
+#'  L8.b02.median = reduce_space(L8.rgb, "median(B02)")  
+#'  L8.b02.median
+#'  plot(L8.b02.median)
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.

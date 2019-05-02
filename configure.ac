@@ -139,30 +139,14 @@ if test ${GDAL_MAJOR} = 2 -a ${GDAL_MINOR} -ge 3 ; then
   fi
 fi
 
-AC_MSG_CHECKING([GDAL version >= 1.11.4])
-if test ${GDAL_MAJOR} -gt 1 ; then
-  AC_MSG_RESULT(yes)
-else
-  if test ${GDAL_MAJOR} = 1 -a ${GDAL_MINOR} = 11 -a ${GDAL_PATCH} -ge 4 ; then
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([upgrade GDAL to 1.11.4 or later])
-  fi
-fi
-
-
-AC_MSG_CHECKING([GDAL version <= 2.5.0])
+AC_MSG_CHECKING([GDAL version >= 2.0.1])
 if test ${GDAL_MAJOR} -lt 2 ; then
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([gdalcubes is not compatible with GDAL versions below 2.0.1])
 else
-  if test ${GDAL_MAJOR} = 2 -a ${GDAL_MINOR} -le 5 ; then
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([GDAL version out of bounds])
-  fi
+  AC_MSG_RESULT(yes)
 fi
+
 
 
 

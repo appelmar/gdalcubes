@@ -2064,38 +2064,17 @@ $as_echo "no" >&6; }
   fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking GDAL version >= 1.11.4" >&5
-$as_echo_n "checking GDAL version >= 1.11.4... " >&6; }
-if test ${GDAL_MAJOR} -gt 1 ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  if test ${GDAL_MAJOR} = 1 -a ${GDAL_MINOR} = 11 -a ${GDAL_PATCH} -ge 4 ; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    as_fn_error $? "upgrade GDAL to 1.11.4 or later" "$LINENO" 5
-  fi
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking GDAL version <= 2.5.0" >&5
-$as_echo_n "checking GDAL version <= 2.5.0... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking GDAL version >= 2.0.1" >&5
+$as_echo_n "checking GDAL version >= 2.0.1... " >&6; }
 if test ${GDAL_MAJOR} -lt 2 ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  as_fn_error $? "gdalcubes is not compatible with GDAL versions below 2.0.1" "$LINENO" 5
+else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-else
-  if test ${GDAL_MAJOR} = 2 -a ${GDAL_MINOR} -le 5 ; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    as_fn_error $? "GDAL version out of bounds" "$LINENO" 5
-  fi
 fi
+
 
 
 

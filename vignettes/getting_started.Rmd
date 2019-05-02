@@ -12,8 +12,10 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+ev = Sys.getenv("USER") == "marius"
 knitr::opts_chunk$set(
-  collapse = TRUE
+  collapse = TRUE,
+  eval = ev
 )
 ```
 
@@ -48,7 +50,7 @@ As a first step, we must combine the set of files for the first MODIS product (M
 The image collection is a simple index, pointing to files and storing the spatial extent, spatial reference system, aquisition date/time of images and how files relate to image bands. The package comes with a set of predefined rules (called _image collection formats_), how this information can be extracted from filenames for selected EO products. A list of available collection formats including a short description can be printed with:
 
 
-```{r}
+```{r, eval=TRUE}
 library(gdalcubes)
 collection_formats()
 ```

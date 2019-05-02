@@ -27,12 +27,12 @@ window_time <- function(x, ...) {
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 400, dt="P1M")
 #' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' L8.cube = raster_cube(L8.col, v) 
-#' L8.nir = select_bands(L8.cube, c("B08"))
-#' L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B02)")  
+#' L8.nir = select_bands(L8.cube, c("B05"))
+#' L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B05)")  
 #' L8.nir.min
 #' plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 #' 
