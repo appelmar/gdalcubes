@@ -34,6 +34,4 @@ drop all unneded bands. This allows to reduce RasterIO and warp operations in GD
  L8.cube = raster_cube(L8.col, v) 
  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
  L8.rgb
- L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
- plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 }

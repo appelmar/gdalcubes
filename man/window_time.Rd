@@ -17,6 +17,18 @@ value and type depend on the class of x
 \description{
 This generic function applies a reducer function over a moving window over the time dimension of a data cube, an R array, or other classes if implemented.
 }
+\examples{
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(extent=list(left=388941.2, right=766552.4, 
+                          bottom=4345299, top=4744931, t0="2018-01", t1="2018-07"),
+              srs="EPSG:32618", nx = 400, dt="P1M")
+L8.col = create_image_collection(L8_files, "L8_L1TP") 
+L8.cube = raster_cube(L8.col, v) 
+L8.nir = select_bands(L8.cube, c("B05"))
+window_time(L8.nir, window = c(2,2), "min(B05)")  
+window_time(L8.nir, kernel=c(-1,1), window=c(1,0)) 
+}
 \seealso{
 \code{\link{window_time.cube}}
 }

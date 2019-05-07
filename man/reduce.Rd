@@ -35,5 +35,4 @@ This function is deprecated and will be replaced by the more flexible \code{\lin
  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
  L8.rgb.median = reduce(L8.rgb, "median")  
  L8.rgb.median
- plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 }

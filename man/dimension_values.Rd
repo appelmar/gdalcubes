@@ -17,3 +17,12 @@ list with elements t,y,x
 \description{
 Dimension values give the coordinates along the spatial and temporal axes of a data cube.
 }
+\examples{
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(extent=list(left=388941.2, right=766552.4, 
+              bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+L8.col = create_image_collection(L8_files, "L8_L1TP") 
+dimension_values(raster_cube(L8.col, v))
+}

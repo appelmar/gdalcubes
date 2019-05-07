@@ -22,3 +22,12 @@ gdalcubes_start_server(port = 1111, endpoint = "/gdalcubes/api",
 Starts one or more gdalcubes_server instance on this machine. Created processes are added to a global list of gdalcubes_server processes.
 Simultaneously running processes must use different ports.
 }
+\note{
+This function runs the gdalcubes_server executable which must have been installed at a findable location (listed in the PATH environment variable) before.
+}
+\examples{
+\dontrun{
+ gdalcubes_start_server() # single server process with default settings
+ gdalcubes_stop_server()
+}
+}

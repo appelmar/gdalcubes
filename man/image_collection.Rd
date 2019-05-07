@@ -20,6 +20,6 @@ use \code{\link{create_image_collection}}.
 \examples{
 L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                        ".TIF", recursive = TRUE, full.names = TRUE)
-create_image_collection(L8_files, "L8_L1TP", out_file = "L8.db", quiet=TRUE)
-image_collection("L8.db")
+create_image_collection(L8_files, "L8_L1TP", out_file = file.path(tempdir(),"L8.db"), quiet=TRUE)
+image_collection(file.path(tempdir(),"L8.db"))
 }

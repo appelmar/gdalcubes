@@ -21,8 +21,6 @@
 #'  L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #'  L8.ndvi.filtered = filter_predicate(L8.ndvi, "NDVI > 0.5") 
 #'  L8.ndvi.filtered
-#'  L8.ndvi.count =  reduce_time(L8.ndvi, "count(NDVI)") 
-#'  plot(L8.ndvi.count, key.pos=1)
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 filter_predicate <- function(cube, pred) {

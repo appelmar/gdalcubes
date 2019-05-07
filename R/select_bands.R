@@ -16,8 +16,6 @@
 #'  L8.cube = raster_cube(L8.col, v) 
 #'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #'  L8.rgb
-#'  L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
-#'  plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @note For performance reasons, \code{select_bands} should always be called directly on a cube created with \code{\link{raster_cube}} and 
 #' drop all unneded bands. This allows to reduce RasterIO and warp operations in GDAL.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cube.R
 \name{write_ncdf}
 \alias{write_ncdf}
-\title{Materialize a data cube as a NetCDF file}
+\title{Materialize a data cube as a netCDF file}
 \usage{
 write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
 }
@@ -12,8 +12,23 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
 \item{fname}{output file name}
 }
 \description{
-This function will read chunks of a data cube and write them to a single NetCDF file.
+This function will read chunks of a data cube and write them to a single netCDF file. The resulting
+file uses the enhanced netCDF-4 format (for chunking and compression).
 }
 \details{
-The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
+The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+}
+\examples{
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(extent=list(left=388941.2, right=766552.4, 
+              bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+L8.col = create_image_collection(L8_files, "L8_L1TP") 
+write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
+}
+\seealso{
+\url{https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/NetCDF_002d4-Format.html#NetCDF_002d4-Format}
+
+\code{\link{gdalcubes_set_ncdf_compression}}
 }

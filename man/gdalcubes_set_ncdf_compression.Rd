@@ -2,7 +2,7 @@
 % Please edit documentation in R/config.R
 \name{gdalcubes_set_ncdf_compression}
 \alias{gdalcubes_set_ncdf_compression}
-\title{Set compression level for NetCDF files produced by gdalcubes}
+\title{Set compression level for netCDF files produced by gdalcubes}
 \usage{
 gdalcubes_set_ncdf_compression(level = 2)
 }
@@ -10,5 +10,9 @@ gdalcubes_set_ncdf_compression(level = 2)
 \item{level}{integer; compression level, 0 = no compression, 1=fast compression, 9=small compression}
 }
 \description{
-Set compression level for NetCDF files produced by gdalcubes
+Set compression level for netCDF files produced by gdalcubes
+}
+\examples{
+gdalcubes_set_ncdf_compression(9) # maximum compression
+gdalcubes_set_ncdf_compression(0) # no compression
 }

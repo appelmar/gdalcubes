@@ -8,8 +8,8 @@
 #' @examples 
 #' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                        ".TIF", recursive = TRUE, full.names = TRUE)
-#' create_image_collection(L8_files, "L8_L1TP", out_file = "L8.db", quiet=TRUE)
-#' image_collection("L8.db")
+#' create_image_collection(L8_files, "L8_L1TP", out_file = file.path(tempdir(),"L8.db"), quiet=TRUE)
+#' image_collection(file.path(tempdir(),"L8.db"))
 #' @export
 image_collection <- function(path) {
   stopifnot(file.exists(path))
@@ -52,7 +52,21 @@ extent <- function(x, srs="EPSG:4326") {
 
 
 
-
+#' Print image collection information
+#' 
+#' Prints information about images in an image collection.
+#' 
+#' @param x Object of class "image_collection"
+#' @param ... Further arguments passed to the generic print function
+#' @param n Number of images for which details are printed 
+#' @examples 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#' print(L8.col)
 #' @export
 print.image_collection <- function(x, ..., n=6) {
   stopifnot(is.image_collection(x))
@@ -163,6 +177,11 @@ collection_formats <-function(print=TRUE)
 #' @param name optional name used to refer to the collection format
 #' @details 
 #' By default, the collection format name will be derived from the basename of the URL.
+#' @examples 
+#' \donttest{
+#' add_collection_format(
+#'    "https://raw.githubusercontent.com/appelmar/gdalcubes/dev/formats/Sentinel1_IW_GRD.json")
+#' }
 #' @export
 add_collection_format <- function(url, name=NULL) {
   if (is.null(name)) {
@@ -179,6 +198,5 @@ add_collection_format <- function(url, name=NULL) {
     file.remove(destfile)
     stop("downloaded file is not valid json")
   }
-  cat(paste("Collection format '", gsub(pattern = ".json",replacement = "", x = name), "' has been successfully downloaded.", sep="" ),"\n")
   invisible()
 }

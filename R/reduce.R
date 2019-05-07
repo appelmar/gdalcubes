@@ -6,6 +6,21 @@
 #' @return return value and type depend on the class of x
 #' @seealso \code{\link{reduce_time.cube}} 
 #' @seealso \code{\link{reduce_time.array}} 
+#' @examples 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#' reduce_time(raster_cube(L8.col, v) , "median(B02)", "median(B03)", "median(B04)")  
+#'  
+#' d <- c(4,16,32,32)
+#' x <- array(rnorm(prod(d)), d)
+#' y <- reduce_time(x, function(v) {
+#'   apply(v, 1, mean)
+#' })
+#'  
 #' @export
 reduce_time <- function(x, ...) {
   UseMethod("reduce_time")
@@ -19,6 +34,22 @@ reduce_time <- function(x, ...) {
 #' @return return value and type depend on the class of x
 #' @seealso \code{\link{reduce_space.cube}} 
 #' @seealso \code{\link{reduce_space.array}} 
+#' @examples 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#' reduce_space(raster_cube(L8.col, v) , "median(B02)")  
+#' 
+#' 
+#' d <- c(4,16,32,32)
+#' x <- array(rnorm(prod(d)), d)
+#' y <- reduce_space(x, function(v) {
+#'   apply(v, 1, mean)
+#' })
+#'  
 #' @export
 reduce_space <- function(x, ...) {
   UseMethod("reduce_space")
@@ -43,7 +74,6 @@ reduce_space <- function(x, ...) {
 #'  L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #'  L8.rgb.median = reduce(L8.rgb, "median")  
 #'  L8.rgb.median
-#'  plot(L8.rgb.median, rgb=3:1, zlim=c(4000,12000))
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @note This function is deprecated and will be replaced by the more flexible \code{\link{reduce_time}}.
 #' @export

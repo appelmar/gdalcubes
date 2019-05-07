@@ -52,10 +52,8 @@ L8.cube = raster_cube(L8.col, v)
 L8.nir = select_bands(L8.cube, c("B05"))
 L8.nir.min = window_time(L8.nir, window = c(2,2), "min(B05)")  
 L8.nir.min
-plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 
 L8.nir.kernel = window_time(L8.nir, kernel=c(-1,1), window=c(1,0))  
 L8.nir.kernel
-plot(L8.nir.min, zlim=c(4000,12000), key.pos=1, t=c(1,4,7))
 
 }

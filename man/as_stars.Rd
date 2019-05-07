@@ -13,6 +13,17 @@ as_stars(from)
 stars object
 }
 \description{
-The function materializes a data cube as a temporary NetCDF file and loads the file 
+The function materializes a data cube as a temporary netCDF file and loads the file 
 with the stars package.
+}
+\examples{
+\donttest{
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(extent=list(left=388941.2, right=766552.4, 
+              bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+L8.col = create_image_collection(L8_files, "L8_L1TP") 
+as_stars(select_bands(raster_cube(L8.col, v), c("B04", "B05")))
+}
 }

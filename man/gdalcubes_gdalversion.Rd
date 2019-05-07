@@ -9,3 +9,6 @@ gdalcubes_gdalversion()
 \description{
 Get the GDAL version used by gdalcubes
 }
+\examples{
+gdalcubes_gdalversion()
+}
