@@ -24,7 +24,7 @@ This is a helper function that uses the same dimension ordering as gdalcubes str
 the application of R functions e.g. over spatial slices in a data cube.
 }
 \examples{
-d <- c(4,16,128,128)
+d <- c(4,16,32,32)
 x <- array(rnorm(prod(d)), d)
 # reduce individual bands over spatial slices 
 y <- reduce_space(x, function(v) {

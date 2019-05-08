@@ -2,7 +2,7 @@
 #'
 #' Processing collections of Earth observation images as on-demand multispectral, multitemporal data cubes. Users
 #' define cubes by spatiotemporal extent, resolution, and spatial reference system and let 'gdalcubes' automatically apply cropping, reprojection, and 
-#' resampling on imagery using the 'Geospatial Data Abstraction Library' ('GDAL'). Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
+#' resampling using the 'Geospatial Data Abstraction Library' ('GDAL'). Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
 #' moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as 'netCDF' files,
 #' and plotting. User-defined 'R' functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
 #' multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries.

@@ -18,12 +18,18 @@ value and type depend on the class of x
 This generic function applies a reducer function over a moving window over the time dimension of a data cube, an R array, or other classes if implemented.
 }
 \examples{
-L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-                       ".TIF", recursive = TRUE, full.names = TRUE)
+# create image collection from example Landsat data only 
+# if not already done in other examples
+if (!file.exists(file.path(tempdir(), "L8.db"))) {
+  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                         ".TIF", recursive = TRUE, full.names = TRUE)
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+}
+
+L8.col = image_collection(file.path(tempdir(), "L8.db"))
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-07"),
-              srs="EPSG:32618", nx = 400, dt="P1M")
-L8.col = create_image_collection(L8_files, "L8_L1TP") 
+                          srs="EPSG:32618", nx = 400, dt="P1M")
 L8.cube = raster_cube(L8.col, v) 
 L8.nir = select_bands(L8.cube, c("B05"))
 window_time(L8.nir, window = c(2,2), "min(B05)")  

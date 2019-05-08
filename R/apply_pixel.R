@@ -8,12 +8,20 @@
 #' @seealso \code{\link{apply_pixel.cube}}
 #' @seealso \code{\link{apply_pixel.array}} 
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
+#'               
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' apply_pixel(raster_cube(L8.col, v), "(B05-B04)/(B05+B04)", "NDVI") 
 #' 
 #' d <- c(4,16,128,128)
@@ -42,18 +50,22 @@ apply_pixel <- function(x, ...) {
 #' @details gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
 #' to see what kind of expressions you can execute. Pixel band values can be accessed by name.
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #' L8.ndvi
-#' L8.ndvi.median =  reduce_time(L8.ndvi, "median(NDVI)") 
-#' plot(L8.ndvi.median, key.pos=1, zlim=c(0,1))
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export

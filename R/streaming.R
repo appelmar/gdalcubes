@@ -13,13 +13,18 @@
 #' 
 #' @examples 
 #' \donttest{
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE) 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
 #' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4,
 #'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP")
+#'                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v)
 #' L8.cube = select_bands(L8.cube, c("B04", "B05"))
 #' f <- function() {
@@ -91,13 +96,18 @@ read_chunk_as_array <-function(with.dimnames=TRUE) {
 #' @param v four-dimensional array with dimensions band, time, y, and x
 #' @examples 
 #' \donttest{
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE) 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
 #' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4,
 #'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP")
+#'                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v)
 #' L8.cube = select_bands(L8.cube, c("B04", "B05"))
 #' f <- function() {
@@ -142,7 +152,7 @@ write_chunk_from_array <- function(v) {
 #' @details 
 #' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 #' @examples
-#' d <- c(4,16,128,128)
+#' d <- c(4,16,32,32)
 #' x <- array(rnorm(prod(d)), d)
 #' # reduce individual bands over pixel time series
 #' y <- reduce_time(x, function(v) {
@@ -174,7 +184,7 @@ reduce_time.array <- function(x, FUN, ...) {
 #' @details 
 #' FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.
 #' @examples
-#' d <- c(4,16,128,128)
+#' d <- c(4,16,32,32)
 #' x <- array(rnorm(prod(d)), d)
 #' y <- apply_pixel(x, function(v) {
 #'   v[1] + v[2] + v[3] - v[4]
@@ -202,7 +212,7 @@ apply_pixel.array <- function(x, FUN, ...) {
 #' @note This is a helper function that uses the same dimension ordering as gdalcubes streaming. It can be used to simplify 
 #' the application of R functions e.g. over spatial slices in a data cube.
 #' @examples
-#' d <- c(4,16,128,128)
+#' d <- c(4,16,32,32)
 #' x <- array(rnorm(prod(d)), d)
 #' # reduce individual bands over spatial slices 
 #' y <- reduce_space(x, function(v) {

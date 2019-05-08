@@ -15,13 +15,19 @@
 #'  3. Read the resulting data to the chunk buffer and if pixels already contain non NAN values, apply an aggregation method (as defined in the view) 
 #' 
 #' @examples 
-#'  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-#'                         ".TIF", recursive = TRUE, full.names = TRUE)
-#'  v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'                bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-#'                srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#'  L8.col = create_image_collection(L8_files, "L8_L1TP") 
-#'  raster_cube(L8.col, v)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' raster_cube(L8.col, v)
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
@@ -75,12 +81,18 @@ is.cube <- function(obj) {
 #' @param x Object of class "cube"
 #' @param ... Further arguments passed to the generic print function
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' print(raster_cube(L8.col, v))
 #' @export
 print.cube <- function(x, ...) {
@@ -103,12 +115,18 @@ print.cube <- function(x, ...) {
 #' @seealso \code{\link{dim.cube}}
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' size(raster_cube(L8.col, v))
 #' @export
 size <- function(obj) {
@@ -125,12 +143,18 @@ size <- function(obj) {
 #' @seealso \code{\link{size}}
 #' @param x a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' dim(raster_cube(L8.col, v))
 #' @export
 dim.cube <- function(x) {
@@ -143,12 +167,18 @@ dim.cube <- function(x) {
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' names(raster_cube(L8.col, v))
 #' @export
 names.cube <- function(x) {
@@ -166,12 +196,18 @@ names.cube <- function(x) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' dimensions(raster_cube(L8.col, v))
 #' @export
 dimensions <- function(obj) {
@@ -188,12 +224,18 @@ dimensions <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' bands(raster_cube(L8.col, v))
 #' @export
 bands <- function(obj) {
@@ -210,12 +252,18 @@ bands <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' srs(raster_cube(L8.col, v))
 #' @export
 srs <- function(obj) {
@@ -230,12 +278,18 @@ srs <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' proj4(raster_cube(L8.col, v))
 #' @export
 proj4 <- function(obj) {
@@ -252,12 +306,18 @@ proj4 <- function(obj) {
 #' @param obj a data cube proxy object (class cube)
 #' @param unit Unit of data size, can be "B", "KB", "KiB", "MB", "MiB", "GB", "GiB", "TB", "TiB", "PB", "PiB"
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' memsize(raster_cube(L8.col, v))
 #' @export
 memsize <- function(obj, unit="MiB") {
@@ -279,18 +339,25 @@ memsize <- function(obj, unit="MiB") {
   ))
 }
 
+
 #' Query data cube properties 
 #' 
 #' @return Number of bands
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' nbands(raster_cube(L8.col, v))
 #' @export
 nbands <- function(obj) {
@@ -305,12 +372,18 @@ nbands <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' nt(raster_cube(L8.col, v))
 #' @export
 nt <- function(obj) {
@@ -325,12 +398,18 @@ nt <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' ny(raster_cube(L8.col, v))
 #' @export
 ny <- function(obj) {
@@ -345,12 +424,18 @@ ny <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' nx(raster_cube(L8.col, v))
 #' @export
 nx <- function(obj) {
@@ -370,12 +455,18 @@ nx <- function(obj) {
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' cat(as_json(select_bands(raster_cube(L8.col, v), c("B04", "B05"))))
 #' @export
 as_json <- function(obj) {
@@ -398,12 +489,18 @@ as_json <- function(obj) {
 #' @param fname output file name
 #' @details The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
@@ -435,12 +532,18 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' @param datetime_unit unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.
 #' @return list with elements t,y,x
 #' @examples 
-#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.col = create_image_collection(L8_files, "L8_L1TP") 
 #' dimension_values(raster_cube(L8.col, v))
 #' @export
 dimension_values <- function(obj, datetime_unit=NULL) {

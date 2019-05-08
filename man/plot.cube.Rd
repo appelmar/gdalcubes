@@ -59,18 +59,21 @@ for the same data cube will not reevaluate the cube. Instead, the temporary resu
 Some parts of the function have been copied from the stars package (c) Edzer Pebesma
 }
 \examples{
-L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-                       ".TIF", recursive = TRUE, full.names = TRUE)
-L8.col = create_image_collection(L8_files, "L8_L1TP")                         
+# create image collection from example Landsat data only 
+# if not already done in other examples
+if (!file.exists(file.path(tempdir(), "L8.db"))) {
+  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                         ".TIF", recursive = TRUE, full.names = TRUE)
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+}
+
+L8.col = image_collection(file.path(tempdir(), "L8.db"))
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
               
-              
-              
 plot(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04")), rgb=3:1)
               
-
 L8.cube = select_bands(raster_cube(L8.col, v), c("B04", "B05")) 
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 plot(reduce_time(L8.ndvi, "median(NDVI)"), key.pos=1, zlim=c(0,1))

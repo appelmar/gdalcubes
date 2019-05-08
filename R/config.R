@@ -2,7 +2,7 @@
 #' Set the number of threads for parallel data cube processing
 #'
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
-#' than the number of chunks of a cube thus has no effect and will not furhter reduce computation times.
+#' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
 #' @param n number of threads
 #' @examples 
 #' gdalcubes_set_threads(1)

@@ -24,7 +24,7 @@ This is a helper function that uses the same dimension ordering as gdalcubes. It
 the application of R functions e.g. over time series in a data cube.
 }
 \examples{
-d <- c(4,16,128,128)
+d <- c(4,16,32,32)
 x <- array(rnorm(prod(d)), d)
 y <- apply_pixel(x, function(v) {
   v[1] + v[2] + v[3] - v[4]
