@@ -9,3 +9,6 @@ gdalcubes_stop_server()
 \description{
 Stops all gdalcubes_server processes that have been started within the current R session.
 }
+\examples{
+gdalcubes_stop_server() 
+}

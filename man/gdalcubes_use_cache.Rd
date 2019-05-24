@@ -18,3 +18,6 @@ it simply tries to reuse existing temporary files where possible.
 For example, changing only parameters to \code{plot} will not require
 rerunning the full data cube operation chain.
 }
+\examples{
+gdalcubes_use_cache(FALSE)
+}

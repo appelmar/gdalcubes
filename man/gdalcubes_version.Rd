@@ -12,3 +12,6 @@ List with gdalcubes library version information
 \description{
 Query gdalcubes version information
 }
+\examples{
+gdalcubes_version()
+}

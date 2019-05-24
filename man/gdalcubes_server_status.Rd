@@ -12,3 +12,6 @@ a data.frame with detailed status information where each row corresponds to one 
 \description{
 Summarizes the status of all gdalcubes_server processes that have been started in the current R session.
 }
+\examples{
+gdalcubes_server_status() 
+}
