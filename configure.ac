@@ -222,15 +222,38 @@ else
   fi
 fi
 
+#GDAL_DATA_TEST_FILE="${GDAL_DATADIR}/pcs.csv"
+#AC_MSG_CHECKING(GDAL: ${GDAL_DATADIR}/pcs.csv readable)
+#if test -r "${GDAL_DATA_TEST_FILE}" ; then
+#  AC_MSG_RESULT(yes)
+#else
+#  AC_MSG_RESULT(no)
+#  AC_MSG_ERROR([pcs.csv not found in GDAL data directory.])
+#fi
+
+GDAL_GE_250="no"
+#GDAL_MAJ_VER=`echo $GDAL_VERSION | cut -d "." -f1`
+#GDAL_MOD_VER=`echo $GDAL_VERSION | cut -d "." -f2`
+if test "${GDAL_MAJOR}" = 2 ; then
+  if test "${GDAL_MINOR}" -ge 5 ; then
+    GDAL_GE_250="yes"
+  fi
+else
+  if test "${GDAL_MAJOR}" -ge 3 ; then
+    GDAL_GE_250="yes"
+  fi
+fi
+
 GDAL_DATA_TEST_FILE="${GDAL_DATADIR}/pcs.csv"
 AC_MSG_CHECKING(GDAL: ${GDAL_DATADIR}/pcs.csv readable)
 if test -r "${GDAL_DATA_TEST_FILE}" ; then
   AC_MSG_RESULT(yes)
 else
   AC_MSG_RESULT(no)
-  AC_MSG_ERROR([pcs.csv not found in GDAL data directory.])
+  if test "${GDAL_GE_250}" = no; then
+    AC_MSG_ERROR([pcs.csv not found in GDAL data directory.])
+  fi
 fi
-
 
 
 
