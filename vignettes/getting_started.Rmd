@@ -33,7 +33,7 @@ In the following, we will follow a simple workflow by
 
 # Downloading the sample data
 
-We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/land-surface-temperature-and-emissivity/MOD11A2) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/products/mod11a2v006) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
 dest_dir = tempdir()

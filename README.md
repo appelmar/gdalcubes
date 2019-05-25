@@ -24,7 +24,16 @@ small (< 1 GB) MODIS dataset (see `vignettes/getting_started.Rmd`).
 
 
 # Installation
-The package is not (yet) available from CRAN, you have to install it from sources with 
+
+Install from CRAN with:
+
+```
+install.packages("gdalcubes")
+```
+
+## From sources
+
+Installation from sources is easiest with
 
 ```
 library(devtools)
