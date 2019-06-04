@@ -24,6 +24,6 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes.o \
 			RcppExports.o
 
-PKG_CPPFLAGS=@CPPFLAGS@
-PKG_LIBS=@LIBS@
+PKG_CPPFLAGS=@PKG_CPPFLAGS@
+PKG_LIBS=@PKG_LIBS@
 CXX_STD=CXX11

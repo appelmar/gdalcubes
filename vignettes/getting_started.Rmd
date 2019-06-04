@@ -12,8 +12,10 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+ev = Sys.getenv("USER") == "marius"
 knitr::opts_chunk$set(
-  collapse = TRUE
+  collapse = TRUE,
+  eval = ev
 )
 ```
 
@@ -21,7 +23,7 @@ knitr::opts_chunk$set(
 
 The gdalcubes R package aims at making the work with large collections of Earth observation (EO) imagery (e.g. from [Sentinel 2](https://sentinel.esa.int/web/sentinel/missions/sentinel-2)) **easier** and **faster**. Typical challenges with these data such as overlapping images, different spatial resolutions of spectral bands, irregular temporal sampling, and different spatial reference systems become invisible to users by reading the data as a raster data cube and letting users define the shape of the cube (spatiotemporal extent, resolution, and  spatial reference system). Working with EO imagery then becomes more interactive: going from "_try my method on low resolution and get the result asap_" to "_apply my final method to the full resolution dataset over night_" becomes straightforward.  
 
-This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://lpdaac.usgs.gov/dataset_discovery/modis)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
+This brief vignette illustrates basic ideas of the package. We will use satellite imagary from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://modis.gsfc.nasa.gov)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the gdalcubes R package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
 
 In the following, we will follow a simple workflow by
 
@@ -31,14 +33,14 @@ In the following, we will follow a simple workflow by
 
 # Downloading the sample data
 
-We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod11a2_v006) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://lpdaac.usgs.gov/products/mod11a2v006) , covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
 
 ```{r data_download, echo=TRUE, results='hide'}
-if (!dir.exists("MOD11A2")) {
-  download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile="MOD11A2.zip",mode = "wb")
-  unzip("MOD11A2.zip", exdir = "MOD11A2")
-  unlink("MOD11A2.zip")
-}
+dest_dir = tempdir()
+download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile=file.path(dest_dir, "MOD11A2.zip"),mode = "wb")
+unzip(file.path(dest_dir, "MOD11A2.zip"), exdir = file.path(dest_dir,"MOD11A2"))
+unlink(file.path(dest_dir, "MOD11A2.zip"))
+
 ```
 
 
@@ -48,7 +50,7 @@ As a first step, we must combine the set of files for the first MODIS product (M
 The image collection is a simple index, pointing to files and storing the spatial extent, spatial reference system, aquisition date/time of images and how files relate to image bands. The package comes with a set of predefined rules (called _image collection formats_), how this information can be extracted from filenames for selected EO products. A list of available collection formats including a short description can be printed with:
 
 
-```{r}
+```{r, eval=TRUE}
 library(gdalcubes)
 collection_formats()
 ```
@@ -62,13 +64,14 @@ Instead of just filenames (as it would work for Landsat or Sentinel 2 imagery), 
 The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL datasets, which then can be passed as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
 
 ```{r}
-file_subdatasets = expand.grid(file=list.files("MOD11A2", pattern=".hdf$", full.names = TRUE), 
+img_col_file = tempfile(fileext=".db")
+file_subdatasets = expand.grid(file=list.files(file.path(dest_dir,"MOD11A2"), pattern=".hdf$", full.names = TRUE), 
             subdataset=c("LST_Day_1km", "QC_Day", "Day_view_time", "LST_Night_1km",
                         "QC_Night", "Night_view_time", "Emis_31", "Emis_32"))
 
 gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MODIS_Grid_8Day_1km_LST:", file_subdatasets$subdataset, sep="")
 
-create_image_collection(gdal_datasets, "MxD11A2", "MOD11A2.db")
+create_image_collection(gdal_datasets, "MxD11A2", img_col_file)
 ```
 
 # Creating a data cube
@@ -82,7 +85,7 @@ The created image collection has references to original images on disk and knows
 If no data cube view is provided, a default cube that covers the whole extent of the collection at low resolution is created. The chunk size defaults to (16 x 256 x 256) pixels in time, y, and x directions. Below, we create a data cube with a default cube view and print some basic information about its dimensions and bands.
 
 ```{r}
-x = raster_cube(image_collection("MOD11A2.db"))
+x = raster_cube(image_collection(img_col_file))
 x
 
 bands(x)
@@ -94,7 +97,7 @@ Notice that `raster_cube()` will not run any computations besides deriving the s
 
 ```{r}
 srs="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
-MOD11A2.col = image_collection("MOD11A2.db")
+MOD11A2.col = image_collection(img_col_file)
 v = cube_view(srs=srs, extent=MOD11A2.col, nx = 400, dt="P1M", aggregation = "mean")
 v
 MOD11A2.cube = raster_cube(MOD11A2.col, v)
@@ -128,7 +131,7 @@ code for example derives monthly differences of land surface temperature, from J
 ```{r}
 library(magrittr) # get the pipe
 v1 = cube_view(view=v, extent=list(t0="2018-06", t1="2018-09"))
-raster_cube(image_collection("MOD11A2.db"), v1)  %>%
+raster_cube(image_collection(img_col_file), v1)  %>%
   select_bands(c("LST_DAY")) %>%
   window_time(kernel=c(-1,1), window=c(1,0)) %>%
   plot(col=terrain.colors, key.pos=1, zlim=c(-25,25))

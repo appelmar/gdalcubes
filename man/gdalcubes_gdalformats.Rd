@@ -9,3 +9,6 @@ gdalcubes_gdalformats()
 \description{
 Get available GDAL drivers
 }
+\examples{
+gdalcubes_gdalformats()
+}

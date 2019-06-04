@@ -4,12 +4,12 @@
 \name{gdalcubes}
 \alias{gdalcubes}
 \alias{gdalcubes-package}
-\title{gdalcubes: Earth observation data cubes from GDAL image collections}
+\title{gdalcubes: Earth Observation Data Cubes from Satellite Image Collections}
 \description{
-gdalcubes reads and processes collections of Earth Observation images as on-demand multispectral, multitemporal data cubes. Users
-define cubes by spatiotemporal extent, resolution, and spatial reference system and let gdalcubes automatically apply cropping, reprojection, and 
-resampling. Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
-moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as NetCDF files,
-and plotting. Furthermore, user-defined R functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
-multithreading. All computational parts are implemented in C++, linking to the GDAL, NetCDF, CURL, and SQLite libraries.
+Processing collections of Earth observation images as on-demand multispectral, multitemporal data cubes. Users
+define cubes by spatiotemporal extent, resolution, and spatial reference system and let 'gdalcubes' automatically apply cropping, reprojection, and 
+resampling using the 'Geospatial Data Abstraction Library' ('GDAL'). Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
+moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as 'netCDF' files,
+and plotting. User-defined 'R' functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
+multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries.
 }

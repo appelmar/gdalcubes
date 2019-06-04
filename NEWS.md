@@ -1,5 +1,4 @@
-
-# gdalcubes 0.1.0.9999
+# gdalcubes 0.1.9999
 
 * rename `filter_predicate()` -> `filter_pixel()`
 * new operator `fill_time()` to fill NA pixels of data cubes based on time-series interpolation
@@ -7,6 +6,7 @@
 * collection format Sentinel2_L2A now includes WVP, AOT, and SCL bands 
 * add `write_json_descr`argument to `write_ncdf()`
 
-# gdalcubes 0.1.0 (2019-03-13)
+
+# gdalcubes 0.1.0 (2019-05-15)
 
 * First release

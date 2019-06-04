@@ -12,3 +12,7 @@ gdalcubes_debug_output(debug = TRUE)
 \description{
 Enable or disable debug output from the gdalcubes C++ library
 }
+\examples{
+gdalcubes_debug_output(TRUE)
+gdalcubes_debug_output(FALSE)
+}

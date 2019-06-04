@@ -8,6 +8,12 @@
 #' @param whitelist character vector with hosts that are allowed to connect to the server, if NULL (the default), all incoming requests will be accepted
 #' @param threads number of threads running to process parallel chunk read requests
 #' @param n number of servers to start, if n > 1 and ports has length 1, port numbers will be increased automatically by one
+#' @examples 
+#' \dontrun{
+#'  gdalcubes_start_server() # single server process with default settings
+#'  gdalcubes_stop_server()
+#' }
+#' @note This function runs the gdalcubes_server executable which must have been installed at a findable location (listed in the PATH environment variable) before.
 #' @export
 gdalcubes_start_server <- function(port=1111, endpoint = "/gdalcubes/api", whitelist=NULL, threads=1, n=1) {
   stopifnot(requireNamespace("processx", quietly = TRUE))
@@ -19,16 +25,10 @@ gdalcubes_start_server <- function(port=1111, endpoint = "/gdalcubes/api", white
   else if (n > 1 && length(port) == 1) {
     port = (port[1]+n-1)
   }
-
-  # TODO: check input arguments
-  # TODO: add workdir argument
-  # TODO: add whitelist
   env <- .pkgenv
   if (!exists("gdalcubes.server_processes", envir=env)) {
     env$gdalcubes.server_processes = list()
   }
-  #env$gdalcubes.server_processes[[length(env$server_processes) + 1]] <- processx::process$new("gdalcubes_server", "-b", endpoint, "-p", port, "-t", threads)
-
 
   for (i in 1:n) {
     env$gdalcubes.server_processes[[length(env$gdalcubes.server_processes) + 1]] <- processx::process$new("gdalcubes_server", c("-b", endpoint, "-p", port[i], "-t", threads), stdin="|")
@@ -45,17 +45,25 @@ gdalcubes_start_server <- function(port=1111, endpoint = "/gdalcubes/api", white
 #' Stop all gdalcubes_server processes
 #'
 #' Stops all gdalcubes_server processes that have been started within the current R session.
+#' 
+#' @examples 
+#' gdalcubes_stop_server() 
 #' @export
 gdalcubes_stop_server <- function() {
   stopifnot(requireNamespace("processx", quietly = TRUE))
-  x = sum(sapply(.pkgenv$gdalcubes.server_processes, function(x) {
-    if (x$is_alive()) {
-      x$kill()
-      return(1)
-    }
-    return(0)
+  if (is.null(.pkgenv$gdalcubes.server_processes) || length(.pkgenv$gdalcubes.server_processes) == 0) {
+    x  = 0
+  }
+  else {
+    x = sum(sapply(.pkgenv$gdalcubes.server_processes, function(x) {
+      if (x$is_alive()) {
+        x$kill()
+        return(1)
+      }
+      return(0)
     }))
-  cat(paste("Stopped", x, "running gdalcubes_server instances\n", sep = " "))
+  }
+  message(paste("Stopped", x, "running gdalcubes_server instances", sep = " "))
   invisible()
 }
 
@@ -63,9 +71,16 @@ gdalcubes_stop_server <- function() {
 #'
 #' Summarizes the status of all gdalcubes_server processes that have been started in the current R session.
 #' @return a data.frame with detailed status information where each row corresponds to one gdalcubes_server process
+#' @examples 
+#' gdalcubes_server_status() 
 #' @export
 gdalcubes_server_status <- function() {
   stopifnot(requireNamespace("processx", quietly = TRUE))
+  
+  if (is.null(.pkgenv$gdalcubes.server_processes) || length(.pkgenv$gdalcubes.server_processes) == 0) {
+    message("No gdalcubes_server instances found.")
+    return(invisible())
+  }
 
   processes <- as.data.frame(t(sapply(.pkgenv$gdalcubes.server_processes, function(p) {
     if (p$is_alive())  {

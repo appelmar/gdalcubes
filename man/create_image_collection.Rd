@@ -29,7 +29,11 @@ collection format.
 An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
 }
 \examples{
-L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"), 
-                       ".TIF", recursive = TRUE, full.names = TRUE)
-create_image_collection(L8_files, "L8_L1TP")
+# create image collection from example Landsat data only 
+# if not already done in other examples
+if (!file.exists(file.path(tempdir(), "L8.db"))) {
+  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                         ".TIF", recursive = TRUE, full.names = TRUE)
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+}
 }

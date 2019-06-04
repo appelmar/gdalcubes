@@ -2,10 +2,10 @@
 % Please edit documentation in R/cube.R
 \name{write_ncdf}
 \alias{write_ncdf}
-\title{Materialize a data cube as a NetCDF file}
+\title{Materialize a data cube as a netCDF file}
 \usage{
-write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc",
-  write_json_descr = FALSE))
+write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
+  write_json_descr = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -15,11 +15,32 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc",
 \item{write_json_descr}{logical; write a JSON description of x as additional file}
 }
 \description{
-This function will read chunks of a data cube and write them to a single NetCDF file.
+This function will read chunks of a data cube and write them to a single netCDF file. The resulting
+file uses the enhanced netCDF-4 format (for chunking and compression).
 }
 \details{
-The resulting NetCDF file contains three dimensions (t, y, x) and bands as variables.
+The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
 
 If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
 ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
+}
+\examples{
+# create image collection from example Landsat data only 
+# if not already done in other examples
+if (!file.exists(file.path(tempdir(), "L8.db"))) {
+  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                         ".TIF", recursive = TRUE, full.names = TRUE)
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+}
+
+L8.col = image_collection(file.path(tempdir(), "L8.db"))
+v = cube_view(extent=list(left=388941.2, right=766552.4, 
+              bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
+}
+\seealso{
+\url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
+
+\code{\link{gdalcubes_set_ncdf_compression}}
 }

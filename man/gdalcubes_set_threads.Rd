@@ -11,5 +11,8 @@ gdalcubes_set_threads(n = 1)
 }
 \description{
 Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
-than the number of chunks of a cube thus has no effect and will not furhter reduce computation times.
+than the number of chunks of a cube thus has no effect and will not further reduce computation times.
+}
+\examples{
+gdalcubes_set_threads(1)
 }

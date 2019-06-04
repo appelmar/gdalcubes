@@ -397,12 +397,19 @@ is.cube_view <- function(obj) {
   return("cube_view" %in% class(obj))
 }
 
-
+#' Print data cube view information
+#' 
+#' Prints information about a data cube view, including its dimensions, spatial reference, aggregation method, and resampling method.
+#' 
+#' @param x Object of class "cube_view"
+#' @param ... Further arguments passed to the generic print function
+#' @examples 
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' print(v)
 #' @export
 print.cube_view <- function(x, ...) {
-  
-  
-  
   stopifnot(is.cube_view(x))
   cat("A data cube view object\n\n")
   cat("Dimensions:\n")
