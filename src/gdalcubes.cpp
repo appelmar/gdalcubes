@@ -7,9 +7,98 @@
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <memory>
+#include <thread>
+#include <algorithm>
 
 using namespace Rcpp;
 using namespace gdalcubes;
+
+
+
+/**
+ * @brief Implementation of the chunk_processor class for multithreaded parallel chunk processing, interruptible by R
+ */
+class chunk_processor_multithread_interruptible : public chunk_processor {
+public:
+  /**
+   * @brief Construct a multithreaded chunk processor
+   * @param nthreads number of threads
+   */
+  chunk_processor_multithread_interruptible(uint16_t nthreads) : _nthreads(nthreads) {}
+  
+  /**
+   * @copydoc chunk_processor::apply
+   */
+  void apply(std::shared_ptr<cube> c,
+             std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) override;
+  
+  /**
+   * Query the number of threads to be used in parallel chunk processing
+   * @return the number of threads
+   */
+  inline uint16_t get_threads() { return _nthreads; }
+  
+private:
+  uint16_t _nthreads;
+};
+
+void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
+                                        std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
+  std::mutex mutex;
+  bool interrupted = false;
+  std::vector<std::thread> workers;
+  std::vector<bool> finished(_nthreads, false);
+  for (uint16_t it = 0; it < _nthreads; ++it) {
+    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted](void) {
+      for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
+        try {
+          if (!interrupted) {
+            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
+            f(i, dat, mutex);
+          }
+        } catch (std::string s) {
+          GCBS_ERROR(s);
+          continue;
+        } catch (...) {
+          GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
+          continue;
+        }
+      }
+      finished[it] = true;
+    }));
+  }
+  
+  bool done = false;
+  int i=0;
+  while (!done) {
+    done = true;
+    for (uint16_t it = 0; it < _nthreads; ++it) {
+      done = done && finished[it];
+    }
+    if (!done) {
+      if (Progress::check_abort()) {
+        interrupted = true; // still need to wait for threads to finish current chunk
+      }
+      uint32_t cur_ms = std::min(750, 100 + i*50);
+      std::this_thread::sleep_for(std::chrono::milliseconds(cur_ms));
+    }
+    ++i;
+  }
+  for (uint16_t it = 0; it < _nthreads; ++it) {
+    workers[it].join();
+  }
+  if (interrupted) {
+    throw std::string("computations have been interrupted by the user");
+  }
+
+}
+
+
+
+
+
+
+
 
 
 struct error_handling_r {
@@ -171,6 +260,10 @@ void libgdalcubes_init() {
   //config::instance()->set_default_progress_bar(std::make_shared<progress_none>());
   
   config::instance()->set_error_handler(error_handling_r::standard); 
+  
+  // Interruptible chunk processor
+  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(1)));
+  
 }
 
 // [[Rcpp::export]]
@@ -1177,12 +1270,7 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
 
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {
-  if (n[0] > 1) {
-    config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread>(n[0])));
-  }
-  else {
-    config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_singlethread>()));
-  }
+  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
 
 
