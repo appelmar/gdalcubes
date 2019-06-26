@@ -2,10 +2,7 @@
 #define REDUCE_TIME_R_H
 
 
-#include <Rcpp.h>
 #include "gdalcubes/src/cube.h"
-
-using namespace Rcpp;
 
 using namespace gdalcubes;
 

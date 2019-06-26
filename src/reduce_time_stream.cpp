@@ -1,7 +1,5 @@
 #include "reduce_time_stream.h"
 #include "gdalcubes/src/external/tiny-process-library/process.hpp"
-// [[Rcpp::plugins("cpp11")]]
-// [[Rcpp::depends(RcppProgress)]]
 
 
 std::shared_ptr<chunk_data> reduce_time_stream_cube::read_chunk(chunkid_t id) {
@@ -30,10 +28,7 @@ std::shared_ptr<chunk_data> reduce_time_stream_cube::read_chunk(chunkid_t id) {
   double *inbegin = (double *)inbuf->buf();
   double *inend = ((double *)inbuf->buf()) + in_size_btyx[0] * in_size_btyx[1] * in_size_btyx[2] * in_size_btyx[3];
   std::fill(inbegin, inend, NAN);
- 
- 
-  GCBS_DEBUG("in_size_btyx:" + std::to_string(in_size_btyx[0]) + "," + std::to_string(in_size_btyx[1]) + "," + std::to_string(in_size_btyx[2]) + "," + std::to_string(in_size_btyx[3]));
-  
+
   uint32_t ichunk=0;
   for (chunkid_t i = id; i < _in_cube->count_chunks(); i += _in_cube->count_chunks_x() * _in_cube->count_chunks_y()) {
     std::shared_ptr<chunk_data> x = _in_cube->read_chunk(i);
