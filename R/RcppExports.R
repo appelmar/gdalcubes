@@ -65,6 +65,10 @@ libgdalcubes_create_image_collection <- function(files, format_file, outfile, un
     invisible(.Call('_gdalcubes_libgdalcubes_create_image_collection', PACKAGE = 'gdalcubes', files, format_file, outfile, unroll_archives))
 }
 
+libgdalcubes_add_images <- function(pin, files, unroll_archives = TRUE, outfile = "") {
+    invisible(.Call('_gdalcubes_libgdalcubes_add_images', PACKAGE = 'gdalcubes', pin, files, unroll_archives, outfile))
+}
+
 libgdalcubes_list_collection_formats <- function() {
     .Call('_gdalcubes_libgdalcubes_list_collection_formats', PACKAGE = 'gdalcubes')
 }

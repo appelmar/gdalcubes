@@ -11,6 +11,8 @@
   .pkgenv$compression_level = 0
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
+  .pkgenv$threads = 1
+  .pkgenv$debug = FALSE
   
   # for windows, rwinlib includes GDAL data and PROJ data in the package and we must set the environment variables
   # PROJ_LIB and GDAL_DATA to make sure GDAL finds the data at the package location

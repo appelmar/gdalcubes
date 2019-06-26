@@ -5,12 +5,14 @@
 \title{Materialize a data cube as a netCDF file}
 \usage{
 write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
-  write_json_descr = FALSE)
+  overwrite = FALSE, write_json_descr = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
 
 \item{fname}{output file name}
+
+\item{overwrite}{logical; overwrite output file if it already exists}
 
 \item{write_json_descr}{logical; write a JSON description of x as additional file}
 }

@@ -731,6 +731,24 @@ void libgdalcubes_create_image_collection(std::vector<std::string> files, std::s
 }
 
 // [[Rcpp::export]]
+void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unroll_archives=true, std::string outfile = "") {
+  
+  try {
+    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
+    if (!outfile.empty()) {
+      (*aa)->write(outfile);
+    }
+    if (unroll_archives) {
+      files = image_collection::unroll_archives(files);
+    }
+    (*aa)->add(files);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
 SEXP libgdalcubes_list_collection_formats() {
   try {
     

@@ -18,6 +18,9 @@ it simply tries to reuse existing temporary files where possible.
 For example, changing only parameters to \code{plot} will not require
 rerunning the full data cube operation chain.
 }
+\note{
+THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+}
 \examples{
 gdalcubes_use_cache(FALSE)
 }

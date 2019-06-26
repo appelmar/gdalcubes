@@ -552,6 +552,7 @@ as_json <- function(obj) {
 #' @seealso \code{\link{gdalcubes_set_ncdf_compression}} 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
+#' @param overwrite logical; overwrite output file if it already exists
 #' @param write_json_descr logical; write a JSON description of x as additional file
 #' @details 
 #' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
@@ -574,8 +575,12 @@ as_json <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), write_json_descr=FALSE) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE) {
   stopifnot(is.cube(x))
+  
+  if (!overwrite && file.exists(fname)) {
+    stop("File already exists, please change the output filename or set overwrite = TRUE")
+  }
   
   if (.pkgenv$use_cube_cache) {
     j = as_json(x)
