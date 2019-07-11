@@ -46,10 +46,18 @@ apply_pixel <- function(x, ...) {
 #' @param expr character vector with one or more arithmetic expressions (see Details)
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
 #' @param ... not used
-#' @param FUN user-defined function TODO
+#' @param FUN user-defined R function that is applied on all pixels (see Details)
 #' @return a proxy data cube object
-#' @details gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
+#' @details 
+#' 
+#' The function can either apply simple arithmetic C expressions given as a character vector (expr argument), or apply a custom R reducer function if FUN is provided.
+#' 
+#' In the former case, gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
 #' to see what kind of expressions you can execute. Pixel band values can be accessed by name.
+#' 
+#' FUN receives values of the bands from one pixel as a (named) vector and should return a numeric vector with identical length for all pixels. Elements of the
+#' result vectors will be interpreted as bands in the result data cube.  
+#' 
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
@@ -59,6 +67,7 @@ apply_pixel <- function(x, ...) {
 #'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
 #' }
 #' 
+#' # 1. Apply a C expression
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
@@ -67,6 +76,13 @@ apply_pixel <- function(x, ...) {
 #' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #' L8.ndvi
+#' 
+#' # 2. Apply a user defined R function
+#' L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy", 
+#'    FUN=function(x) {
+#'        rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
+#'    })
+#' L8.ndvi.noisy
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
