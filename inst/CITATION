@@ -1,0 +1,12 @@
+bibentry(bibtype = "Article",
+         title = "On-Demand Processing of Data Cubes from Satellite Image Collections with the gdalcubes Library",
+         author = c(person("Marius", "Appel"),
+                    person("Edzer", "Pebesma")),
+         year = 2019,
+         #doi = "10.3390/data4030092",
+         journal = "Data",
+         volume = 4,
+         number = 3,
+         other=list("article-number" = 92),
+         header="To cite gdalcubes in publications use:",
+         url = "https://www.mdpi.com/2306-5729/4/3/92")
