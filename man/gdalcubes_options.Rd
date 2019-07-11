@@ -7,6 +7,8 @@
 gdalcubes_options(..., threads, ncdf_compression_level, debug, cache)
 }
 \arguments{
+\item{...}{not used}
+
 \item{threads}{number of threads used to process data cubes}
 
 \item{ncdf_compression_level}{integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression}

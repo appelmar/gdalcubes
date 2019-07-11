@@ -93,8 +93,8 @@ libgdalcubes_create_reduce_time_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }
 
-libgdalcubes_create_reduce_time_stream_cube <- function(pin, cmd, nbands, names) {
-    .Call('_gdalcubes_libgdalcubes_create_reduce_time_stream_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
+libgdalcubes_create_stream_reduce_time_cube <- function(pin, cmd, nbands, names) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_reduce_time_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
 }
 
 libgdalcubes_create_reduce_space_cube <- function(pin, reducers, bands) {
@@ -119,6 +119,10 @@ libgdalcubes_create_select_bands_cube <- function(pin, bands) {
 
 libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names) {
     .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names)
+}
+
+libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
 }
 
 libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {

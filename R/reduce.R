@@ -182,7 +182,6 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     }
     else {
       # guess number of bands from provided function
-      nbands(x)
       dummy_values = matrix(rnorm(nbands(x)*10), nrow = nbands(x), ncol=10)
       rownames(dummy_values) <- names(x)
       tryCatch({
@@ -201,12 +200,8 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
       })
     }
     
-    ####
-   # assign("f", eval(parse(text="function(x) {median(x)}")))
-    #write_chunk_as_array(reduce_time(read_chunk_as_array(), f))
-    
     # create src file
-    # TODO: load the same packages as in the current workspace, see (.packages())
+    # TODO: load the same packages as in the current workspace? see (.packages())
     srcfile1 =  tempfile(".stream_",fileext = ".R")
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
@@ -219,13 +214,9 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
     
-    x = libgdalcubes_create_reduce_time_stream_cube(x, cmd, nb, names)
+    x = libgdalcubes_create_stream_reduce_time_cube(x, cmd, nb, names)
     class(x) <- c("reduce_time_cube", "cube", "xptr")
     return(x)
-    
-    #x = libgdalcubes_create_reduce_time_R_cube(x, FUN, nb, names)
-    #class(x) <- c("reduce_time_cube", "cube", "xptr")
-    #return(x)
   }
   
 }

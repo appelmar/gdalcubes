@@ -4,6 +4,7 @@
 #' Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
 #' or not debug messages should be printed.
 #'
+#' @param ... not used
 #' @param threads number of threads used to process data cubes
 #' @param ncdf_compression_level integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression
 #' @param logical;  print debug messages

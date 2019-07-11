@@ -4,7 +4,7 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, ...)
+\method{apply_pixel}{cube}(x, expr, names = NULL, ..., FUN)
 }
 \arguments{
 \item{x}{source data cube}
@@ -14,6 +14,8 @@
 \item{names}{optional character vector with the same length as expr to specify band names for the output cube}
 
 \item{...}{not used}
+
+\item{FUN}{user-defined function TODO}
 }
 \value{
 a proxy data cube object

@@ -10,7 +10,6 @@
 #include <thread>
 #include <algorithm>
 
-#include "reduce_time_stream.h"
 
 using namespace Rcpp;
 using namespace gdalcubes;
@@ -1102,11 +1101,11 @@ SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> red
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_reduce_time_stream_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-    std::shared_ptr<reduce_time_stream_cube>* x = new std::shared_ptr<reduce_time_stream_cube>(reduce_time_stream_cube::create(*aa, cmd, nbands, names));
-    Rcpp::XPtr< std::shared_ptr<reduce_time_stream_cube> > p(x, true) ;
+    std::shared_ptr<stream_reduce_time_cube>* x = new std::shared_ptr<stream_reduce_time_cube>(stream_reduce_time_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_reduce_time_cube> > p(x, true) ;
     return p;
   }
   catch (std::string s) {
@@ -1225,6 +1224,18 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<stream_apply_pixel_cube>* x = new std::shared_ptr<stream_apply_pixel_cube>(stream_apply_pixel_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_apply_pixel_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]
