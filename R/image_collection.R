@@ -94,6 +94,7 @@ print.image_collection <- function(x, ..., n=6) {
   }
   cat("\n")
   cat("Bands:\n")
+  
   print(info$bands)
   cat("\n")
 }

@@ -7,8 +7,9 @@
 #' @param ... not used
 #' @param threads number of threads used to process data cubes
 #' @param ncdf_compression_level integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression
-#' @param logical;  print debug messages
+#' @param debug logical;  print debug messages
 #' @param cache logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes
+#' @param swarm character vector with URLs pointing to gdalcubes_server API endpoints, used to evaluate cube chunks (experimental)
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -23,7 +24,7 @@
 #' gdalcubes_options(threads=4) # set the number of threads
 #' gdalcubes_options() # print current options
 #' @export
-gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache) {
+gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, swarm) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -43,6 +44,13 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   if (!missing(cache)) {
     stopifnot(is.logical(cache))
     .pkgenv$use_cube_cache = cache
+  }
+  if (!missing(swarm)) {
+    stopifnot(is.character(swarm))
+    # check whether all endpoints are accessible
+    #libgdalcubes_set_swarm(swarm)
+    warning("swarm mode is currently not supported by the R package")
+    .pkgenv$swarm = swarm
   }
   if (nargs() == 0) {
     return(list(

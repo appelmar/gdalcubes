@@ -621,33 +621,33 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
     
     std::vector<image_collection::bands_row> bands = ic->get_bands();
     
-    Rcpp::CharacterVector bands_name(bands.size());
-    Rcpp::CharacterVector bands_type(bands.size());
-    Rcpp::NumericVector bands_offset(bands.size());
-    Rcpp::NumericVector bands_scale(bands.size());
-    Rcpp::CharacterVector bands_unit(bands.size());
-    Rcpp::CharacterVector bands_nodata(bands.size());
+    
+    Rcpp::CharacterVector bands_name( bands.size());
+    //Rcpp::CharacterVector bands_type(bands.size());
+    Rcpp::NumericVector bands_offset( bands.size());
+    Rcpp::NumericVector bands_scale( bands.size());
+    Rcpp::CharacterVector bands_unit( bands.size());
+    Rcpp::CharacterVector bands_nodata( bands.size());
+    Rcpp::IntegerVector bands_image_count( bands.size());
     
     for (uint32_t i=0; i<bands.size(); ++i) {
       bands_name[i] = bands[i].name;
-      bands_type[i] = bands[i].type;
+      //bands_type[i] = bands[i].type;
       bands_offset[i] = bands[i].offset;
       bands_scale[i] = bands[i].scale;
       bands_unit[i] = bands[i].unit;
       bands_nodata[i] = bands[i].nodata;
+      bands_image_count[i] = bands[i].image_count;
     }
     
     Rcpp::DataFrame bands_df =
       Rcpp::DataFrame::create(Rcpp::Named("name")=bands_name,
-                              Rcpp::Named("type")=bands_type,
+                              //Rcpp::Named("type")=bands_type,
                               Rcpp::Named("offset")=bands_offset,
                               Rcpp::Named("scale")=bands_scale,
                               Rcpp::Named("unit")=bands_unit,
-                              Rcpp::Named("nodata")=bands_nodata);
-    
-    
-    
-    
+                              Rcpp::Named("nodata")=bands_nodata,
+                              Rcpp::Named("image_count")=bands_image_count);
     
     
     std::vector<image_collection::gdalrefs_row> gdalrefs = ic->get_gdalrefs();
@@ -1317,5 +1317,14 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
 void libgdalcubes_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
+
+// [[Rcpp::export]]
+void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
+  auto p = gdalcubes_swarm::from_urls(swarm);
+  //p->set_threads(nthreads);
+  config::instance()->set_default_chunk_processor(p);
+  // TODO: how to make swarm interruptible
+}
+
 
 
