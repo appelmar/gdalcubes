@@ -4,12 +4,17 @@
 \alias{write_ncdf}
 \title{Materialize a data cube as a netCDF file}
 \usage{
-write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"))
+write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
+  overwrite = FALSE, write_json_descr = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
 
 \item{fname}{output file name}
+
+\item{overwrite}{logical; overwrite output file if it already exists}
+
+\item{write_json_descr}{logical; write a JSON description of x as additional file}
 }
 \description{
 This function will read chunks of a data cube and write them to a single netCDF file. The resulting
@@ -17,6 +22,9 @@ file uses the enhanced netCDF-4 format (for chunking and compression).
 }
 \details{
 The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+
+If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
+".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
 }
 \examples{
 # create image collection from example Landsat data only 
@@ -34,7 +42,7 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 }
 \seealso{
-\url{https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/NetCDF_002d4-Format.html#NetCDF_002d4-Format}
+\url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
 
 \code{\link{gdalcubes_set_ncdf_compression}}
 }

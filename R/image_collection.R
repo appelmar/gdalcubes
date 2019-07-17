@@ -94,6 +94,7 @@ print.image_collection <- function(x, ..., n=6) {
   }
   cat("\n")
   cat("Bands:\n")
+  
   print(info$bands)
   cat("\n")
 }
@@ -101,13 +102,13 @@ print.image_collection <- function(x, ..., n=6) {
 
 #' Create an image collection from a set of GDAL datasets or files
 #' 
-#' This function iterates over files or GDAL dataset identifiers and extracts datetime, image_id, and band information according to a given
+#' This function iterates over files or GDAL dataset identifiers and extracts datetime, image identifiers, and band information according to a given
 #' collection format.
 #' 
 #' @details
 #' An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
 #' @param files character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
-#' @param out_file pptional name of the output SQLite database file, defaults to a temporary file
+#' @param out_file optional name of the output SQLite database file, defaults to a temporary file
 #' @param format collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file
 #' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files  
 #' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
@@ -130,6 +131,34 @@ create_image_collection <-function(files, format, out_file=tempfile(fileext = ".
   return(image_collection(out_file))
 }
 
+#' Add images to an existing image collection
+#' 
+#' This function adds provided files or GDAL dataset identifiers and to an existing image collection by extracting datetime, image identifiers, and band information according to the collection's format.
+#' 
+#' @param image_collection image_collection object or path to an existing collection file
+#' @param files character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
+#' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files  
+#' @param out_file path to output file, an empty string (the default) will update the collection in-place, whereas images will be added to a new copy of the image collection at the given location otherwise.
+#' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
+#' @return image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
+#' @examples 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#' L8_col = create_image_collection(L8_files[1:12], "L8_L1TP") 
+#' add_images(L8_col, L8_files[13:24])
+#' @export
+add_images <- function(image_collection, files, unroll_archives = TRUE, out_file = "", quiet = FALSE) {
+  if (is.character(image_collection)) {
+    image_collection = image_collection(image_collection)
+  }
+  stopifnot(is.image_collection(image_collection))
+  libgdalcubes_add_images(image_collection, files, unroll_archives, out_file)
+  
+  if (quiet) {
+    return(invisible(image_collection))
+  }
+  return(image_collection)
+}
 
 
 #' List predefined image collection formats

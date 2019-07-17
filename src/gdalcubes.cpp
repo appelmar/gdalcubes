@@ -7,8 +7,99 @@
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <memory>
+#include <thread>
+#include <algorithm>
+
 
 using namespace Rcpp;
+using namespace gdalcubes;
+
+
+
+/**
+ * @brief Implementation of the chunk_processor class for multithreaded parallel chunk processing, interruptible by R
+ */
+class chunk_processor_multithread_interruptible : public chunk_processor {
+public:
+  /**
+   * @brief Construct a multithreaded chunk processor
+   * @param nthreads number of threads
+   */
+  chunk_processor_multithread_interruptible(uint16_t nthreads) : _nthreads(nthreads) {}
+  
+  /**
+   * @copydoc chunk_processor::apply
+   */
+  void apply(std::shared_ptr<cube> c,
+             std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) override;
+  
+  /**
+   * Query the number of threads to be used in parallel chunk processing
+   * @return the number of threads
+   */
+  inline uint16_t get_threads() { return _nthreads; }
+  
+private:
+  uint16_t _nthreads;
+};
+
+void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
+                                        std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
+  std::mutex mutex;
+  bool interrupted = false;
+  std::vector<std::thread> workers;
+  std::vector<bool> finished(_nthreads, false);
+  for (uint16_t it = 0; it < _nthreads; ++it) {
+    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted](void) {
+      for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
+        try {
+          if (!interrupted) {
+            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
+            f(i, dat, mutex);
+          }
+        } catch (std::string s) {
+          GCBS_ERROR(s);
+          continue;
+        } catch (...) {
+          GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
+          continue;
+        }
+      }
+      finished[it] = true;
+    }));
+  }
+  
+  bool done = false;
+  int i=0;
+  while (!done) {
+    done = true;
+    for (uint16_t it = 0; it < _nthreads; ++it) {
+      done = done && finished[it];
+    }
+    if (!done) {
+      if (Progress::check_abort()) {
+        interrupted = true; // still need to wait for threads to finish current chunk
+      }
+      uint32_t cur_ms = std::min(750, 100 + i*50);
+      std::this_thread::sleep_for(std::chrono::milliseconds(cur_ms));
+    }
+    ++i;
+  }
+  for (uint16_t it = 0; it < _nthreads; ++it) {
+    workers[it].join();
+  }
+  if (interrupted) {
+    throw std::string("computations have been interrupted by the user");
+  }
+
+}
+
+
+
+
+
+
+
 
 
 struct error_handling_r {
@@ -170,6 +261,10 @@ void libgdalcubes_init() {
   //config::instance()->set_default_progress_bar(std::make_shared<progress_none>());
   
   config::instance()->set_error_handler(error_handling_r::standard); 
+  
+  // Interruptible chunk processor
+  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(1)));
+  
 }
 
 // [[Rcpp::export]]
@@ -526,33 +621,33 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
     
     std::vector<image_collection::bands_row> bands = ic->get_bands();
     
-    Rcpp::CharacterVector bands_name(bands.size());
-    Rcpp::CharacterVector bands_type(bands.size());
-    Rcpp::NumericVector bands_offset(bands.size());
-    Rcpp::NumericVector bands_scale(bands.size());
-    Rcpp::CharacterVector bands_unit(bands.size());
-    Rcpp::CharacterVector bands_nodata(bands.size());
+    
+    Rcpp::CharacterVector bands_name( bands.size());
+    //Rcpp::CharacterVector bands_type(bands.size());
+    Rcpp::NumericVector bands_offset( bands.size());
+    Rcpp::NumericVector bands_scale( bands.size());
+    Rcpp::CharacterVector bands_unit( bands.size());
+    Rcpp::CharacterVector bands_nodata( bands.size());
+    Rcpp::IntegerVector bands_image_count( bands.size());
     
     for (uint32_t i=0; i<bands.size(); ++i) {
       bands_name[i] = bands[i].name;
-      bands_type[i] = bands[i].type;
+      //bands_type[i] = bands[i].type;
       bands_offset[i] = bands[i].offset;
       bands_scale[i] = bands[i].scale;
       bands_unit[i] = bands[i].unit;
       bands_nodata[i] = bands[i].nodata;
+      bands_image_count[i] = bands[i].image_count;
     }
     
     Rcpp::DataFrame bands_df =
       Rcpp::DataFrame::create(Rcpp::Named("name")=bands_name,
-                              Rcpp::Named("type")=bands_type,
+                              //Rcpp::Named("type")=bands_type,
                               Rcpp::Named("offset")=bands_offset,
                               Rcpp::Named("scale")=bands_scale,
                               Rcpp::Named("unit")=bands_unit,
-                              Rcpp::Named("nodata")=bands_nodata);
-    
-    
-    
-    
+                              Rcpp::Named("nodata")=bands_nodata,
+                              Rcpp::Named("image_count")=bands_image_count);
     
     
     std::vector<image_collection::gdalrefs_row> gdalrefs = ic->get_gdalrefs();
@@ -628,6 +723,24 @@ void libgdalcubes_create_image_collection(std::vector<std::string> files, std::s
       files = image_collection::unroll_archives(files);
     }
     image_collection::create(cfmt, files)->write(outfile);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
+void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unroll_archives=true, std::string outfile = "") {
+  
+  try {
+    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
+    if (!outfile.empty()) {
+      (*aa)->write(outfile);
+    }
+    if (unroll_archives) {
+      files = image_collection::unroll_archives(files);
+    }
+    (*aa)->add(files);
   }
   catch (std::string s) {
     Rcpp::stop(s);
@@ -750,7 +863,7 @@ SEXP libgdalcubes_create_view(SEXP v) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP v = R_NilValue) {
+SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask, SEXP v = R_NilValue) {
 
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -817,6 +930,29 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa, cv));
     }
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    
+    
+    if (mask != R_NilValue) {
+      std::string band_name = Rcpp::as<Rcpp::List>(mask)["band"]; 
+      bool invert = Rcpp::as<Rcpp::List>(mask)["invert"];
+      
+      if (Rcpp::as<Rcpp::List>(mask)["values"] != R_NilValue) {
+        std::vector<double> values = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(mask)["values"]);
+        std::vector<uint8_t> bits;
+        if (Rcpp::as<Rcpp::List>(mask)["bits"] != R_NilValue)
+          bits =  Rcpp::as<std::vector<uint8_t>>(Rcpp::as<Rcpp::List>(mask)["bits"]);
+        (*x)->set_mask(band_name, std::make_shared<value_mask>(std::unordered_set<double>(values.begin(), values.end()), invert, bits));
+      }
+      else {
+        double min = Rcpp::as<Rcpp::List>(mask)["min"];
+        double max = Rcpp::as<Rcpp::List>(mask)["max"];
+        std::vector<uint8_t> bits;
+        if (Rcpp::as<Rcpp::List>(mask)["bits"] != R_NilValue)
+          bits =  Rcpp::as<std::vector<uint8_t>>(Rcpp::as<Rcpp::List>(mask)["bits"]);
+        (*x)->set_mask(band_name, std::make_shared<range_mask>(min, max, invert, bits));
+      }
+    }
+    
     
     Rcpp::XPtr< std::shared_ptr<image_collection_cube> > p(x, true) ;
     
@@ -965,6 +1101,20 @@ SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> red
 
 
 // [[Rcpp::export]]
+SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<stream_reduce_time_cube>* x = new std::shared_ptr<stream_reduce_time_cube>(stream_reduce_time_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_reduce_time_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
@@ -1074,14 +1224,26 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<stream_apply_pixel_cube>* x = new std::shared_ptr<stream_apply_pixel_cube>(stream_apply_pixel_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_apply_pixel_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-    std::shared_ptr<filter_predicate_cube>* x = new std::shared_ptr<filter_predicate_cube>(filter_predicate_cube::create(*aa, pred));
-    Rcpp::XPtr< std::shared_ptr<filter_predicate_cube> > p(x, true) ;
+    std::shared_ptr<filter_pixel_cube>* x = new std::shared_ptr<filter_pixel_cube>(filter_pixel_cube::create(*aa, pred));
+    Rcpp::XPtr< std::shared_ptr<filter_pixel_cube> > p(x, true) ;
     return p;
   }
   catch (std::string s) {
@@ -1138,15 +1300,31 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::shared_ptr<fill_time_cube>* x = new std::shared_ptr<fill_time_cube>( fill_time_cube::create(*aa, method));
+    Rcpp::XPtr< std::shared_ptr<fill_time_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {
-  if (n[0] > 1) {
-    config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread>(n[0])));
-  }
-  else {
-    config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_singlethread>()));
-  }
+  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
+
+// [[Rcpp::export]]
+void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
+  auto p = gdalcubes_swarm::from_urls(swarm);
+  //p->set_threads(nthreads);
+  config::instance()->set_default_chunk_processor(p);
+  // TODO: how to make swarm interruptible
+}
+
 
 

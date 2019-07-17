@@ -35,6 +35,9 @@ as_stars <- function(from) {
   out = stars::st_set_dimensions(out, "x", point = FALSE)
   out = stars::st_set_dimensions(out, "y", point = FALSE)
   out = stars::st_set_dimensions(out, "time", point = FALSE, values=as.POSIXct(dimension_values(from, "S")$t, tz = "GMT"))
+  
+  attr(out, "dimensions")$x$refsys = proj4(from)
+  attr(out, "dimensions")$y$refsys = proj4(from)
  
   return(out)
 }

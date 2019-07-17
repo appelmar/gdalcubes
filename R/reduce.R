@@ -111,6 +111,8 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' @param x source data cube
 #' @param expr either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube
 #' @param ... optional additional expressions (if \code{expr} is not a vector)
+#' @param FUN a user-defined R function applied over pixel time series (see Details)
+#' @param names character vector; if FUN is provided, names can be used to define the number and name of output bands
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 #' @examples 
@@ -131,26 +133,92 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #' L8.rgb.median
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
-#' more complex functions or arguments.
+#' @details 
 #' 
-#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+#' The function can either apply a built-in reducer if expr is given, or apply a custom R reducer function if FUN is provided.
+#' 
+#' In the former case, notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
+#' more complex functions or arguments. Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+#' 
+#' User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For 
+#' example, one row is the time series of a specific band. FUN should always return a numeric vector with the same number of elements, which will be interpreted
+#' as bands in the result cube. Notice that it is recommended to specify the names of the output bands as a character vector. If names are missing,
+#' the number and names of output bands is tried to be derived automatically, which may fail in some cases. 
+#' 
 #' @export
-reduce_time.cube <- function(x, expr, ...) {
+reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
   stopifnot(is.cube(x))
-  stopifnot(is.character(expr))
-  if (length(list(...))> 0) {
-    stopifnot(all(sapply(list(...), is.character)))
-    expr = c(expr, unlist(list(...)))
+  if (missing(expr) && missing(FUN)) {
+    stop("either a expr or FUN must be provided ")
+  }
+  if (!missing(FUN) && !missing(expr)) {
+    warning("received both expr and FUN, ignoring FUN")
+    FUN = NULL
+  }
+  if (!missing(FUN) && !is.function(FUN)) {
+    stop ("FUN must be a function")
   }
   
-  # parse expr to separate reducers and bands
-  reducers = gsub("\\(.*\\)", "", expr)
-  bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
-  stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_reduce_time_cube(x, reducers, bands)
-  class(x) <- c("reduce_time_cube", "cube", "xptr")
-  return(x)
+  
+  if (!missing(expr)) {
+    stopifnot(is.character(expr))
+    if (length(list(...))> 0) {
+      stopifnot(all(sapply(list(...), is.character)))
+      expr = c(expr, unlist(list(...)))
+    }
+    
+    # parse expr to separate reducers and bands
+    reducers = gsub("\\(.*\\)", "", expr)
+    bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
+    stopifnot(length(reducers) == length(bands))
+    x = libgdalcubes_create_reduce_time_cube(x, reducers, bands)
+    class(x) <- c("reduce_time_cube", "cube", "xptr")
+    return(x)
+  }
+  else {
+    
+    if (!is.null(names)) {
+      nb = length(names)
+    }
+    else {
+      # guess number of bands from provided function
+      dummy_values = matrix(rnorm(nbands(x)*10), nrow = nbands(x), ncol=10)
+      rownames(dummy_values) <- names(x)
+      tryCatch({
+        res <- as.vector(FUN(dummy_values))
+        nb <- length(res)
+        # set names
+        if (!is.null(names(res))) {
+          names = names(res)
+        }
+        else {
+          names = paste("band", 1:nb, sep="")
+        }
+      }
+        , error = function(e) {
+        stop("Failed to derive the length of the output from FUN automatically, please specify output band names with the correct size.")
+      })
+    }
+    
+    # create src file
+    # TODO: load the same packages as in the current workspace? see (.packages())
+    srcfile1 =  tempfile(".stream_",fileext = ".R")
+    srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
+    
+    cat(serialize_function(FUN),  file = srcfile1, append = FALSE)
+    
+    srcfile2 =  tempfile(".stream_",fileext = ".R")
+    srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
+    cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
+    cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
+    cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
+    
+    x = libgdalcubes_create_stream_reduce_time_cube(x, cmd, nb, names)
+    class(x) <- c("reduce_time_cube", "cube", "xptr")
+    return(x)
+  }
+  
 }
 
 

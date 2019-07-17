@@ -4,7 +4,7 @@
 \alias{reduce_time.cube}
 \title{Reduce a data cube over the time dimension}
 \usage{
-\method{reduce_time}{cube}(x, expr, ...)
+\method{reduce_time}{cube}(x, expr, ..., FUN, names = NULL)
 }
 \arguments{
 \item{x}{source data cube}
@@ -12,6 +12,10 @@
 \item{expr}{either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube}
 
 \item{...}{optional additional expressions (if \code{expr} is not a vector)}
+
+\item{FUN}{a user-defined R function applied over pixel time series (see Details)}
+
+\item{names}{character vector; if FUN is provided, names can be used to define the number and name of output bands}
 }
 \value{
 proxy data cube object
@@ -20,10 +24,15 @@ proxy data cube object
 Create a proxy data cube, which applies one or more reducer functions to selected bands over pixel time series of a data cube
 }
 \details{
-Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
-more complex functions or arguments.
+The function can either apply a built-in reducer if expr is given, or apply a custom R reducer function if FUN is provided.
 
-Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+In the former case, notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
+more complex functions or arguments. Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+
+User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For 
+example, one row is the time series of a specific band. FUN should always return a numeric vector with the same number of elements, which will be interpreted
+as bands in the result cube. Notice that it is recommended to specify the names of the output bands as a character vector. If names are missing,
+the number and names of output bands is tried to be derived automatically, which may fail in some cases.
 }
 \note{
 Implemented reducers will ignore any NAN values (as na.rm=TRUE does)

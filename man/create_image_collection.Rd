@@ -12,7 +12,7 @@ create_image_collection(files, format, out_file = tempfile(fileext =
 
 \item{format}{collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file}
 
-\item{out_file}{pptional name of the output SQLite database file, defaults to a temporary file}
+\item{out_file}{optional name of the output SQLite database file, defaults to a temporary file}
 
 \item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files}
 
@@ -22,7 +22,7 @@ create_image_collection(files, format, out_file = tempfile(fileext =
 image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 }
 \description{
-This function iterates over files or GDAL dataset identifiers and extracts datetime, image_id, and band information according to a given
+This function iterates over files or GDAL dataset identifiers and extracts datetime, image identifiers, and band information according to a given
 collection format.
 }
 \details{

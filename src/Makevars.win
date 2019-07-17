@@ -17,8 +17,12 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/reduce_space.o \
 			gdalcubes/src/window_time.o \
 			gdalcubes/src/select_bands.o \
-			gdalcubes/src/filter_predicate.o \
+			gdalcubes/src/filter_pixel.o \
+			gdalcubes/src/fill_time.o\
+			gdalcubes/src/rechunk_merge_time.o \
 			gdalcubes/src/stream.o \
+			gdalcubes/src/stream_reduce_time.o \
+			gdalcubes/src/stream_apply_pixel.o \
 			gdalcubes/src/swarm.o \
 			gdalcubes/src/view.o \
 			gdalcubes/src/dummy.o \
@@ -35,7 +39,7 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
                -DCURL_STATICLIB -DR_PACKAGE
  
 
-PKG_LIBS = -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_GDAL)/lib-4.9.3$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
+PKG_LIBS = -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_GDAL)/lib$(R_ARCH) -L$(RWINLIB_CURL)/lib$(R_ARCH) \
   -lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
 	-ljson-c -lnetcdf -lmariadbclient -lpq -lintl -lwebp -lcurl -lssh2 -lssl -lcrypto \
 	-lkea -lhdf5_cpp -lhdf5_hl -lhdf5 -lexpat -lfreexl -lcfitsio \

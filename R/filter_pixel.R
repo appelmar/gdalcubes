@@ -25,22 +25,22 @@
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
-#' L8.ndvi.filtered = filter_predicate(L8.ndvi, "NDVI > 0.5") 
+#' L8.ndvi.filtered = filter_pixel(L8.ndvi, "NDVI > 0.5") 
 #' L8.ndvi.filtered
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-filter_predicate <- function(cube, pred) {
+filter_pixel <- function(cube, pred) {
   stopifnot(is.cube(cube))
 
   x = libgdalcubes_create_filter_predicate_cube(cube, pred)
-  class(x) <- c("filter_predicate_cube", "cube", "xptr")
+  class(x) <- c("filter_pixel_cube", "cube", "xptr")
   return(x)
 }
 
 
 
-is.filter_predicate_cube  <- function(obj) {
-  if(!("filter_predicate_cube" %in% class(obj))) {
+is.filter_pixel_cube  <- function(obj) {
+  if(!("filter_pixel_cube" %in% class(obj))) {
     return(FALSE)
   }
   if (libgdalcubes_is_null(obj)) {

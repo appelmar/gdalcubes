@@ -5,14 +5,16 @@
 #'
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
+#' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
 #' @param chunking Vector of length 3 defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
 #' 
-#'  1. Filter images from the input collection that intersect with the spatiotemporal extent of the chunk
-#'  2. For all resulting images, apply gdalwarp to reproject / warp the image to the target SRS and size to a GDAL MEM dataset
-#'  3. Read the resulting data to the chunk buffer and if pixels already contain non NAN values, apply an aggregation method (as defined in the view) 
+#'  1. Find images from the input collection that intersect with the spatiotemporal extent of the chunk
+#'  2. For all resulting images, apply gdalwarp to reproject, resize, and resample to an in-memory GDAL dataset
+#'  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
+#'  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -29,25 +31,88 @@
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' raster_cube(L8.col, v)
 #'  
+#'  # using a mask on the Landsat quality bit band to filter out clouds
+#'  raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
+#'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-raster_cube <- function(image_collection, view, chunking=c(16, 256, 256)) {
+raster_cube <- function(image_collection, view, mask=NULL, chunking=c(16, 256, 256)) {
 
   stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
   chunking = as.integer(chunking)
   stopifnot(chunking[1] > 0 && chunking[2] > 0 && chunking[3] > 0)
+  if (!is.null(mask)) {
+    stopifnot(is.image_mask(mask))
+  }
   
   x = NULL
   if (!missing(view)) {
     stopifnot(is.cube_view(view))
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), view)
+    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask, view)
   }
   else {
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking))
+    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask)
   }
   class(x) <- c("image_collection_cube", "cube", "xptr")
   return(x)
+}
+
+
+#' Create a mask for images in a raster data cube 
+#'
+#' Create an image mask based on a band and provided values to filter pixels of images 
+#' read by \code{\link{raster_cube}}
+#'
+#' @details
+#' Values of the selected mask band can be based on a range (by passing \code{min} and \code{max}) or on a set of values (by passing \code{values}). By default
+#' pixels with mask values contained in the range or in the values are masked out, i.e. set to NA. Setting \code{invert = TRUE} will invert the masking behavior.
+#' Passing \code{values} will override \code{min} and \code{max}.
+#' 
+#' @note 
+#' Notice that masks are applied per image while reading images as a raster cube. They can be useful to eliminate e.g. cloudy pixels before applying the temporal aggregation to
+#' merge multiple values for the same data cube pixel.
+#' 
+#' @examples 
+#' image_mask("SCL", values = c(3,8,9)) # Sentinel 2 L2A: mask cloud and cloud shadows
+#' image_mask("BQA", bits=4, values=16) # Landsat 8: mask clouds
+#' image_mask("B10", min = 8000, max=65000) 
+#' 
+#' @param band name of the mask band
+#' @param min minimum value, values between \code{min} and \code{max} will be masked
+#' @param max maximum value, values between \code{min} and \code{max} will be masked 
+#' @param values numeric vector; specific values that will be masked. 
+#' @param bits for bitmasks, extract the given bits (integer vector) with a bitwise AND before filtering the mask values, bit indexes are zero-based
+#' @param invert logical; invert mask
+#' @export
+image_mask <- function(band, min=NULL, max=NULL, values=NULL, bits=NULL, invert=FALSE) {
+  if (is.null(values) && is.null(min) && is.null(max)) {
+    stop("either values or min and max must be provided")
+  } 
+  if (is.null(values) && is.null(min) && !is.null(max)) {
+    stop("either values or min AND max must be provided")
+  } 
+  if (is.null(values) && !is.null(min) && is.null(max)) {
+    stop("either values or min AND max must be provided")
+  } 
+  if (!is.null(values)) {
+    if (!is.null(min) || !is.null(max)) {
+      warning("using values instead of min / max")
+    }
+    out = list(band = band, values = values, invert = invert, bits = bits)
+  }  
+  else {
+    out = list(band = band, min = min, max = max, invert = invert, bits = bits)
+  }
+  class(out) <- "image_mask"
+  return(out)
+}
+
+is.image_mask <- function(obj) {
+  if(!("image_mask" %in% class(obj))) {
+    return(FALSE)
+  }
+  return(TRUE)
 }
 
 
@@ -483,11 +548,18 @@ as_json <- function(obj) {
 #' This function will read chunks of a data cube and write them to a single netCDF file. The resulting
 #' file uses the enhanced netCDF-4 format (for chunking and compression).
 #' 
-#' @seealso \url{https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/NetCDF_002d4-Format.html#NetCDF_002d4-Format}
+#' @seealso \url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
 #' @seealso \code{\link{gdalcubes_set_ncdf_compression}} 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
-#' @details The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+#' @param overwrite logical; overwrite output file if it already exists
+#' @param write_json_descr logical; write a JSON description of x as additional file
+#' @details 
+#' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+#' 
+#' If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
+#' ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
+#' 
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
@@ -503,8 +575,12 @@ as_json <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc")) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE) {
   stopifnot(is.cube(x))
+  
+  if (!overwrite && file.exists(fname)) {
+    stop("File already exists, please change the output filename or set overwrite = TRUE")
+  }
   
   if (.pkgenv$use_cube_cache) {
     j = as_json(x)
@@ -518,6 +594,9 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
   }
   else {
     libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+  }
+  if (write_json_descr) {
+    writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
   invisible()
 }

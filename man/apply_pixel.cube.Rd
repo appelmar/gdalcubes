@@ -4,7 +4,7 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, ...)
+\method{apply_pixel}{cube}(x, expr, names = NULL, ..., FUN)
 }
 \arguments{
 \item{x}{source data cube}
@@ -14,6 +14,8 @@
 \item{names}{optional character vector with the same length as expr to specify band names for the output cube}
 
 \item{...}{not used}
+
+\item{FUN}{user-defined R function that is applied on all pixels (see Details)}
 }
 \value{
 a proxy data cube object
@@ -22,8 +24,13 @@ a proxy data cube object
 Create a proxy data cube, which applies arithmetic expressions over all pixels of a data cube. Expressions may access band values by name.
 }
 \details{
-gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
+The function can either apply simple arithmetic C expressions given as a character vector (expr argument), or apply a custom R reducer function if FUN is provided.
+
+In the former case, gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
 to see what kind of expressions you can execute. Pixel band values can be accessed by name.
+
+FUN receives values of the bands from one pixel as a (named) vector and should return a numeric vector with identical length for all pixels. Elements of the
+result vectors will be interpreted as bands in the result data cube.
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
@@ -37,6 +44,7 @@ if (!file.exists(file.path(tempdir(), "L8.db"))) {
   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
 }
 
+# 1. Apply a C expression
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
@@ -45,5 +53,12 @@ L8.cube = raster_cube(L8.col, v)
 L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 L8.ndvi
+
+# 2. Apply a user defined R function
+L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy", 
+   FUN=function(x) {
+       rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
+   })
+L8.ndvi.noisy
  
 }

@@ -4,12 +4,15 @@
 \alias{raster_cube}
 \title{Create a data cube from an image collection}
 \usage{
-raster_cube(image_collection, view, chunking = c(16, 256, 256))
+raster_cube(image_collection, view, mask = NULL, chunking = c(16, 256,
+  256))
 }
 \arguments{
 \item{image_collection}{Source image collection as from \code{image_collection} or \code{create_image_collection}}
 
 \item{view}{A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used}
+
+\item{mask}{mask pixels of images based on band values, see \code{\link{image_mask}}}
 
 \item{chunking}{Vector of length 3 defining the size of data cube chunks in the order time, y, x.}
 }
@@ -22,9 +25,10 @@ Create a proxy data cube, which loads data from a given image collection accordi
 \details{
 The following steps will be performed when the data cube is requested to read data of a chunk:
 
- 1. Filter images from the input collection that intersect with the spatiotemporal extent of the chunk
- 2. For all resulting images, apply gdalwarp to reproject / warp the image to the target SRS and size to a GDAL MEM dataset
- 3. Read the resulting data to the chunk buffer and if pixels already contain non NAN values, apply an aggregation method (as defined in the view)
+ 1. Find images from the input collection that intersect with the spatiotemporal extent of the chunk
+ 2. For all resulting images, apply gdalwarp to reproject, resize, and resample to an in-memory GDAL dataset
+ 3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
+ 4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
@@ -43,5 +47,8 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 raster_cube(L8.col, v)
+ 
+ # using a mask on the Landsat quality bit band to filter out clouds
+ raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
  
 }
