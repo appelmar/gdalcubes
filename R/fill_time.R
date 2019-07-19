@@ -1,5 +1,5 @@
 
-#' Fill NA data cube pixels by time series interpolation
+#' Fill NA data cube pixels by simple time series interpolation
 #' 
 #' Create a proxy data cube, which fills NA pixels of a data cube by nearest neighbor or linear time series interpolation. 
 #' 
@@ -15,8 +15,12 @@
 #' L8.filled = fill_time(L8.rgb, "linear")
 #' plot(L8.filled, rgb=3:1, zlim=c(5000,12000))
 #' 
+#' @details 
+#' 
+#' Please notice that completely empty (NA) time series will not be filled, i.e. the result cube might still contain NA values. 
+#' 
 #' @param cube source data cube
-#' @param method interpolation method, can be "near, "linear", "repead_prec", or "repeat_succ"
+#' @param method interpolation method, can be "near, "linear", "repeat_prec", or "repeat_succ"
 #' @return a proxy data cube object
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export

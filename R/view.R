@@ -416,7 +416,7 @@ print.cube_view <- function(x, ...) {
   dims = data.frame(low   = c(x$space$left, x$space$bottom, x$time$t0),
                     high  = c(x$space$right, x$space$top, x$time$t1),
                     count = c(x$space$nx, x$space$ny, x$time$nt),
-                    size  = c(x$space$dx, x$space$dy, x$time$dt))
+                    pixel_size  = c(x$space$dx, x$space$dy, x$time$dt))
   rownames(dims) <- c("x", "y", "t")
   dims = dims[3:1, ] # reverse rows
   print(dims)

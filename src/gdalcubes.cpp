@@ -294,40 +294,37 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
     
     std::shared_ptr<cube> x = *aa;
     
-    Rcpp::CharacterVector d_name(3);
-    Rcpp::NumericVector d_low(3);
-    Rcpp::NumericVector d_high(3);
-    Rcpp::IntegerVector d_n(3);
-    Rcpp::IntegerVector d_chunk(3);
     
-    d_name[0] = "t";
-    d_low[0] = x->st_reference()->t0().to_double();
-    d_high[0] = x->st_reference()->t1().to_double();
-    d_n[0] = x->st_reference()->nt();
-    d_chunk[0] = x->chunk_size()[0];
+    Rcpp::List dims =
+      Rcpp::List::create(Rcpp::Named("time")=
+        Rcpp::List::create(
+          Rcpp::Named("low") = x->st_reference()->t0().to_string(),
+          Rcpp::Named("high") = x->st_reference()->t1().to_string(),
+          Rcpp::Named("count") = x->st_reference()->nt(),
+          Rcpp::Named("size") = x->st_reference()->dt().to_string(),
+          Rcpp::Named("chunk_size") = x->chunk_size()[0]),
+        Rcpp::List::create(
+          Rcpp::Named("low") = x->st_reference()->bottom(),
+          Rcpp::Named("high") = x->st_reference()->top(),
+          Rcpp::Named("count") = x->st_reference()->ny(),
+          Rcpp::Named("size") = x->st_reference()->dy(),
+          Rcpp::Named("chunk_size") = x->chunk_size()[1]),
+        Rcpp::List::create(
+          Rcpp::Named("low") = x->st_reference()->left(),
+          Rcpp::Named("high") = x->st_reference()->right(),
+          Rcpp::Named("count") = x->st_reference()->nx(),
+          Rcpp::Named("size") = x->st_reference()->dx(),
+          Rcpp::Named("chunk_size") = x->chunk_size()[2])
+      );
+                         
+                         
+                      
+                       
     
-    d_name[1] = "y";
-    d_low[1] = x->st_reference()->bottom();
-    d_high[1] = x->st_reference()->top();
-    d_n[1] = x->st_reference()->ny();
-    d_chunk[1] = x->chunk_size()[1];
     
-    d_name[2] = "x";
-    d_low[2] = x->st_reference()->left();
-    d_high[2] = x->st_reference()->right();
-    d_n[2] = x->st_reference()->nx();
-    d_chunk[2] = x->chunk_size()[2];
-    
-    
-    Rcpp::DataFrame dims =
-      Rcpp::DataFrame::create(Rcpp::Named("name")=d_name,
-                              Rcpp::Named("low")=d_low,
-                              Rcpp::Named("high")=d_high,
-                              Rcpp::Named("size")=d_n,
-                              Rcpp::Named("chunk_size")=d_chunk);
     
     Rcpp::CharacterVector b_names(x->bands().count(), "");
-    Rcpp::CharacterVector b_type(x->bands().count(), "");
+    //Rcpp::CharacterVector b_type(x->bands().count(), "");
     Rcpp::NumericVector b_offset(x->bands().count(), NA_REAL);
     Rcpp::NumericVector b_scale(x->bands().count(), NA_REAL);
     Rcpp::NumericVector b_nodata(x->bands().count(), NA_REAL);
@@ -335,7 +332,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
     
     for (uint16_t i=0; i<x->bands().count(); ++i) {
       b_names[i] = x->bands().get(i).name;
-      b_type[i] = x->bands().get(i).type;
+     // b_type[i] = x->bands().get(i).type;
       b_offset[i] = x->bands().get(i).offset;
       b_scale[i] = x->bands().get(i).scale;
       b_nodata[i] = (x->bands().get(i).no_data_value.empty())? NA_REAL : std::stod(x->bands().get(i).no_data_value);
@@ -344,7 +341,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
     
     Rcpp::DataFrame bands =
       Rcpp::DataFrame::create(Rcpp::Named("name")=b_names,
-                              Rcpp::Named("type")=b_type,
+                              //Rcpp::Named("type")=b_type,
                               Rcpp::Named("offset")=b_offset,
                               Rcpp::Named("scale")=b_scale,
                               Rcpp::Named("nodata")=b_nodata,
@@ -363,7 +360,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
                               Rcpp::Named("srs") = x->st_reference()->srs(),
                               Rcpp::Named("proj4") = sproj4,
                               Rcpp::Named("graph") = x->make_constructible_json().dump(2),
-                              Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3]));
+                              Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3])); // TODO: remove size element
     
   }
   catch (std::string s) {
@@ -619,7 +616,7 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
     
     
     
-    std::vector<image_collection::bands_row> bands = ic->get_bands();
+    std::vector<image_collection::bands_row> bands = ic->get_available_bands();
     
     
     Rcpp::CharacterVector bands_name( bands.size());

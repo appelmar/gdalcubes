@@ -45,7 +45,8 @@ Description: Processing collections of Earth observation images as on-demand mul
     moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as 'netCDF' files,
     and plotting. User-defined 'R' functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
     multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries.
-Depends: R (>= 3.3.0), Rcpp, RcppProgress, jsonlite, ncdf4
+Depends: R (>= 3.3.0)
+Imports: Rcpp, RcppProgress, jsonlite, ncdf4
 License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/
@@ -58,7 +59,8 @@ Suggests:
     magrittr,
     processx,
     rmarkdown,
-    stars
+    stars,
+    magick
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

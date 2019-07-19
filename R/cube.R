@@ -166,8 +166,10 @@ print.cube <- function(x, ...) {
   }
   y = libgdalcubes_cube_info(x)
   cat("A GDAL data cube proxy object\n")
+  cat("\n")
   cat("Dimensions:\n")
-  print(y$dimensions)
+  print(dimensions(x))
+  
   cat("\n")
   cat("Bands:\n")
   print(y$bands)
@@ -279,8 +281,17 @@ dimensions <- function(obj) {
   if (libgdalcubes_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  x = libgdalcubes_cube_info(obj)
-  return(x$dimensions)
+  y = libgdalcubes_cube_info(obj)
+  dimensions = data.frame(
+    #name = c("time","y","x"),
+    low = sapply(y$dimensions, function(z) z$low),
+    high = sapply(y$dimensions, function(z) z$high),
+    count = sapply(y$dimensions, function(z) z$count),
+    pixel_size = sapply(y$dimensions, function(z) z$size),
+    chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
+  )
+  rownames(dimensions) = c("t","y","x")
+  return(dimensions)
 }
 
 #' Query data cube properties 
@@ -577,7 +588,7 @@ as_json <- function(obj) {
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE) {
   stopifnot(is.cube(x))
-  
+  fname = path.expand(fname)
   if (!overwrite && file.exists(fname)) {
     stop("File already exists, please change the output filename or set overwrite = TRUE")
   }
