@@ -168,7 +168,16 @@ print.cube <- function(x, ...) {
   cat("A GDAL data cube proxy object\n")
   cat("\n")
   cat("Dimensions:\n")
-  print(dimensions(x))
+  dimensions = data.frame(
+    #name = c("time","y","x"),
+    low = sapply(y$dimensions, function(z) z$low),
+    high = sapply(y$dimensions, function(z) z$high),
+    count = sapply(y$dimensions, function(z) z$count),
+    pixel_size = sapply(y$dimensions, function(z) z$pixel_size),
+    chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
+  )
+  rownames(dimensions) = c("t","y","x")
+  print(dimensions)
   
   cat("\n")
   cat("Bands:\n")
@@ -259,7 +268,9 @@ names.cube <- function(x) {
 
 #' Query data cube properties 
 #' 
-#' @return Dimension information as a data.frame, where each row represents a dimension and columns represent properties such as dimension boundaries, names, and chunk size
+#' @return Dimension information as a list
+#' 
+#' @details Elements of the returned list represent individual dimensions with properties such as dimension boundaries, names, and chunk size stored as inner lists
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
@@ -282,16 +293,7 @@ dimensions <- function(obj) {
     stop("GDAL data cube proxy object is invalid")
   }
   y = libgdalcubes_cube_info(obj)
-  dimensions = data.frame(
-    #name = c("time","y","x"),
-    low = sapply(y$dimensions, function(z) z$low),
-    high = sapply(y$dimensions, function(z) z$high),
-    count = sapply(y$dimensions, function(z) z$count),
-    pixel_size = sapply(y$dimensions, function(z) z$size),
-    chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
-  )
-  rownames(dimensions) = c("t","y","x")
-  return(dimensions)
+  return(y$dimensions)
 }
 
 #' Query data cube properties 

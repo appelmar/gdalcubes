@@ -14,8 +14,6 @@ matrix:
     
 dist: xenial
 
-
-
 addons:
   apt:
     sources:
@@ -27,6 +25,7 @@ addons:
       - netcdf-bin
       - libudunits2-dev
       - libcurl4-openssl-dev
+      - libmagick++-dev # only needed for animate function
   homebrew:
     packages:
       - pkg-config
@@ -36,6 +35,7 @@ addons:
       - curl
       - libgit2
       - udunits
+      - brew reinstall imagemagick@6 --with-fontconfig --with-librsvg # only needed for animate function
     update: true
 
 

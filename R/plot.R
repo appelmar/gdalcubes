@@ -593,12 +593,12 @@ plot.cube  <-
       
       
       
-      dimsx = seq(dims$low[3], dims$high[3], length.out = size[4])
-      dimsy = seq(dims$low[2], dims$high[2], length.out = size[3])
-      asp = ((dims$high[2] - dims$low[2]) / dims$size[2]) / ((dims$high[3] - dims$low[3]) /
-                                                               dims$size[3])
-      ylim = c(dims$low[2], dims$high[2])
-      xlim = c(dims$low[3], dims$high[3])
+      dimsx = seq(dims$x$low, dims$x$high, length.out = size[4])
+      dimsy = seq(dims$y$low, dims$y$high, length.out = size[3])
+      asp = ((dims$y$high - dims$y$low) / dims$y$count) / ((dims$x$high - dims$x$low) /
+                                                               dims$x$count)
+      ylim = c(dims$y$low, dims$y$high)
+      xlim = c(dims$x$low, dims$x$high)
       
       #dimst = seq(from = dims$low[1], by = (dims$high[1] - dims$low[1] + 1) %/% size[2], length.out = size[2])
       

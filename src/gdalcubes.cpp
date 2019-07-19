@@ -296,25 +296,28 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
     
     
     Rcpp::List dims =
-      Rcpp::List::create(Rcpp::Named("time")=
-        Rcpp::List::create(
-          Rcpp::Named("low") = x->st_reference()->t0().to_string(),
-          Rcpp::Named("high") = x->st_reference()->t1().to_string(),
-          Rcpp::Named("count") = x->st_reference()->nt(),
-          Rcpp::Named("size") = x->st_reference()->dt().to_string(),
-          Rcpp::Named("chunk_size") = x->chunk_size()[0]),
-        Rcpp::List::create(
-          Rcpp::Named("low") = x->st_reference()->bottom(),
-          Rcpp::Named("high") = x->st_reference()->top(),
-          Rcpp::Named("count") = x->st_reference()->ny(),
-          Rcpp::Named("size") = x->st_reference()->dy(),
-          Rcpp::Named("chunk_size") = x->chunk_size()[1]),
-        Rcpp::List::create(
-          Rcpp::Named("low") = x->st_reference()->left(),
-          Rcpp::Named("high") = x->st_reference()->right(),
-          Rcpp::Named("count") = x->st_reference()->nx(),
-          Rcpp::Named("size") = x->st_reference()->dx(),
-          Rcpp::Named("chunk_size") = x->chunk_size()[2])
+      Rcpp::List::create(
+        Rcpp::Named("t")=
+          Rcpp::List::create(
+            Rcpp::Named("low") = x->st_reference()->t0().to_string(),
+            Rcpp::Named("high") = x->st_reference()->t1().to_string(),
+            Rcpp::Named("count") = x->st_reference()->nt(),
+            Rcpp::Named("pixel_size") = x->st_reference()->dt().to_string(),
+            Rcpp::Named("chunk_size") = x->chunk_size()[0]),
+        Rcpp::Named("y") =  
+          Rcpp::List::create(
+            Rcpp::Named("low") = x->st_reference()->bottom(),
+            Rcpp::Named("high") = x->st_reference()->top(),
+            Rcpp::Named("count") = x->st_reference()->ny(),
+            Rcpp::Named("pixel_size") = x->st_reference()->dy(),
+            Rcpp::Named("chunk_size") = x->chunk_size()[1]),
+        Rcpp::Named("x")=
+          Rcpp::List::create(
+            Rcpp::Named("low") = x->st_reference()->left(),
+            Rcpp::Named("high") = x->st_reference()->right(),
+            Rcpp::Named("count") = x->st_reference()->nx(),
+            Rcpp::Named("pixel_size") = x->st_reference()->dx(),
+            Rcpp::Named("chunk_size") = x->chunk_size()[2])
       );
                          
                          
