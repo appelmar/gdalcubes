@@ -25,6 +25,8 @@
 ^travis-tool.sh.cmd$
 ^S2_demo.R$
 ^S2demo.db$
+^L8.db$
+^S2demo.db$
 ^S1_demo.R$
 ^S1demo.db$
 ^src/gdalcubes/.gitignore$

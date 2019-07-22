@@ -59,7 +59,7 @@ animate  <-
       
   
     fname_start = tempfile()
-    png(file=paste(fname_start, "_%04d.png", sep=""), width=width, height=height)
+    png(filename = paste(fname_start, "_%04d.png", sep=""), width=width, height=height)
 
     tryCatch({
       for (i in 1:size[2]) {

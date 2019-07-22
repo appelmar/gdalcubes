@@ -10,10 +10,13 @@ dimensions(obj)
 \item{obj}{a data cube proxy object (class cube)}
 }
 \value{
-Dimension information as a data.frame, where each row represents a dimension and columns represent properties such as dimension boundaries, names, and chunk size
+Dimension information as a list
 }
 \description{
 Query data cube properties
+}
+\details{
+Elements of the returned list represent individual dimensions with properties such as dimension boundaries, names, and chunk size stored as inner lists
 }
 \examples{
 # create image collection from example Landsat data only 
