@@ -76,7 +76,7 @@ gdalcubes_set_threads <- function(n=1) {
   stopifnot(n >= 1)
   stopifnot(n%%1==0)
   libgdalcubes_set_threads(n)
-  .pkgenv$threads(n)
+  .pkgenv$threads = n
   invisible()
 }
 
