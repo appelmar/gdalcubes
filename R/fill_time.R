@@ -29,7 +29,7 @@
 #' Please notice that completely empty (NA) time series will not be filled, i.e. the result cube might still contain NA values. 
 #' 
 #' @param cube source data cube
-#' @param method interpolation method, can be "near, "linear", "repeat_prec", or "repeat_succ"
+#' @param method interpolation method, can be "near" (nearest neighbor), "linear" (linear interpolation), "locf" (last observation carried forward), or "nocb" (next observation carried backward)
 #' @return a proxy data cube object
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export

@@ -8,7 +8,8 @@
 #' @param loop how many iterations, 0 = infinite
 #' @param width width (in pixels) of the animation
 #' @param height height (in pixels) of the animation
-#' @param save_as character path where the animation shall be stored as a gif file 
+#' @param save_as character path where the animation shall be stored as a gif file
+#' @param plot logical; plot the animation (default is TRUE) 
 #' @details 
 #' Animations can be created for single band data cubes or RGB plots of multi-band data cubes (by providing the argument rgb) only.
 #' @seealso \code{\link[magick]{image_animate}}
@@ -39,11 +40,16 @@ animate  <-
            loop = 0,
            width = dev.size(units = "px")[1],
            height = dev.size(units = "px")[2],
-           save_as = NULL 
+           save_as = NULL,
+           plot = TRUE
            ) {
     
     if (!requireNamespace("magick", quietly = TRUE))
       stop("magick package not found, please install first") 
+    
+    if(is.null(save_as) && !plot) {
+      stop("nothing to do, please set either plot = TRUE or save_as to a filename")
+    }
     
     stopifnot(is.cube(x))
     size = c(nbands(x), size(x))
@@ -78,6 +84,7 @@ animate  <-
     if (!is.null(save_as)) {
       magick::image_write(animation, save_as)
     }
-    print(animation)
+    if (plot)
+      print(animation)
     invisible()
   }

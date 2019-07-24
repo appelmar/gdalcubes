@@ -9,7 +9,6 @@
 #' @param ncdf_compression_level integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression
 #' @param debug logical;  print debug messages
 #' @param cache logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes
-#' @param swarm character vector with URLs pointing to gdalcubes_server API endpoints, used to evaluate cube chunks (experimental)
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -24,7 +23,7 @@
 #' gdalcubes_options(threads=4) # set the number of threads
 #' gdalcubes_options() # print current options
 #' @export
-gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, swarm) {
+gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -45,13 +44,13 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     stopifnot(is.logical(cache))
     .pkgenv$use_cube_cache = cache
   }
-  if (!missing(swarm)) {
-    stopifnot(is.character(swarm))
-    # check whether all endpoints are accessible
-    #libgdalcubes_set_swarm(swarm)
-    warning("swarm mode is currently not supported by the R package")
-    .pkgenv$swarm = swarm
-  }
+  # if (!missing(swarm)) {
+  #   stopifnot(is.character(swarm))
+  #   # check whether all endpoints are accessible
+  #   #libgdalcubes_set_swarm(swarm)
+  #   warning("swarm mode is currently not supported by the R package")
+  #   .pkgenv$swarm = swarm
+  # }
   if (nargs() == 0) {
     return(list(
       threads = .pkgenv$threads,
@@ -71,12 +70,13 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
 #' @param n number of threads
 #' @examples 
 #' gdalcubes_set_threads(1)
-#' @note THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+#' @note THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 #' @export
 gdalcubes_set_threads <- function(n=1) {
   stopifnot(n >= 1)
   stopifnot(n%%1==0)
   libgdalcubes_set_threads(n)
+  .pkgenv$threads(n)
   invisible()
 }
 
@@ -95,10 +95,11 @@ gdalcubes_version <- function() {
 #' @examples 
 #' gdalcubes_debug_output(TRUE)
 #' gdalcubes_debug_output(FALSE)
-#' @note THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+#' @note THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 #' @export
 gdalcubes_debug_output <- function(debug=TRUE) {
    libgdalcubes_debug_output(debug)
+  .pkgenv$debug = debug
   invisible()
 }
 
@@ -108,7 +109,7 @@ gdalcubes_debug_output <- function(debug=TRUE) {
 #' @examples 
 #' gdalcubes_set_ncdf_compression(9) # maximum compression
 #' gdalcubes_set_ncdf_compression(0) # no compression
-#' @note THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+#' @note THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 #' @export
 gdalcubes_set_ncdf_compression <- function(level=2) {
   stopifnot(level %% 1 == 0)
@@ -145,7 +146,7 @@ gdalcubes_gdalversion <- function() {
 #' @param enable logical, TRUE if you want to use the data cube cache
 #' @examples 
 #' gdalcubes_use_cache(FALSE)
-#' @note THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+#' @note THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 #' @export
 gdalcubes_use_cache <- function(enable=TRUE) {
   .pkgenv$use_cube_cache = enable
