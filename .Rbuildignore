@@ -24,6 +24,7 @@
 ^cran-comments.md$
 ^travis-tool.sh.cmd$
 ^S2_demo.R$
+^L8_demo.R$
 ^S2demo.db$
 ^L8.db$
 ^S2demo.db$

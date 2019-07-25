@@ -5,7 +5,7 @@
 \title{Animate a data cube as an image time series}
 \usage{
 animate(x, ..., fps = 1, loop = 0, width = dev.size(units = "px")[1],
-  height = dev.size(units = "px")[2], save_as = NULL)
+  height = dev.size(units = "px")[2], save_as = NULL, plot = TRUE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -21,6 +21,8 @@ animate(x, ..., fps = 1, loop = 0, width = dev.size(units = "px")[1],
 \item{height}{height (in pixels) of the animation}
 
 \item{save_as}{character path where the animation shall be stored as a gif file}
+
+\item{plot}{logical; plot the animation (default is TRUE)}
 }
 \description{
 Animate a data cube as an image time series

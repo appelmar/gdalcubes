@@ -132,6 +132,15 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #' L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #' L8.rgb.median
+#' 
+#' # user defined reducer calculating interquartile ranges
+#' L8.rgb.iqr = reduce_time(L8.rgb, names=c("iqr_R", "iqr_G","iqr_B"), FUN = function(x) {
+#'     c(diff(quantile(x["B04",],c(0.25,0.75), na.rm=TRUE)),
+#'       diff(quantile(x["B03",],c(0.25,0.75), na.rm=TRUE)),
+#'       diff(quantile(x["B02",],c(0.25,0.75), na.rm=TRUE)))
+#' })
+#' L8.rgb.iqr
+#' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
 #' 

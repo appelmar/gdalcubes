@@ -13,7 +13,7 @@ gdalcubes_debug_output(debug = TRUE)
 Enable or disable debug output from the gdalcubes C++ library
 }
 \note{
-THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 }
 \examples{
 gdalcubes_debug_output(TRUE)

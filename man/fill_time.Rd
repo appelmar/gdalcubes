@@ -9,7 +9,7 @@ fill_time(cube, method = "near")
 \arguments{
 \item{cube}{source data cube}
 
-\item{method}{interpolation method, can be "near, "linear", "repeat_prec", or "repeat_succ"}
+\item{method}{interpolation method, can be "near" (nearest neighbor), "linear" (linear interpolation), "locf" (last observation carried forward), or "nocb" (next observation carried backward)}
 }
 \value{
 a proxy data cube object

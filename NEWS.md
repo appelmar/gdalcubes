@@ -10,6 +10,10 @@
 * add `animate()` function to create data cube time series animations
 * fix windows source compilation on CRAN
 * consistent output for printing data cube views and data cubes
+* new collection format for Sentinel-2 data on Theia
+* add `as_array()` function to convert a data cube to a native in-memory R array
+* collection formats can now overwrite scale, offset, and unit for bands
+
 
 # gdalcubes 0.1.0 (2019-05-15)
 

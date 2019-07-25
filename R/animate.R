@@ -86,5 +86,5 @@ animate  <-
     }
     if (plot)
       print(animation)
-    invisible()
+    return(animation)
   }

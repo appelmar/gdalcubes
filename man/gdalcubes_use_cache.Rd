@@ -19,7 +19,7 @@ For example, changing only parameters to \code{plot} will not require
 rerunning the full data cube operation chain.
 }
 \note{
-THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 }
 \examples{
 gdalcubes_use_cache(FALSE)

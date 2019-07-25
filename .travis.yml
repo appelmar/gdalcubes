@@ -35,7 +35,7 @@ addons:
       - curl
       - libgit2
       - udunits
-      - brew reinstall imagemagick@6 --with-fontconfig --with-librsvg # only needed for animate function
+      - imagemagick@6 # only needed for animate function
     update: true
 
 
