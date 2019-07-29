@@ -395,14 +395,27 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_eval_cube
-void libgdalcubes_eval_cube(SEXP pin, std::string outfile, uint8_t compression_level);
-RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP, SEXP compression_levelSEXP) {
+void libgdalcubes_eval_cube(SEXP pin, std::string outfile, uint8_t compression_level, bool with_VRT);
+RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP, SEXP compression_levelSEXP, SEXP with_VRTSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
     Rcpp::traits::input_parameter< uint8_t >::type compression_level(compression_levelSEXP);
-    libgdalcubes_eval_cube(pin, outfile, compression_level);
+    Rcpp::traits::input_parameter< bool >::type with_VRT(with_VRTSEXP);
+    libgdalcubes_eval_cube(pin, outfile, compression_level, with_VRT);
+    return R_NilValue;
+END_RCPP
+}
+// libgdalcubes_write_COG
+void libgdalcubes_write_COG(SEXP pin, std::string dir, std::string prefix);
+RcppExport SEXP _gdalcubes_libgdalcubes_write_COG(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dir(dirSEXP);
+    Rcpp::traits::input_parameter< std::string >::type prefix(prefixSEXP);
+    libgdalcubes_write_COG(pin, dir, prefix);
     return R_NilValue;
 END_RCPP
 }
@@ -485,7 +498,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube, 4},
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},
-    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 3},
+    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 4},
+    {"_gdalcubes_libgdalcubes_write_COG", (DL_FUNC) &_gdalcubes_libgdalcubes_write_COG, 3},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},

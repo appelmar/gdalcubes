@@ -1273,10 +1273,21 @@ void libgdalcubes_debug_output( bool debug) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0) {
+void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, bool with_VRT=false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    (*aa)->write_netcdf_file(outfile, compression_level);
+    (*aa)->write_netcdf_file(outfile, compression_level, with_VRT);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
+void libgdalcubes_write_COG( SEXP pin, std::string dir, std::string prefix="") {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    (*aa)->write_COG_collection(dir, prefix);
   }
   catch (std::string s) {
     Rcpp::stop(s);

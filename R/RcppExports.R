@@ -133,8 +133,12 @@ libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }
 
-libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L) {
-    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level))
+libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L, with_VRT = FALSE) {
+    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level, with_VRT))
+}
+
+libgdalcubes_write_COG <- function(pin, dir, prefix = "") {
+    invisible(.Call('_gdalcubes_libgdalcubes_write_COG', PACKAGE = 'gdalcubes', pin, dir, prefix))
 }
 
 libgdalcubes_create_stream_cube <- function(pin, cmd) {

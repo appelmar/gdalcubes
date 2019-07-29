@@ -556,7 +556,7 @@ as_json <- function(obj) {
 
 
 
-#' Materialize a data cube as a netCDF file
+#' Export a data cube as a netCDF file
 #' 
 #' This function will read chunks of a data cube and write them to a single netCDF file. The resulting
 #' file uses the enhanced netCDF-4 format (for chunking and compression).
@@ -567,6 +567,7 @@ as_json <- function(obj) {
 #' @param fname output file name
 #' @param overwrite logical; overwrite output file if it already exists
 #' @param write_json_descr logical; write a JSON description of x as additional file
+#' @param with_VRT logical; write additional VRT datasets (one per time slice)  
 #' @details 
 #' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
 #' 
@@ -588,7 +589,7 @@ as_json <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE, with_VRT=FALSE) {
   stopifnot(is.cube(x))
   fname = path.expand(fname)
   if (!overwrite && file.exists(fname)) {
@@ -602,17 +603,94 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
       file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
     }
     else {
-      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
     }
   }
   else {
-    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
   }
   if (write_json_descr) {
     writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
   invisible()
 }
+
+
+
+
+
+
+
+#' Export a data cube as a collection of cloud-optimized GeoTIFF files
+#' 
+#' This function will time slices of a data cube as cloud-optimized GeoTIFF files
+#' in a given directory. 
+#' 
+#' @param dir a data cube proxy object (class cube)
+#' @param prefix output file name
+#' @param write_json_descr logical; write a JSON description of x as additional file
+#' 
+#' @return Vector of created GeoTIFF files
+#' 
+#' If \code{write_json_descr} is TRUE, the function will write an additional file with name according to prefix (if not missing) or simply cube.json 
+#' This file includes a serialized description of the input data cube, including all chained data cube operations.
+#' 
+#' @examples 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' write_COG(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
+#' @export
+write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", write_json_descr=FALSE) {
+  stopifnot(is.cube(x))
+  dir = path.expand(dir)
+  if (dir.exists(dir)) {
+    stop("Directory already exists")
+  }
+  
+  # if (.pkgenv$use_cube_cache) {
+  #   j = as_json(x)
+  #   if (!is.null(.pkgenv$cube_cache[[j]])
+  #       && file.exists(.pkgenv$cube_cache[[j]])) {
+  #     file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
+  #   }
+  #   else {
+  #     libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+  #   }
+  # }
+  # else {
+  #   libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+  # }
+  libgdalcubes_write_COG(x, dir, prefix)
+  if (write_json_descr) {
+    if (prefix == "") {
+      writeLines(as_json(x), file.path(dir, "cube.json"))
+    }
+    else {
+      writeLines(as_json(x), file.path(dir, paste(prefix, ".json", sep="")))
+    }
+  }
+  return(list.files(path = dir,pattern = ".tif", full.names = TRUE))
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
