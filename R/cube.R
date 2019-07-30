@@ -628,12 +628,19 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' 
 #' @param dir a data cube proxy object (class cube)
 #' @param prefix output file name
+#' @param rsmpl_overview resampling method for overview (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
+#' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})
 #' @param write_json_descr logical; write a JSON description of x as additional file
 #' 
 #' @return Vector of created GeoTIFF files
 #' 
+#' @details 
+#' 
 #' If \code{write_json_descr} is TRUE, the function will write an additional file with name according to prefix (if not missing) or simply cube.json 
 #' This file includes a serialized description of the input data cube, including all chained data cube operations.
+#' 
+#' Additional GDAL creation options for resulting GeoTIFF files must be passed as a named list of simple strings, where element names refer to the key. For example,
+#' \code{creation_options = list("COMPRESS" = "DEFLATE", "ZLEVEL" = "5")} would enable deflate compression at level 5.
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -650,27 +657,24 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_COG(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
 #' @export
-write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", write_json_descr=FALSE) {
+write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", rsmpl_overview="nearest", creation_options = NULL , write_json_descr=FALSE) {
   stopifnot(is.cube(x))
   dir = path.expand(dir)
   if (dir.exists(dir)) {
     stop("Directory already exists")
   }
   
-  # if (.pkgenv$use_cube_cache) {
-  #   j = as_json(x)
-  #   if (!is.null(.pkgenv$cube_cache[[j]])
-  #       && file.exists(.pkgenv$cube_cache[[j]])) {
-  #     file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
-  #   }
-  #   else {
-  #     libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
-  #   }
-  # }
-  # else {
-  #   libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
-  # }
-  libgdalcubes_write_COG(x, dir, prefix)
+  if (!(is.null(creation_options) || is.list(creation_options))) {
+    stop("Expected either NULL or a list as creation_options argument.")
+  }
+  
+  if (!is.character(rsmpl_overview)) {
+    stop("Expected a chracte as rsmpl_overview argument.")
+  }
+  
+  # TODO: find out how to enable caching
+  
+  libgdalcubes_write_COG(x, dir, prefix, rsmpl_overview, creation_options)
   if (write_json_descr) {
     if (prefix == "") {
       writeLines(as_json(x), file.path(dir, "cube.json"))

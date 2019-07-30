@@ -137,8 +137,8 @@ libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L, with_VR
     invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level, with_VRT))
 }
 
-libgdalcubes_write_COG <- function(pin, dir, prefix = "") {
-    invisible(.Call('_gdalcubes_libgdalcubes_write_COG', PACKAGE = 'gdalcubes', pin, dir, prefix))
+libgdalcubes_write_COG <- function(pin, dir, prefix = "", rsmpl_overview = "nearest", creation_options = NULL) {
+    invisible(.Call('_gdalcubes_libgdalcubes_write_COG', PACKAGE = 'gdalcubes', pin, dir, prefix, rsmpl_overview, creation_options))
 }
 
 libgdalcubes_create_stream_cube <- function(pin, cmd) {

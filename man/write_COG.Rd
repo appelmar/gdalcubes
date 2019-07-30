@@ -5,6 +5,7 @@
 \title{Export a data cube as a collection of cloud-optimized GeoTIFF files}
 \usage{
 write_COG(x, dir = tempfile(pattern = ""), prefix = "",
+  rsmpl_overview = "nearest", creation_options = NULL,
   write_json_descr = FALSE)
 }
 \arguments{
@@ -12,17 +13,25 @@ write_COG(x, dir = tempfile(pattern = ""), prefix = "",
 
 \item{prefix}{output file name}
 
+\item{rsmpl_overview}{resampling method for overview (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)}
+
+\item{creation_options}{additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})}
+
 \item{write_json_descr}{logical; write a JSON description of x as additional file}
 }
 \value{
 Vector of created GeoTIFF files
-
-If \code{write_json_descr} is TRUE, the function will write an additional file with name according to prefix (if not missing) or simply cube.json 
-This file includes a serialized description of the input data cube, including all chained data cube operations.
 }
 \description{
 This function will time slices of a data cube as cloud-optimized GeoTIFF files
 in a given directory.
+}
+\details{
+If \code{write_json_descr} is TRUE, the function will write an additional file with name according to prefix (if not missing) or simply cube.json 
+This file includes a serialized description of the input data cube, including all chained data cube operations.
+
+Additional GDAL creation options for resulting GeoTIFF files must be passed as a named list of simple strings, where element names refer to the key. For example,
+\code{creation_options = list("COMPRESS" = "DEFLATE", "ZLEVEL" = "5")} would enable deflate compression at level 5.
 }
 \examples{
 # create image collection from example Landsat data only 

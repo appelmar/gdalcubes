@@ -1284,10 +1284,26 @@ void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_write_COG( SEXP pin, std::string dir, std::string prefix="") {
+void libgdalcubes_write_COG( SEXP pin, std::string dir, std::string prefix="", std::string rsmpl_overview = "nearest", SEXP creation_options = R_NilValue ) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    (*aa)->write_COG_collection(dir, prefix);
+    std::map<std::string, std::string> co;
+    
+    if (creation_options == R_NilValue) {
+      (*aa)->write_COG_collection(dir, prefix, rsmpl_overview);
+    }
+    else {
+      Rcpp::List colist = Rcpp::as<Rcpp::List>(creation_options);
+      Rcpp::CharacterVector names = colist.names();
+      for(uint16_t i=0; i< names.size(); ++i) {
+        std::string key = Rcpp::as<std::string>(names[i]);
+        std::string value =Rcpp::as<std::string>(Rcpp::as<Rcpp::CharacterVector>(colist[i]));
+        co[key] = value;
+      }
+      (*aa)->write_COG_collection(dir, prefix, rsmpl_overview, co);
+    }
+    
+    
   }
   catch (std::string s) {
     Rcpp::stop(s);
