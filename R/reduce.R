@@ -211,13 +211,15 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
-    srcfile1 =  tempfile(".stream_",fileext = ".R")
+    funstr = serialize_function(FUN)
+    funhash = libgdalcubes_simple_hash(funstr)
+    srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
-    cat(serialize_function(FUN),  file = srcfile1, append = FALSE)
-    
-    srcfile2 =  tempfile(".stream_",fileext = ".R")
+    cat(funstr,  file = srcfile1, append = FALSE)
+    srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
     srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    
     cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
     cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
     cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)

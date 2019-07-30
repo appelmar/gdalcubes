@@ -465,6 +465,17 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// libgdalcubes_simple_hash
+std::string libgdalcubes_simple_hash(std::string instr);
+RcppExport SEXP _gdalcubes_libgdalcubes_simple_hash(SEXP instrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type instr(instrSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_simple_hash(instr));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_is_null", (DL_FUNC) &_gdalcubes_libgdalcubes_is_null, 1},
@@ -506,6 +517,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
+    {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
     {NULL, NULL, 0}
 };
 

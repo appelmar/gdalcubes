@@ -1353,5 +1353,10 @@ void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
   // TODO: how to make swarm interruptible
 }
 
+// [[Rcpp::export]]
+std::string libgdalcubes_simple_hash(std::string instr) {
+  return utils::hash(instr);
+}
+
 
 

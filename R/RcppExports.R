@@ -157,3 +157,7 @@ libgdalcubes_set_swarm <- function(swarm) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_swarm', PACKAGE = 'gdalcubes', swarm))
 }
 
+libgdalcubes_simple_hash <- function(instr) {
+    .Call('_gdalcubes_libgdalcubes_simple_hash', PACKAGE = 'gdalcubes', instr)
+}
+
