@@ -51,3 +51,6 @@
 ^src/gdalcubes/src/external/exprtk.hpp$
 ^src/gdalcubes/src/external/tiny-process-library/examples.cpp$
 ^src/gdalcubes/src/external/tiny-process-library/CMakeLists.txt$
+^_pkgdown.yml$
+^docs$
+

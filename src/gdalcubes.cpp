@@ -1209,11 +1209,11 @@ SEXP libgdalcubes_create_select_bands_cube(SEXP pin, std::vector<std::string> ba
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names) {
+SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names, bool keep_bands=false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
-    std::shared_ptr<apply_pixel_cube>* x = new std::shared_ptr<apply_pixel_cube>(apply_pixel_cube::create(*aa, expr, names));
+    std::shared_ptr<apply_pixel_cube>* x = new std::shared_ptr<apply_pixel_cube>(apply_pixel_cube::create(*aa, expr, names, keep_bands));
     Rcpp::XPtr< std::shared_ptr<apply_pixel_cube> > p(x, true) ;
     
     return p;
@@ -1225,10 +1225,10 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-    std::shared_ptr<stream_apply_pixel_cube>* x = new std::shared_ptr<stream_apply_pixel_cube>(stream_apply_pixel_cube::create(*aa, cmd, nbands, names));
+    std::shared_ptr<stream_apply_pixel_cube>* x = new std::shared_ptr<stream_apply_pixel_cube>(stream_apply_pixel_cube::create(*aa, cmd, nbands, names, keep_bands));
     Rcpp::XPtr< std::shared_ptr<stream_apply_pixel_cube> > p(x, true) ;
     return p;
   }

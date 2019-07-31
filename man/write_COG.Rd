@@ -9,7 +9,9 @@ write_COG(x, dir = tempfile(pattern = ""), prefix = "",
   write_json_descr = FALSE)
 }
 \arguments{
-\item{dir}{a data cube proxy object (class cube)}
+\item{x}{a data cube proxy object (class cube)}
+
+\item{dir}{destination directory}
 
 \item{prefix}{output file name}
 

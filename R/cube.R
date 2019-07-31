@@ -626,7 +626,8 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' This function will time slices of a data cube as cloud-optimized GeoTIFF files
 #' in a given directory. 
 #' 
-#' @param dir a data cube proxy object (class cube)
+#' @param x a data cube proxy object (class cube)
+#' @param dir destination directory
 #' @param prefix output file name
 #' @param rsmpl_overview resampling method for overview (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
 #' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})

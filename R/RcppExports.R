@@ -117,12 +117,12 @@ libgdalcubes_create_select_bands_cube <- function(pin, bands) {
     .Call('_gdalcubes_libgdalcubes_create_select_bands_cube', PACKAGE = 'gdalcubes', pin, bands)
 }
 
-libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names) {
-    .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names)
+libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names, keep_bands = FALSE) {
+    .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names, keep_bands)
 }
 
-libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names) {
-    .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
+libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names, keep_bands = FALSE) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names, keep_bands)
 }
 
 libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
