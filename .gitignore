@@ -43,3 +43,5 @@ config.status
 autom4te.cache
 src/Makevars
 cran-comments.md
+L8_Amazon.zip
+L8_Amazon

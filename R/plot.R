@@ -669,9 +669,9 @@ plot.cube  <-
         dat_G <- (dat_G - offset) / scale
         dat_B <- (dat_B - offset) / scale
         
-        dat_R[which(is.nan(dat_R) , arr.ind = T)] <- 1
-        dat_G[which(is.nan(dat_G) , arr.ind = T)] <- 1
-        dat_B[which(is.nan(dat_B) , arr.ind = T)] <- 1
+        dat_R[which(is.na(dat_R) , arr.ind = T)] <- 1
+        dat_G[which(is.na(dat_G) , arr.ind = T)] <- 1
+        dat_B[which(is.na(dat_B) , arr.ind = T)] <- 1
         
         
         dat_R[which(dat_R < 0 , arr.ind = T)] <- 0

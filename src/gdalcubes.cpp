@@ -126,13 +126,13 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "Error message:\n"  << msg << where_str << std::endl;
+      _err_stream << "Error  message: "  << msg << where_str;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning message:\n" << msg << where_str << std::endl;
+      _err_stream << "Warning  message: " << msg << where_str;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "Info: " << msg << where_str << std::endl;
+      _err_stream << "Info message: " << msg << where_str;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "Debug message: "  << msg << where_str << std::endl;
+      _err_stream << "Debug message: "  << msg << where_str;
     }
     if (!_defer) {
       Rcpp::Rcerr << _err_stream.str() << std::endl;
@@ -144,13 +144,12 @@ struct error_handling_r {
   static void standard(error_level type, std::string msg, std::string where, int error_code) {
     _m_errhandl.lock();
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "Error message:\n" << msg << std::endl;
+      _err_stream << "Error: " << msg;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning message:\n" << msg  << std::endl;
+      _err_stream << "Warning: " << msg;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "Info: " <<  msg << std::endl;
+      _err_stream << "## " << msg;
     }
     if (!_defer) {
       Rcpp::Rcerr << _err_stream.str() << std::endl;

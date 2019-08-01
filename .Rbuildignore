@@ -53,4 +53,11 @@
 ^src/gdalcubes/src/external/tiny-process-library/CMakeLists.txt$
 ^_pkgdown.yml$
 ^docs$
-
+^logo.svg$
+^index.Rmd$
+^index.md$
+^index_files$
+^L8_Amazon.zip$
+^L8_Amazon$
+^.img$
+^README.md$ 

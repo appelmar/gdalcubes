@@ -58,8 +58,8 @@ as_stars <- function(from) {
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-05"),
+#'               srs="EPSG:32618", nx = 100, ny=100, dt="P1M")
 #' as_array(select_bands(raster_cube(L8.col, v), c("B04", "B05")))
 #' }
 #' @note Depending on the data cube size, this function may require substantial amounts of main memory, i.e.
