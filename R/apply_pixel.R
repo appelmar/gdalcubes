@@ -45,6 +45,7 @@ apply_pixel <- function(x, ...) {
 #' @param x source data cube
 #' @param expr character vector with one or more arithmetic expressions (see Details)
 #' @param names optional character vector with the same length as expr to specify band names for the output cube
+#' @param keep_bands logical; keep bands of input data cube, defaults to FALSE, i.e. original bands will be dropped
 #' @param ... not used
 #' @param FUN user-defined R function that is applied on all pixels (see Details)
 #' @return a proxy data cube object
@@ -86,7 +87,7 @@ apply_pixel <- function(x, ...) {
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-apply_pixel.cube <- function(x, expr, names=NULL, ..., FUN) {
+apply_pixel.cube <- function(x, expr, names=NULL, keep_bands=FALSE, ..., FUN) {
   stopifnot(is.cube(x))
   
   
@@ -107,7 +108,7 @@ apply_pixel.cube <- function(x, expr, names=NULL, ..., FUN) {
       names <- paste("band", 1:length(expr), sep="")
     }
     
-    x = libgdalcubes_create_apply_pixel_cube(x, expr, names)
+    x = libgdalcubes_create_apply_pixel_cube(x, expr, names, keep_bands)
     class(x) <- c("apply_pixel_cube", "cube", "xptr")
     return(x)
   }
@@ -138,19 +139,21 @@ apply_pixel.cube <- function(x, expr, names=NULL, ..., FUN) {
     
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
-    srcfile1 =  tempfile(".stream_",fileext = ".R")
+    funstr = serialize_function(FUN)
+    funhash = libgdalcubes_simple_hash(funstr)
+    srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
-    cat(serialize_function(FUN),  file = srcfile1, append = FALSE)
-    
-    srcfile2 =  tempfile(".stream_",fileext = ".R")
+    cat(funstr,  file = srcfile1, append = FALSE)
+    srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
     srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    
     cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
     cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
     cat("write_chunk_from_array(apply_pixel(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
     
-    x = libgdalcubes_create_stream_apply_pixel_cube(x, cmd, nb, names)
+    x = libgdalcubes_create_stream_apply_pixel_cube(x, cmd, nb, names, keep_bands)
     class(x) <- c("apply_pixel_cube", "cube", "xptr")
     return(x) 
 

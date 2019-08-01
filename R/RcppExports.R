@@ -117,12 +117,12 @@ libgdalcubes_create_select_bands_cube <- function(pin, bands) {
     .Call('_gdalcubes_libgdalcubes_create_select_bands_cube', PACKAGE = 'gdalcubes', pin, bands)
 }
 
-libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names) {
-    .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names)
+libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names, keep_bands = FALSE) {
+    .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names, keep_bands)
 }
 
-libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names) {
-    .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
+libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names, keep_bands = FALSE) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names, keep_bands)
 }
 
 libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
@@ -133,8 +133,12 @@ libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }
 
-libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L) {
-    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level))
+libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L, with_VRT = FALSE) {
+    invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level, with_VRT))
+}
+
+libgdalcubes_write_COG <- function(pin, dir, prefix = "", rsmpl_overview = "nearest", creation_options = NULL) {
+    invisible(.Call('_gdalcubes_libgdalcubes_write_COG', PACKAGE = 'gdalcubes', pin, dir, prefix, rsmpl_overview, creation_options))
 }
 
 libgdalcubes_create_stream_cube <- function(pin, cmd) {
@@ -151,5 +155,9 @@ libgdalcubes_set_threads <- function(n) {
 
 libgdalcubes_set_swarm <- function(swarm) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_swarm', PACKAGE = 'gdalcubes', swarm))
+}
+
+libgdalcubes_simple_hash <- function(instr) {
+    .Call('_gdalcubes_libgdalcubes_simple_hash', PACKAGE = 'gdalcubes', instr)
 }
 

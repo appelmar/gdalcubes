@@ -1,0 +1,222 @@
+---
+output: github_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.path = ".img/")
+```
+
+# gdalcubes <img src=".img/logo.svg" align="right" alt="" width="120" />
+
+[![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes-r)
+[![CRAN](https://www.r-pkg.org/badges/version/gdalcubes)](https://cran.r-project.org/package=gdalcubes)
+
+The R package `gdalcubes` aims at making analyses of large satellite image collections easier, faster, more intuitive, and more interactive.
+
+The package represents the data as _regular raster data cubes_ with dimensions `bands`, `time`, `y`, and `x` and hides complexities in the data due to different spatial resolutions,map projections, data formats, and irregular temporal sampling.
+
+
+# Features
+
+- Read and process multitemporal, multispectral Earth observation image collections as _regular raster data cubes_ by applying on-the-fly reprojection, rescaling, cropping, and resampling.
+- Work with existing Earth observation imagery on local disks or cloud storage without the need to maintain a 2nd copy of the data.
+- Apply user-defined R functions on data cubes.
+- Execute data cube operation chains using parallel processing and lazy evaluation.
+
+
+# Installation
+
+Install from CRAN with:
+
+```{r, eval=FALSE}
+install.packages("gdalcubes")
+```
+
+## From sources
+
+Installation from sources is easiest with
+
+```{r, eval=FALSE}
+remotes::install_git("https://github.com/appelmar/gdalcubes_R")
+```
+
+Please make sure that the [git command line client](https://git-scm.com/downloads) is available on your system. Otherwise, the above command might not clone the gdalcubes C++ library as a submodule under src/gdalcubes.
+
+The package builds on the system libraries ([GDAL](https://www.gdal.org), [NetCDF](https://www.unidata.ucar.edu/software/netcdf), [SQLite](https://www.sqlite.org), and [curl](https://curl.haxx.se/libcurl)). 
+
+
+## Windows
+
+On Windows, you will need [Rtools](https://cran.r-project.org/bin/windows/Rtools). System libraries are automatically downloaded from [rwinlib](https://github.com/rwinlib).
+
+
+## Linux
+Please install the system libraries e.g. with the package manager of your Linux distribution. Also make sure that you are using a recent version of GDAL (>2.3.0). On Ubuntu, the following commands install all libraries.
+
+```
+sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
+sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev libudunits2-dev
+```
+
+## MacOS
+Use [Homebrew](https://brew.sh) to install system libraries with
+
+```
+brew install pkg-config
+brew install gdal
+brew install netcdf
+brew install libgit2
+brew install udunits
+brew install curl
+brew install sqlite
+```
+
+# Getting started
+
+## Download example data
+```{r download}
+if (!dir.exists("L8_Amazon")) {
+  download.file("https://uni-muenster.sciebo.de/s/e5yUZmYGX0bo4u9/download", destfile = "L8_Amazon.zip")
+  unzip("L8_Amazon.zip", exdir = "L8_Amazon")
+}
+```
+
+
+## Creating an image collection
+
+At first, we must scan all available images once, and extract some metadata such as their spatial extent and acquisition time. The resulting _image collection_ is stored on disk, and typically consumes a few kilobytes per image. Due to the diverse structure of satellite image products, the rules how to derive the required metadata are formalized as _collection_formats_. The package comes with predefined formats for some Sentinel, Landsat, and MODIS products (see `collection_formats()` to print a list of available formats).  
+
+```{r}
+library(gdalcubes)
+
+gdalcubes_options(threads=8)
+
+files = list.files("L8_Amazon", recursive = TRUE, 
+                   full.names = TRUE, pattern = ".tif") 
+length(files)
+sum(file.size(files)) / 1024^2 # MiB
+
+L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
+```
+
+
+## Creating data cubes
+
+To create a regular raster data cube from the image collection, we define the geometry of our targetr cube as
+a _data cube view_, using the `cube_view()` function. We define a simple overview, covering the full spatiotemporal extent 
+of the imagery at 1km x 1km pixel size where one data cube cell represents a duration of one year. The provided resampling
+and aggregation methods are used to spatially reproject, crop, and rescale individual images and combine pixel values from many images within one year respectively. The `raster_cube()` function returns a _proxy_ object, i.e., it returns immediately without doing any expensive computations.
+
+```{r}
+v.overview = cube_view(extent=L8.col, dt="P1Y", dx=1000, dy=1000, srs="EPSG:3857", 
+                      aggregation = "median", resampling = "bilinear")
+raster_cube(L8.col, v.overview)
+```
+
+
+## Processing data cubes
+
+We can apply (and chain) operations on data cubes: 
+
+```{r cubes}
+suppressPackageStartupMessages(library(magrittr)) # for %>%
+x = raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B02","B03","B04")) %>%
+  reduce_time(c("median(B02)","median(B03)","median(B04)"))
+x
+
+plot(x, rgb=3:1, zlim=c(0,1200))
+
+
+library(RColorBrewer)
+ raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+  plot(zlim=c(0,1),  nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
+```
+
+Calling data cube operations always returns _proxy_ objects, computations are started lazily when users call e.g. `plot()`.
+
+
+
+## Animations
+
+Multitemporal data cubes can be animated (thanks to the [magick package](https://cran.r-project.org/web/packages/magick/index.html)):
+
+```{r animation}
+v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-550000, top=-450000, 
+                             t0="2014-01-01", t1="2018-12-31"), dt="P1Y", dx=50, dy=50,
+                             srs="EPSG:3857", aggregation = "median", resampling = "bilinear")
+
+raster_cube(L8.col, v.subarea.yearly) %>%
+  select_bands(c("B02","B03","B04")) %>%
+  animate(rgb=3:1, zlim=c(100,1000))
+```
+
+
+## Data cube export
+
+Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of cloud-optimized GeoTIFF (COG) files with `write_COG()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
+
+```{r}
+suppressPackageStartupMessages(library(raster))
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+  write_COG() %>%
+  stack() -> x
+x
+
+suppressPackageStartupMessages(library(stars))
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+  as_stars() -> y
+y
+```
+
+### User-defined functions
+
+Users can pass custom R functions to `reduce_time()` and `apply_pixel()`. Below, we derive a _greenest pixel composite_ by returning RGB values from pixels with maximum NDVI for all pixel time-series.
+
+```{r greenest_pixel_composite}
+v.subarea.monthly = cube_view(view = v.subarea.yearly, dt="P1M", dx = 100, dy = 100,
+                              extent = list(t0="2015-01", t0="2018-12"))
+raster_cube(L8.col, v.subarea.monthly) %>%
+  select_bands(c("B02","B03","B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) %>%
+  reduce_time(names=c("B02","B03","B04"), FUN=function(x) {
+    if (all(is.na(x["NDVI",]))) return(rep(NA,3))
+    return (x[c("B02","B03","B04"), which.max(x["NDVI",])])
+  }) %>%
+  plot(rgb=3:1, zlim=c(100,1000))
+```
+
+
+# Advanced Features 
+
+
+**Mask bands**: Imagery that comes with existing masks (e.g. general pixel quality measures or cloud masks) can apply masks during the construction of the raster data cube, such that masked values will not contribute to data cube values. 
+
+**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an arument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
+
+
+
+
+# Limitations
+
+* There is no support for vector data cubes ([stars](https://cran.r-project.org/package=stars) has vector data cubes). 
+* Data cubes are limited to four dimensions ([stars](https://cran.r-project.org/package=stars) has cubes with any number of dimensions). 
+* Operations such as `reduce_space()` or `window_time()` do not support user-defined functions at the moment.
+* Images must be orthorectified / regularly gridded, Sentinel-1 or Sentinel-5P products require additional preprocessing.
+* Using gdalcubes in cloud infrastructures is still work in progress.
+
+
+
+# Further reading
+
+* [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) on r-spatial.org
+* [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal
+* Some [introductory slides](https://github.com/appelmar/gdalcubes_docs/blob/master/gdalcubes_overview_slides.pdf)

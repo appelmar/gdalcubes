@@ -1,12 +1,12 @@
 ---
-title: "Getting started with gdalcubes"
+title: "1. Processing MODIS data with gdalcubes"
 author: "Marius Appel"
 output: 
   html_document:
     toc: true
     theme: united
 vignette: >
-  %\VignetteIndexEntry{Getting started with gdalcubes}
+  %\VignetteIndexEntry{1. Processing MODIS data with gdalcubes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

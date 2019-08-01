@@ -4,7 +4,8 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, ..., FUN)
+\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE,
+  ..., FUN)
 }
 \arguments{
 \item{x}{source data cube}
@@ -12,6 +13,8 @@
 \item{expr}{character vector with one or more arithmetic expressions (see Details)}
 
 \item{names}{optional character vector with the same length as expr to specify band names for the output cube}
+
+\item{keep_bands}{logical; keep bands of input data cube, defaults to FALSE, i.e. original bands will be dropped}
 
 \item{...}{not used}
 

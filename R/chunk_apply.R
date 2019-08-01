@@ -51,9 +51,13 @@ serialize_function <- function(f) {
 #' @export
 chunk_apply <- function(cube, f) {
   stopifnot(is.cube(cube))
-  srcfile =  tempfile(".stream_",fileext = ".R")
+  
+  funstr = serialize_function(f)
+  funhash = libgdalcubes_simple_hash(funstr)
+  srcfile =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
   srcfile = gsub("\\\\", "/", srcfile) # Windows fix
-  cat(serialize_function(f), file = srcfile, append = FALSE)
+
+  cat(funstr, file = srcfile, append = FALSE)
   
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e ", "\"require(gdalcubes)\" ", "-e ", "\"do.call(eval(parse('", srcfile ,"')), args=list())\"", sep="")
   x = libgdalcubes_create_stream_cube(cube, cmd)

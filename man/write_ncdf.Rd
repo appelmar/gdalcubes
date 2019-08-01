@@ -2,10 +2,10 @@
 % Please edit documentation in R/cube.R
 \name{write_ncdf}
 \alias{write_ncdf}
-\title{Materialize a data cube as a netCDF file}
+\title{Export a data cube as a netCDF file}
 \usage{
 write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
-  overwrite = FALSE, write_json_descr = FALSE)
+  overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -15,6 +15,8 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
 \item{overwrite}{logical; overwrite output file if it already exists}
 
 \item{write_json_descr}{logical; write a JSON description of x as additional file}
+
+\item{with_VRT}{logical; write additional VRT datasets (one per time slice)}
 }
 \description{
 This function will read chunks of a data cube and write them to a single netCDF file. The resulting

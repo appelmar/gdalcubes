@@ -1,0 +1,5 @@
+title: gdalcubes
+
+template:
+  params:
+    bootswatch: flatly

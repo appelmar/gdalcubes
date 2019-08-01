@@ -13,7 +13,7 @@ gdalcubes_set_ncdf_compression(level = 2)
 Set compression level for netCDF files produced by gdalcubes
 }
 \note{
-THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 }
 \examples{
 gdalcubes_set_ncdf_compression(9) # maximum compression

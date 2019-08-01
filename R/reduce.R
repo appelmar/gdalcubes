@@ -132,6 +132,15 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #' L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #' L8.rgb.median
+#' 
+#' # user defined reducer calculating interquartile ranges
+#' L8.rgb.iqr = reduce_time(L8.rgb, names=c("iqr_R", "iqr_G","iqr_B"), FUN = function(x) {
+#'     c(diff(quantile(x["B04",],c(0.25,0.75), na.rm=TRUE)),
+#'       diff(quantile(x["B03",],c(0.25,0.75), na.rm=TRUE)),
+#'       diff(quantile(x["B02",],c(0.25,0.75), na.rm=TRUE)))
+#' })
+#' L8.rgb.iqr
+#' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
 #' 
@@ -202,13 +211,15 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
-    srcfile1 =  tempfile(".stream_",fileext = ".R")
+    funstr = serialize_function(FUN)
+    funhash = libgdalcubes_simple_hash(funstr)
+    srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
-    cat(serialize_function(FUN),  file = srcfile1, append = FALSE)
-    
-    srcfile2 =  tempfile(".stream_",fileext = ".R")
+    cat(funstr,  file = srcfile1, append = FALSE)
+    srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
     srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    
     cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
     cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
     cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)

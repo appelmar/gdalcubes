@@ -4,8 +4,7 @@
 \alias{gdalcubes_options}
 \title{Set or read global options of the gdalcubes package}
 \usage{
-gdalcubes_options(..., threads, ncdf_compression_level, debug, cache,
-  swarm)
+gdalcubes_options(..., threads, ncdf_compression_level, debug, cache)
 }
 \arguments{
 \item{...}{not used}
@@ -17,8 +16,6 @@ gdalcubes_options(..., threads, ncdf_compression_level, debug, cache,
 \item{debug}{logical;  print debug messages}
 
 \item{cache}{logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes}
-
-\item{swarm}{character vector with URLs pointing to gdalcubes_server API endpoints, used to evaluate cube chunks (experimental)}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether

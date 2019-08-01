@@ -14,7 +14,7 @@ Data cubes can be processed in parallel where one thread processes one chunk at 
 than the number of chunks of a cube thus has no effect and will not further reduce computation times.
 }
 \note{
-THIS FUNCTION IS DEPRECATED AND IS REPLACED BY \code{\link{gdalcubes_options}}.
+THIS FUNCTION IS DEPRECATED AND IS GOING TO BE REPLACED BY \code{\link{gdalcubes_options}}.
 }
 \examples{
 gdalcubes_set_threads(1)

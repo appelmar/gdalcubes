@@ -166,8 +166,19 @@ print.cube <- function(x, ...) {
   }
   y = libgdalcubes_cube_info(x)
   cat("A GDAL data cube proxy object\n")
+  cat("\n")
   cat("Dimensions:\n")
-  print(y$dimensions)
+  dimensions = data.frame(
+    #name = c("time","y","x"),
+    low = sapply(y$dimensions, function(z) z$low),
+    high = sapply(y$dimensions, function(z) z$high),
+    count = sapply(y$dimensions, function(z) z$count),
+    pixel_size = sapply(y$dimensions, function(z) z$pixel_size),
+    chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
+  )
+  rownames(dimensions) = c("t","y","x")
+  print(dimensions)
+  
   cat("\n")
   cat("Bands:\n")
   print(y$bands)
@@ -257,7 +268,9 @@ names.cube <- function(x) {
 
 #' Query data cube properties 
 #' 
-#' @return Dimension information as a data.frame, where each row represents a dimension and columns represent properties such as dimension boundaries, names, and chunk size
+#' @return Dimension information as a list
+#' 
+#' @details Elements of the returned list represent individual dimensions with properties such as dimension boundaries, names, and chunk size stored as inner lists
 #' 
 #' @param obj a data cube proxy object (class cube)
 #' @examples 
@@ -279,8 +292,8 @@ dimensions <- function(obj) {
   if (libgdalcubes_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  x = libgdalcubes_cube_info(obj)
-  return(x$dimensions)
+  y = libgdalcubes_cube_info(obj)
+  return(y$dimensions)
 }
 
 #' Query data cube properties 
@@ -543,7 +556,7 @@ as_json <- function(obj) {
 
 
 
-#' Materialize a data cube as a netCDF file
+#' Export a data cube as a netCDF file
 #' 
 #' This function will read chunks of a data cube and write them to a single netCDF file. The resulting
 #' file uses the enhanced netCDF-4 format (for chunking and compression).
@@ -554,6 +567,7 @@ as_json <- function(obj) {
 #' @param fname output file name
 #' @param overwrite logical; overwrite output file if it already exists
 #' @param write_json_descr logical; write a JSON description of x as additional file
+#' @param with_VRT logical; write additional VRT datasets (one per time slice)  
 #' @details 
 #' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
 #' 
@@ -575,9 +589,9 @@ as_json <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE, with_VRT=FALSE) {
   stopifnot(is.cube(x))
-  
+  fname = path.expand(fname)
   if (!overwrite && file.exists(fname)) {
     stop("File already exists, please change the output filename or set overwrite = TRUE")
   }
@@ -589,17 +603,99 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
       file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
     }
     else {
-      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
     }
   }
   else {
-    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level)
+    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
   }
   if (write_json_descr) {
     writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
   invisible()
 }
+
+
+
+
+
+
+
+#' Export a data cube as a collection of cloud-optimized GeoTIFF files
+#' 
+#' This function will time slices of a data cube as cloud-optimized GeoTIFF files
+#' in a given directory. 
+#' 
+#' @param x a data cube proxy object (class cube)
+#' @param dir destination directory
+#' @param prefix output file name
+#' @param rsmpl_overview resampling method for overview (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
+#' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})
+#' @param write_json_descr logical; write a JSON description of x as additional file
+#' 
+#' @return Vector of created GeoTIFF files
+#' 
+#' @details 
+#' 
+#' If \code{write_json_descr} is TRUE, the function will write an additional file with name according to prefix (if not missing) or simply cube.json 
+#' This file includes a serialized description of the input data cube, including all chained data cube operations.
+#' 
+#' Additional GDAL creation options for resulting GeoTIFF files must be passed as a named list of simple strings, where element names refer to the key. For example,
+#' \code{creation_options = list("COMPRESS" = "DEFLATE", "ZLEVEL" = "5")} would enable deflate compression at level 5.
+#' 
+#' @examples 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' write_COG(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
+#' @export
+write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", rsmpl_overview="nearest", creation_options = NULL , write_json_descr=FALSE) {
+  stopifnot(is.cube(x))
+  dir = path.expand(dir)
+  if (dir.exists(dir)) {
+    stop("Directory already exists")
+  }
+  
+  if (!(is.null(creation_options) || is.list(creation_options))) {
+    stop("Expected either NULL or a list as creation_options argument.")
+  }
+  
+  if (!is.character(rsmpl_overview)) {
+    stop("Expected a chracte as rsmpl_overview argument.")
+  }
+  
+  # TODO: find out how to enable caching
+  
+  libgdalcubes_write_COG(x, dir, prefix, rsmpl_overview, creation_options)
+  if (write_json_descr) {
+    if (prefix == "") {
+      writeLines(as_json(x), file.path(dir, "cube.json"))
+    }
+    else {
+      writeLines(as_json(x), file.path(dir, paste(prefix, ".json", sep="")))
+    }
+  }
+  return(list.files(path = dir,pattern = ".tif", full.names = TRUE))
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

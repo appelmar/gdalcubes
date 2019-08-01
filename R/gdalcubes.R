@@ -12,15 +12,13 @@
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib gdalcubes
 #' 
-#' @importFrom grDevices grey
-#' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title
-#' @importFrom grDevices rainbow
-#' @importFrom graphics legend lines
+#' @importFrom grDevices grey rainbow dev.off dev.size png
+#' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title legend lines
 #' @importFrom stats quantile rnorm
-#' @importFrom utils head 
-#' @importFrom utils download.file
+#' @importFrom utils head download.file
 #' @import RcppProgress jsonlite ncdf4 
 #' 
 #' 
 #' 
 NULL
+
