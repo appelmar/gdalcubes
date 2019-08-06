@@ -1,4 +1,4 @@
-# gdalcubes 0.1.9999
+# gdalcubes 0.2.0 (2019-08-06)
 
 ## New Features
 * add `animate()` function to create data cube time series animations
