@@ -1,20 +1,32 @@
 # gdalcubes 0.1.9999
 
-* rename `filter_predicate()` -> `filter_pixel()`
-* new operator `fill_time()` fills NA pixels of data cubes based on time series interpolation
-* add masking based on pixel band values while reading images, see `?image_mask`
-* collection format Sentinel2_L2A now includes WVP, AOT, and SCL bands 
-* add `write_json_descr`argument to `write_ncdf()`
-* new argument `with_VRT` in `write_ncdf()` to write GDAL VRT datasets for data cube time slices
-* `write_ncdf`, `as_stars()`, and `plot()` are now  interruptible, though it might take some time to let all threads finish processing their current chunk
-* new image collection database schema, existing collections must be recreated
+## New Features
 * add `animate()` function to create data cube time series animations
-* fix windows source compilation on CRAN
+* add masking based on pixel band values while reading images, see `?image_mask`
+* add `as_array()` function to convert a data cube to a native in-memory R array
+* add `write_tif()` to export data cube time slices as (possibly cloud-optimized) GeoTIFF files
+* export of data cubes with `write_tif()` and `write_ncdf()` supports packing data values to smaller integer types  
+* processing cubes is interruptible, though it might take some time to let all threads finish their current chunk
+* new operator `fill_time()` fills NA pixels of data cubes based on time series interpolation
+* changed image collection database schema, existing collections must be recreated
+* new global configuration function `gdalcubes_options()` as a replacement to `gdalcubes_set_threads()` etc.
+
+## Minor improvements
+* rename `filter_predicate()` -> `filter_pixel()`
+* collection format Sentinel2_L2A now includes WVP, AOT, and SCL bands 
 * consistent output for printing data cube views and data cubes
 * new collection format for Sentinel-2 data on Theia
-* add `as_array()` function to convert a data cube to a native in-memory R array
+* add `write_json_descr`argument to `write_ncdf()`
+* new argument `with_VRT` in `write_ncdf()` to write GDAL VRT datasets for data cube time slices
 * collection formats can now overwrite scale, offset, and unit for bands
-* add `write_COG` to export data cube time slices as cloud-optimized GeoTIFF files
+* `write_ncdf()` can produce netCDF files without bounds variables if desired
+
+## Bug fixes
+* fix windows source compilation on CRAN
+* bands of multiband files are now read in correct order
+
+
+
 
 
 

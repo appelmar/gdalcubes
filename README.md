@@ -36,7 +36,7 @@ remotes::install_git("https://github.com/appelmar/gdalcubes_R")
 
 Please make sure that the [git command line client](https://git-scm.com/downloads) is available on your system. Otherwise, the above command might not clone the gdalcubes C++ library as a submodule under src/gdalcubes.
 
-The package builds on the system libraries ([GDAL](https://www.gdal.org), [NetCDF](https://www.unidata.ucar.edu/software/netcdf), [SQLite](https://www.sqlite.org), and [curl](https://curl.haxx.se/libcurl)).
+The package builds on the external libraries [GDAL](https://www.gdal.org), [NetCDF](https://www.unidata.ucar.edu/software/netcdf), [SQLite](https://www.sqlite.org), and [curl](https://curl.haxx.se/libcurl).
 
 Windows
 -------
@@ -212,14 +212,14 @@ raster_cube(L8.col, v.subarea.yearly) %>%
 Data cube export
 ----------------
 
-Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of cloud-optimized GeoTIFF (COG) files with `write_COG()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
+Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
 
 ``` r
 suppressPackageStartupMessages(library(raster))
 raster_cube(L8.col, v.overview) %>%
   select_bands(c("B04","B05")) %>%
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  write_COG() %>%
+  write_tif() %>%
   stack() -> x
 x
 ```
@@ -229,7 +229,7 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs 
-    ## names      : X2013, X2014, X2015, X2016, X2017, X2018, X2019
+    ## names      : cube_5ca6786f5e9e2013, cube_5ca6786f5e9e2014, cube_5ca6786f5e9e2015, cube_5ca6786f5e9e2016, cube_5ca6786f5e9e2017, cube_5ca6786f5e9e2018, cube_5ca6786f5e9e2019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
@@ -260,6 +260,8 @@ y
     ## y                         NULL [y]
     ## time 2013-01-01,...,2019-01-01
 
+To reduce the size of exported data cubes, compression and packing (conversion of doubles to smaller integer types) are supported.
+
 ### User-defined functions
 
 Users can pass custom R functions to `reduce_time()` and `apply_pixel()`. Below, we derive a *greenest pixel composite* by returning RGB values from pixels with maximum NDVI for all pixel time-series.
@@ -284,7 +286,7 @@ Advanced Features
 
 **Mask bands**: Imagery that comes with existing masks (e.g. general pixel quality measures or cloud masks) can apply masks during the construction of the raster data cube, such that masked values will not contribute to data cube values.
 
-**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an arument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
+**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an argument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
 
 Limitations
 ===========

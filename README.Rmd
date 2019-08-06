@@ -44,7 +44,7 @@ remotes::install_git("https://github.com/appelmar/gdalcubes_R")
 
 Please make sure that the [git command line client](https://git-scm.com/downloads) is available on your system. Otherwise, the above command might not clone the gdalcubes C++ library as a submodule under src/gdalcubes.
 
-The package builds on the system libraries ([GDAL](https://www.gdal.org), [NetCDF](https://www.unidata.ucar.edu/software/netcdf), [SQLite](https://www.sqlite.org), and [curl](https://curl.haxx.se/libcurl)). 
+The package builds on the external libraries [GDAL](https://www.gdal.org), [NetCDF](https://www.unidata.ucar.edu/software/netcdf), [SQLite](https://www.sqlite.org), and [curl](https://curl.haxx.se/libcurl). 
 
 
 ## Windows
@@ -158,14 +158,14 @@ raster_cube(L8.col, v.subarea.yearly) %>%
 
 ## Data cube export
 
-Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of cloud-optimized GeoTIFF (COG) files with `write_COG()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
+Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
 
 ```{r}
 suppressPackageStartupMessages(library(raster))
 raster_cube(L8.col, v.overview) %>%
   select_bands(c("B04","B05")) %>%
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  write_COG() %>%
+  write_tif() %>%
   stack() -> x
 x
 
@@ -176,6 +176,9 @@ raster_cube(L8.col, v.overview) %>%
   as_stars() -> y
 y
 ```
+
+To reduce the size of exported data cubes, compression and packing (conversion of doubles to smaller integer types) are supported.
+
 
 ### User-defined functions
 
@@ -200,7 +203,7 @@ raster_cube(L8.col, v.subarea.monthly) %>%
 
 **Mask bands**: Imagery that comes with existing masks (e.g. general pixel quality measures or cloud masks) can apply masks during the construction of the raster data cube, such that masked values will not contribute to data cube values. 
 
-**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an arument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
+**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an argument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
 
 
 
