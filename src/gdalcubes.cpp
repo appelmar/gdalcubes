@@ -126,20 +126,17 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "Error  message: "  << msg << where_str;
+      _err_stream << "Error  message: "  << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning  message: " << msg << where_str;
+      _err_stream << "Warning  message: " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "Info message: " << msg << where_str;
+      _err_stream << "Info message: " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "Debug message: "  << msg << where_str;
+      _err_stream << "Debug message: "  << msg << where_str << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str() << std::endl;
+      Rcpp::Rcerr << _err_stream.str() ;
       _err_stream.str(""); 
-    }
-    else {
-      Rcpp::Rcerr << std::endl;
     }
     _m_errhandl.unlock();
   }
@@ -148,19 +145,17 @@ struct error_handling_r {
     _m_errhandl.lock();
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "Error: " << msg;
+      _err_stream << "Error: " << msg << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning: " << msg;
+      _err_stream << "Warning: " << msg << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "## " << msg;
+      _err_stream << "## " << msg << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str() << std::endl;
+      Rcpp::Rcerr << _err_stream.str();
       _err_stream.str(""); 
     }
-    else {
-      Rcpp::Rcerr << std::endl;
-    }
+    
     _m_errhandl.unlock();
   }
 };
