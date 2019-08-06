@@ -556,6 +556,88 @@ as_json <- function(obj) {
 
 
 
+#' Helper function to define packed data exports by min / max values 
+#'
+#' This function can be used to define packed exports in \code{\link{write_ncdf}}
+#' and \code{\link{write_tif}}. It will generate scale and offset values with maximum precision (unless simplify=TRUE).
+#'
+#' @details
+#' Nodata values will be mapped to the lowest value of the target data type.
+#' 
+#' Arguments min and max must have length 1 or length equal to the number of bands of the data cube to be exported. In the former
+#' case, the same values are used for all bands of the exported target cube, whereas the latter case allows to use different 
+#' ranges for different bands.
+#' 
+#' @note 
+#' Using simplify=TRUE will round scale values to the next smaller power of 10.
+#' 
+#' @examples 
+#' ndvi_packing = pack_minmax(type="int16", min=-1, max=1)
+#' ndvi_packing
+#' 
+#' @param type target data type of packed values (one of "uint8", "uint16", "uint32", "int16", or "int32")
+#' @param min numeric; minimum value(s) of original values, will be packed to the 2nd lowest value of the target data type
+#' @param max numeric; maximum value(s) in original scale, will be packed to the highest value of the target data type
+#' @param simplify logical; round resulting scale and offset to power of 10 values
+#' @export
+pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
+  
+  stopifnot(length(min) == length(max))
+  
+  if (type == "int16") {
+    nodata = -2^15
+    low = -2^15+1
+    high = 2^15 - 1
+    scale = (max-min)/(high-low)
+    offset = min - low * scale 
+    out = list(type="int16", offset=offset, scale=scale, nodata=nodata)
+  }
+  else if (type == "int32") {
+    nodata = -2^31
+    low = -2^(31)+1
+    high = 2^31 - 1
+    scale = (max-min)/(high-low)
+    offset = min - low * scale 
+    out = list(type="int32", offset=offset, scale=scale, nodata=nodata)
+  }
+  else if (type == "uint8") {
+    nodata = 0
+    low = 1
+    high = 2^8 - 1
+    scale = (max-min)/(high-low)
+    offset = min - low * scale 
+    out = list(type="uint8", offset=offset, scale=scale, nodata=nodata)
+  }
+  else if (type == "uint16") {
+    nodata = 0
+    low =  1
+    high = 2^16 - 1
+    scale = (max-min)/(high-low)
+    offset = min - low * scale 
+    out = list(type="uint16", offset=offset, scale=scale, nodata=nodata)
+  }
+  else if (type == "uint32") {
+    nodata =  0
+    low =  1
+    high = 2^32 - 1
+    scale = (max-min)/(high-low)
+    offset = min - low * scale 
+    out = list(type="uint32", offset=offset, scale=scale, nodata=nodata)
+  }
+  else {
+    stop("Invalid data type for packed export.")
+  }
+  
+  if (simplify) {
+    floor_10 <- function(x) 10^floor(log10(x))
+    out$scale = floor_10(out$scale)
+  }
+  return(out)
+}
+
+
+
+
 #' Export a data cube as a netCDF file
 #' 
 #' This function will read chunks of a data cube and write them to a single netCDF file. The resulting
@@ -567,12 +649,25 @@ as_json <- function(obj) {
 #' @param fname output file name
 #' @param overwrite logical; overwrite output file if it already exists
 #' @param write_json_descr logical; write a JSON description of x as additional file
-#' @param with_VRT logical; write additional VRT datasets (one per time slice)  
+#' @param with_VRT logical; write additional VRT datasets (one per time slice)
+#' @param pack reduce output file size by packing values (see Details), defaults to no packing  
+#' 
+#' @seealso \code{\link{pack_minmax}}
+#' 
 #' @details 
 #' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
 #' 
 #' If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
 #' ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
+#'
+#' To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
+#' integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+#' and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
+#' \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
+#' The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
+#' original scale.
+#' 
+#' @return returns (invisibly) the path of the created netCDF file 
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -589,11 +684,21 @@ as_json <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
-write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite=FALSE, write_json_descr=FALSE, with_VRT=FALSE) {
+write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite = FALSE, 
+                       write_json_descr = FALSE, with_VRT = FALSE, pack = NULL) {
   stopifnot(is.cube(x))
   fname = path.expand(fname)
   if (!overwrite && file.exists(fname)) {
     stop("File already exists, please change the output filename or set overwrite = TRUE")
+  }
+  
+  if (!is.null(pack)) {
+    stopifnot(is.list(pack))
+    stopifnot(length(pack$offset) == 1 || length(pack$offset) == nbands(x))
+    stopifnot(length(pack$scale) == 1 || length(pack$scale) == nbands(x))
+    stopifnot(length(pack$nodata) == 1 || length(pack$nodata) == nbands(x))
+    stopifnot(length(pack$offset) == length(pack$scale))
+    stopifnot(length(pack$offset) == length(pack$nodata))
   }
   
   if (.pkgenv$use_cube_cache) {
@@ -603,16 +708,16 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
       file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
     }
     else {
-      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
+      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
     }
   }
   else {
-    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT)
+    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
   }
   if (write_json_descr) {
     writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
-  invisible()
+  invisible(fname)
 }
 
 
@@ -621,19 +726,24 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 
 
 
-#' Export a data cube as a collection of cloud-optimized GeoTIFF files
+#' Export a data cube as a collection of GeoTIFF files
 #' 
-#' This function will time slices of a data cube as cloud-optimized GeoTIFF files
+#' This function will time slices of a data cube as GeoTIFF files
 #' in a given directory. 
 #' 
 #' @param x a data cube proxy object (class cube)
 #' @param dir destination directory
 #' @param prefix output file name
-#' @param rsmpl_overview resampling method for overview (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
+#' @param overviews logical; generate overview images 
+#' @param COG logical; create cloud-optimized GeoTIFF files (forces overviews=TRUE)
+#' @param rsmpl_overview resampling method for overviews (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
 #' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})
 #' @param write_json_descr logical; write a JSON description of x as additional file
+#' @param pack reduce output file size by packing values (see Details), defaults to no packing
 #' 
-#' @return Vector of created GeoTIFF files
+#' @seealso \code{\link{pack_minmax}}
+#' 
+#' @return  returns (invisibly) a vector of paths pointing to the created GeoTIFF files
 #' 
 #' @details 
 #' 
@@ -642,6 +752,16 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' 
 #' Additional GDAL creation options for resulting GeoTIFF files must be passed as a named list of simple strings, where element names refer to the key. For example,
 #' \code{creation_options = list("COMPRESS" = "DEFLATE", "ZLEVEL" = "5")} would enable deflate compression at level 5.
+#' 
+#' To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
+#' integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+#' and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
+#' \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
+#' The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
+#' original scale.
+#' 
+#' If \code{overviews=TRUE}, the numbers of pixels are halved until the longer spatial dimensions counts less than 256 pixels.
+#' Setting \code{COG=TRUE} automatically sets \code{overviews=TRUE}.
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -656,14 +776,15 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' write_COG(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
+#' write_tif(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
 #' @export
-write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", rsmpl_overview="nearest", creation_options = NULL , write_json_descr=FALSE) {
+write_tif <- function(x, dir = tempfile(pattern=""), prefix = basename(tempfile(pattern = "cube_")), overviews = FALSE, 
+                      COG = FALSE, rsmpl_overview="nearest", creation_options = NULL , write_json_descr=FALSE, pack = NULL) {
   stopifnot(is.cube(x))
   dir = path.expand(dir)
-  if (dir.exists(dir)) {
-    stop("Directory already exists")
-  }
+  # if (dir.exists(dir) && prefix == "" && length(list.files(dir, include.dirs = TRUE) > 0)) {
+  #   stop("Directory already exists and is not empty, please either")
+  # }
   
   if (!(is.null(creation_options) || is.list(creation_options))) {
     stop("Expected either NULL or a list as creation_options argument.")
@@ -673,9 +794,22 @@ write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", rsmpl_overview
     stop("Expected a chracte as rsmpl_overview argument.")
   }
   
-  # TODO: find out how to enable caching
+  if (!overviews && COG) {
+    overviews = TRUE
+  }
   
-  libgdalcubes_write_COG(x, dir, prefix, rsmpl_overview, creation_options)
+  if (!is.null(pack)) {
+    stopifnot(is.list(pack))
+    stopifnot(length(pack$offset) == 1 || length(pack$offset) == nbands(x))
+    stopifnot(length(pack$scale) == 1 || length(pack$scale) == nbands(x))
+    stopifnot(length(pack$nodata) == 1 || length(pack$nodata) == nbands(x))
+    stopifnot(length(pack$offset) == length(pack$scale))
+    stopifnot(length(pack$offset) == length(pack$nodata))
+  }
+  
+  
+  # TODO: find out how to enable caching
+  libgdalcubes_write_tif(x, dir, prefix, overviews, COG, creation_options, rsmpl_overview,  pack)
   if (write_json_descr) {
     if (prefix == "") {
       writeLines(as_json(x), file.path(dir, "cube.json"))
@@ -684,7 +818,7 @@ write_COG <- function(x, dir = tempfile(pattern=""), prefix = "", rsmpl_overview
       writeLines(as_json(x), file.path(dir, paste(prefix, ".json", sep="")))
     }
   }
-  return(list.files(path = dir,pattern = ".tif", full.names = TRUE))
+  return(invisible(list.files(path = dir,pattern = paste(prefix, ".*\\.tif", sep=""), full.names = TRUE)))
 }
 
 

@@ -138,6 +138,9 @@ struct error_handling_r {
       Rcpp::Rcerr << _err_stream.str() << std::endl;
       _err_stream.str(""); 
     }
+    else {
+      Rcpp::Rcerr << std::endl;
+    }
     _m_errhandl.unlock();
   }
   
@@ -154,6 +157,9 @@ struct error_handling_r {
     if (!_defer) {
       Rcpp::Rcerr << _err_stream.str() << std::endl;
       _err_stream.str(""); 
+    }
+    else {
+      Rcpp::Rcerr << std::endl;
     }
     _m_errhandl.unlock();
   }
@@ -1272,10 +1278,38 @@ void libgdalcubes_debug_output( bool debug) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, bool with_VRT=false) {
+void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, bool with_VRT=false, 
+                             bool write_bounds = true,  SEXP packing = R_NilValue) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    (*aa)->write_netcdf_file(outfile, compression_level, with_VRT);
+    packed_export p = packed_export::make_none();
+    if (packing != R_NilValue) {
+      
+      std::string type = Rcpp::as<Rcpp::List>(packing)["type"];
+      
+      if (type == "uint8") {
+        p.type = packed_export::packing_type::PACK_UINT8;
+      }
+      else if (type == "uint16") {
+        p.type = packed_export::packing_type::PACK_UINT16;
+      }
+      else if (type == "uint32") {
+        p.type = packed_export::packing_type::PACK_UINT32;
+      }
+      else if (type == "int16") {
+        p.type = packed_export::packing_type::PACK_INT16;
+      }
+      else if (type == "int32") {
+        p.type = packed_export::packing_type::PACK_INT32;
+      }
+      else {
+        // TODO: NO PACKING-> WARNING
+      }
+      p.offset = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["offset"]);
+      p.scale = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["scale"]);
+      p.nodata = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["nodata"]);
+    }
+    (*aa)->write_netcdf_file(outfile, compression_level, with_VRT, write_bounds, p);
   }
   catch (std::string s) {
     Rcpp::stop(s);
@@ -1283,15 +1317,16 @@ void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_write_COG( SEXP pin, std::string dir, std::string prefix="", std::string rsmpl_overview = "nearest", SEXP creation_options = R_NilValue ) {
+void libgdalcubes_write_tif( SEXP pin, std::string dir, std::string prefix="", 
+                             bool overviews = false, bool cog = false, 
+                             SEXP creation_options = R_NilValue,
+                             std::string rsmpl_overview = "nearest", 
+                             SEXP packing = R_NilValue) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::map<std::string, std::string> co;
     
-    if (creation_options == R_NilValue) {
-      (*aa)->write_COG_collection(dir, prefix, rsmpl_overview);
-    }
-    else {
+    if (creation_options != R_NilValue) {
       Rcpp::List colist = Rcpp::as<Rcpp::List>(creation_options);
       Rcpp::CharacterVector names = colist.names();
       for(uint16_t i=0; i< names.size(); ++i) {
@@ -1299,8 +1334,38 @@ void libgdalcubes_write_COG( SEXP pin, std::string dir, std::string prefix="", s
         std::string value =Rcpp::as<std::string>(Rcpp::as<Rcpp::CharacterVector>(colist[i]));
         co[key] = value;
       }
-      (*aa)->write_COG_collection(dir, prefix, rsmpl_overview, co);
     }
+    
+    packed_export p = packed_export::make_none();
+    if (packing != R_NilValue) {
+      
+      std::string type = Rcpp::as<Rcpp::List>(packing)["type"];
+      
+      if (type == "uint8") {
+        p.type = packed_export::packing_type::PACK_UINT8;
+      }
+      else if (type == "uint16") {
+        p.type = packed_export::packing_type::PACK_UINT16;
+      }
+      else if (type == "uint32") {
+        p.type = packed_export::packing_type::PACK_UINT32;
+      }
+      else if (type == "int16") {
+        p.type = packed_export::packing_type::PACK_INT16;
+      }
+      else if (type == "int32") {
+        p.type = packed_export::packing_type::PACK_INT32;
+      }
+      else {
+        // TODO: NO PACKING-> WARNING
+      }
+      
+      p.offset = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["offset"]);
+      p.scale = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["scale"]);
+      p.nodata = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["nodata"]);
+    }
+    
+    (*aa)->write_tif_collection(dir, prefix, overviews, cog, co, rsmpl_overview, p);
     
     
   }

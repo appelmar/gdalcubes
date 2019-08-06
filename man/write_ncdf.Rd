@@ -5,7 +5,8 @@
 \title{Export a data cube as a netCDF file}
 \usage{
 write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
-  overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE)
+  overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE,
+  pack = NULL)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -17,6 +18,11 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
 \item{write_json_descr}{logical; write a JSON description of x as additional file}
 
 \item{with_VRT}{logical; write additional VRT datasets (one per time slice)}
+
+\item{pack}{reduce output file size by packing values (see Details), defaults to no packing}
+}
+\value{
+returns (invisibly) the path of the created netCDF file
 }
 \description{
 This function will read chunks of a data cube and write them to a single netCDF file. The resulting
@@ -27,6 +33,13 @@ The resulting netCDF file contains three dimensions (t, y, x) and bands as varia
 
 If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
 ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
+
+To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
+integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
+\code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
+The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
+original scale.
 }
 \examples{
 # create image collection from example Landsat data only 
@@ -47,4 +60,6 @@ write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile
 \url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
 
 \code{\link{gdalcubes_set_ncdf_compression}}
+
+\code{\link{pack_minmax}}
 }

@@ -397,29 +397,34 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_eval_cube
-void libgdalcubes_eval_cube(SEXP pin, std::string outfile, uint8_t compression_level, bool with_VRT);
-RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP, SEXP compression_levelSEXP, SEXP with_VRTSEXP) {
+void libgdalcubes_eval_cube(SEXP pin, std::string outfile, uint8_t compression_level, bool with_VRT, bool write_bounds, SEXP packing);
+RcppExport SEXP _gdalcubes_libgdalcubes_eval_cube(SEXP pinSEXP, SEXP outfileSEXP, SEXP compression_levelSEXP, SEXP with_VRTSEXP, SEXP write_boundsSEXP, SEXP packingSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
     Rcpp::traits::input_parameter< uint8_t >::type compression_level(compression_levelSEXP);
     Rcpp::traits::input_parameter< bool >::type with_VRT(with_VRTSEXP);
-    libgdalcubes_eval_cube(pin, outfile, compression_level, with_VRT);
+    Rcpp::traits::input_parameter< bool >::type write_bounds(write_boundsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type packing(packingSEXP);
+    libgdalcubes_eval_cube(pin, outfile, compression_level, with_VRT, write_bounds, packing);
     return R_NilValue;
 END_RCPP
 }
-// libgdalcubes_write_COG
-void libgdalcubes_write_COG(SEXP pin, std::string dir, std::string prefix, std::string rsmpl_overview, SEXP creation_options);
-RcppExport SEXP _gdalcubes_libgdalcubes_write_COG(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP, SEXP rsmpl_overviewSEXP, SEXP creation_optionsSEXP) {
+// libgdalcubes_write_tif
+void libgdalcubes_write_tif(SEXP pin, std::string dir, std::string prefix, bool overviews, bool cog, SEXP creation_options, std::string rsmpl_overview, SEXP packing);
+RcppExport SEXP _gdalcubes_libgdalcubes_write_tif(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP, SEXP overviewsSEXP, SEXP cogSEXP, SEXP creation_optionsSEXP, SEXP rsmpl_overviewSEXP, SEXP packingSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type dir(dirSEXP);
     Rcpp::traits::input_parameter< std::string >::type prefix(prefixSEXP);
-    Rcpp::traits::input_parameter< std::string >::type rsmpl_overview(rsmpl_overviewSEXP);
+    Rcpp::traits::input_parameter< bool >::type overviews(overviewsSEXP);
+    Rcpp::traits::input_parameter< bool >::type cog(cogSEXP);
     Rcpp::traits::input_parameter< SEXP >::type creation_options(creation_optionsSEXP);
-    libgdalcubes_write_COG(pin, dir, prefix, rsmpl_overview, creation_options);
+    Rcpp::traits::input_parameter< std::string >::type rsmpl_overview(rsmpl_overviewSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type packing(packingSEXP);
+    libgdalcubes_write_tif(pin, dir, prefix, overviews, cog, creation_options, rsmpl_overview, packing);
     return R_NilValue;
 END_RCPP
 }
@@ -513,8 +518,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube, 5},
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},
-    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 4},
-    {"_gdalcubes_libgdalcubes_write_COG", (DL_FUNC) &_gdalcubes_libgdalcubes_write_COG, 5},
+    {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 6},
+    {"_gdalcubes_libgdalcubes_write_tif", (DL_FUNC) &_gdalcubes_libgdalcubes_write_tif, 8},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
