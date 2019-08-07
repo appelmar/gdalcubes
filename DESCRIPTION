@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
 Version: 0.2.0
-Date: 2019-08-06
+Date: 2019-08-07
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -39,12 +39,13 @@ Authors@R: c(
     person(given = "Tomasz",
            family = "Kamiński",
            role = "cph"))
-Description: Processing collections of Earth observation images as on-demand multispectral, multitemporal data cubes. Users
+Description: Processing collections of Earth observation images as on-demand multispectral, multitemporal raster data cubes. Users
     define cubes by spatiotemporal extent, resolution, and spatial reference system and let 'gdalcubes' automatically apply cropping, reprojection, and 
-    resampling using the 'Geospatial Data Abstraction Library' ('GDAL'). Implemented functions on data cubes include reduction over space and time, applying arithmetic expressions on pixel band values,
-    moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, materializing data cubes as 'netCDF' files,
-    and plotting. User-defined 'R' functions can be applied over chunks of data cubes. The package implements lazy evaluation and 
-    multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries.
+    resampling using the 'Geospatial Data Abstraction Library' ('GDAL'). Implemented functions on data cubes include reduction over space and time, 
+    applying arithmetic expressions on pixel band values, moving window aggregates over time, filtering by space, time, bands, and predicates on pixel values, 
+    exporting data cubes as 'netCDF' or 'GeoTIFF' files, and plotting.  The package implements lazy evaluation and 
+    multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries. 
+    See Appel and Pebesma (2019) <doi:10.3390/data4030092> for further details.
 Depends: R (>= 3.3.0)
 Imports: Rcpp, RcppProgress, jsonlite, ncdf4
 License: MIT + file LICENSE
