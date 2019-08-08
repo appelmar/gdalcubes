@@ -86,7 +86,7 @@ At first, we must scan all available images once, and extract some metadata such
 library(gdalcubes)
 ```
 
-    ## Using gdalcubes library version 0.1.9999
+    ## Using gdalcubes library version 0.2.0
 
 ``` r
 gdalcubes_options(threads=8)
@@ -229,7 +229,7 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs 
-    ## names      : cube_5ca6786f5e9e2013, cube_5ca6786f5e9e2014, cube_5ca6786f5e9e2015, cube_5ca6786f5e9e2016, cube_5ca6786f5e9e2017, cube_5ca6786f5e9e2018, cube_5ca6786f5e9e2019
+    ## names      : cube_4e9d669f2f4f2013, cube_4e9d669f2f4f2014, cube_4e9d669f2f4f2015, cube_4e9d669f2f4f2016, cube_4e9d669f2f4f2017, cube_4e9d669f2f4f2018, cube_4e9d669f2f4f2019
 
 ``` r
 suppressPackageStartupMessages(library(stars))

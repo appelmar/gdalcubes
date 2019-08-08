@@ -16,7 +16,7 @@
 * rename `filter_predicate()` -> `filter_pixel()`
 * collection format Sentinel2_L2A now includes WVP, AOT, and SCL bands 
 * consistent output for printing data cube views and data cubes
-* new collection format for Sentinel-2 data on Theia (credis to Xavier Laviron)
+* new collection format for Sentinel-2 data on Theia (credits to Xavier Laviron)
 * new collection format for MODIS MxD13Q1 vegetation index data
 * add `write_json_descr`argument to `write_ncdf()`
 * new argument `with_VRT` in `write_ncdf()` to write GDAL VRT datasets for data cube time slices
@@ -27,6 +27,7 @@
 ## Bug fixes
 * fix windows source compilation on CRAN
 * bands of multiband files are now read in correct order
+* fix package build with PROJ 6.1 (credits to Roger Bivand)
 
 
 
