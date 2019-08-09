@@ -133,6 +133,7 @@ library(magrittr) # get the pipe
 v1 = cube_view(view=v, extent=list(t0="2018-06", t1="2018-09"))
 raster_cube(image_collection(img_col_file), v1)  %>%
   select_bands(c("LST_DAY")) %>%
+  apply_pixel("LST_DAY * 0.02") %>% # apply scale
   window_time(kernel=c(-1,1), window=c(1,0)) %>%
   plot(col=terrain.colors, key.pos=1, zlim=c(-25,25))
 ```
