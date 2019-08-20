@@ -43,6 +43,8 @@
 ^src/gdalcubes/LICENSE_THIRDPARTY$
 ^src/gdalcubes/README\.md$
 ^src/gdalcubes/NEWS\.md$
+^src/gdalcubes/gdalcubes_logo_mini\.png$
+^src/gdalcubes/gdalcubes_logo_small\.png$
 ^src/gdalcubes/supervisord\.conf$
 ^src/gdalcubes/src/CMakeLists\.txt$
 ^src/gdalcubes/src/Doxyfile$
@@ -59,3 +61,6 @@
 ^L8_Amazon\.zip$
 ^L8_Amazon$
 ^\.img$
+^Dockerfile$
+^.*Dockerfile$
+^\.dockerignore$

@@ -1,0 +1,37 @@
+{
+  "description" : "Image collection format for PlanetScope 4-band scenes",
+  "tags" : ["PlanetScope", "BOA", "Surface Reflectance"],
+  "pattern" : ".+(?:_AnalyticMS_DN_udm|_AnalyticMS_SR)\\.tif$",
+  "images" : {
+    "pattern" : ".*([0-9]{8}_[0-9]{6}_.*?)(?:_AnalyticMS_DN_udm|_AnalyticMS_SR)\\.tif$"
+  },
+  "datetime" : {
+    "pattern" : ".*([0-9]{8}).*?(?:_AnalyticMS_DN_udm|_AnalyticMS_SR)\\.tif$",
+    "format" : "%Y%m%d"
+  },
+  "bands" : {
+    "red" : {
+      "nodata" : 0,
+      "pattern" : ".+_AnalyticMS_SR\\.tif$",
+      "band" : 3
+    },
+    "green" : {
+      "nodata" : 0,
+      "pattern" : ".+_AnalyticMS_SR\\.tif$",
+      "band" : 2
+    },
+    "blue" : {
+      "nodata" : 0,
+      "pattern" : ".+_AnalyticMS_SR\\.tif$",
+      "band" : 1
+    },
+    "nir" : {
+      "nodata" : 0,
+      "pattern" : ".+_AnalyticMS_SR\\.tif$",
+      "band" : 4
+    },
+    "udm" : {
+      "pattern" : ".+_AnalyticMS_DN_udm\\.tif$"
+    }
+  }
+}

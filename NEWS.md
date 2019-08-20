@@ -1,3 +1,10 @@
+# gdalcubes 0.2.1 (2019-08-21)
+
+* new collection format for PlanetScope data
+* fixed R CMD check warnings on CRAN (caused by compiler warning -Wdeprecated-declarations)
+* fixed mean aggregation
+
+
 # gdalcubes 0.2.0 (2019-08-07)
 
 ## New Features
