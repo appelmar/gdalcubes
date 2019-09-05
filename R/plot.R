@@ -271,9 +271,9 @@ plot.cube  <-
             stopifnot(min(bands) >= 1 && max(bands) <= size[1])
           }
         }
-        x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
-        bands = 1:length(bands)
-        size[1] = length(bands)
+        #x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
+        #bands = 1:length(bands)
+        #size[1] = length(bands)
       }
       else {
         bands <- 1:size[1]
@@ -293,10 +293,10 @@ plot.cube  <-
           }
         }
         bands <- rgb
-        x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
-        rgb = 1:3
-        bands = 1:3
-        size[1] <- 3
+        #x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
+        #rgb = 1:3
+        #bands = 1:3
+        #size[1] <- 3
       }
       dtvalues = libgdalcubes_datetime_values(x)
       if (periods.in.title)

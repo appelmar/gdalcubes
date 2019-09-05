@@ -1,3 +1,7 @@
+# gdalcubes 0.2.9999
+
+
+
 # gdalcubes 0.2.1 (2019-08-21)
 
 * new collection format for PlanetScope data
