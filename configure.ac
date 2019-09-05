@@ -12,10 +12,7 @@ fi
 RBIN="${R_HOME}/bin/R"
 CC=`"${RBIN}" CMD config CC`;
 CFLAGS=`"${RBIN}" CMD config CFLAGS`;
-CPP=`"${RBIN}" CMD config CPP`;
 AC_SUBST(R_HOME)
-
-
 
 
 INLIBS="${LIBS}"
