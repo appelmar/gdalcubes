@@ -1,5 +1,6 @@
 # gdalcubes 0.2.9999
 
+* support for GDAL subdatasets in collection format
 
 
 # gdalcubes 0.2.1 (2019-08-21)

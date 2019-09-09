@@ -2,6 +2,7 @@
   "description" : "Collection format for selected bands from the MODIS MxD13Q1 (Aqua and Terra) product",
   "tags" : ["MODIS", "VI", "NDVI", "EVI"],
   "pattern" : ".*\\.hdf.*",
+  "subdatasets" : true,
   "images" : {
     "pattern" : "HDF4_EOS:EOS_GRID:\"(.+)\\.hdf.*"
   },

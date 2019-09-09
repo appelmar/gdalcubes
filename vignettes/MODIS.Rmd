@@ -58,20 +58,12 @@ collection_formats()
 
 In this case, `MxD11A2` is the correct format for our datasets. Internally, collection formats are defined in relatively simple JSON files, presets for other products will be added continuously.   
 
-To create the image collection, we must pass a list of our files and the collection format to the `create_image_collection()` function.
-However, since MODIS comes as HDF4 files where GDAL interprets bands as subdatasets, reading the data with GDAL is little more complex. 
-Instead of just filenames (as it would work for Landsat or Sentinel 2 imagery), we will not only provide filenames, but the subdataset names. For MOD11A2, the pattern for the subdatasets is `HDF4_EOS:EOS_GRID:"/path/to/file":MODIS_Grid_8Day_1km_LST:BAND`, where `BAND` can be e.g. "LST_Day_1km".
-The code below combines all files with all bands and adds subdataset identifiers to generate a character vector of GDAL datasets, which then can be passed as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database).
+To create the image collection, we must pass a list of our files and the collection format to the `create_image_collection()` function.  The code below finds all files as character vector of GDAL datasets, which then can be passed as first argument to `create_image_collection()`. The second argument here referes to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database). The collection format also knows that bands are stored as subdatasets in the HDF files.
 
 ```{r}
 img_col_file = tempfile(fileext=".db")
-file_subdatasets = expand.grid(file=list.files(file.path(dest_dir,"MOD11A2"), pattern=".hdf$", full.names = TRUE), 
-            subdataset=c("LST_Day_1km", "QC_Day", "Day_view_time", "LST_Night_1km",
-                        "QC_Night", "Night_view_time", "Emis_31", "Emis_32"))
-
-gdal_datasets = paste("HDF4_EOS:EOS_GRID:\"", file_subdatasets$file, "\":MODIS_Grid_8Day_1km_LST:", file_subdatasets$subdataset, sep="")
-
-create_image_collection(gdal_datasets, "MxD11A2", img_col_file)
+files = list.files(file.path(dest_dir,"MOD11A2"), pattern=".hdf$", full.names = TRUE)
+create_image_collection(files, "MxD11A2", img_col_file)
 ```
 
 # Creating a data cube
