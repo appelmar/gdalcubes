@@ -1400,7 +1400,7 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
     std::shared_ptr<fill_time_cube>* x = new std::shared_ptr<fill_time_cube>( fill_time_cube::create(*aa, method));
     Rcpp::XPtr< std::shared_ptr<fill_time_cube> > p(x, true) ;
     return p;
-  }
+  } 
   catch (std::string s) {
     Rcpp::stop(s);
   }
