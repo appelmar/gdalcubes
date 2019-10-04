@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(gdalcubes, 0.1.0, marius.appel@uni-muenster.de)
+AC_INIT(gdalcubes, 0.2.1, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -24,29 +24,12 @@ INPKG_LIBS="${PKG_LIBS}"
 
 
 # C++11 ########################################################################################################
-# largely copied from https://github.com/cran/rgdal/blob/master/configure.ac
-
-R_VERSION=`echo 'cat(unlist(R.Version()$minor))' | ${RBIN} --vanilla --slave`
-R_MINOR=`echo $R_VERSION | cut -f1 -d"."`
+# 2019-10-04: remove C++11 test based on R version because package now dependes on R(>=3.4)
 
 
-if test ${R_MINOR} -ge 4; then
- CXX11=`"${RBIN}" CMD config CXX11`
- CXX11STD=`"${RBIN}" CMD config CXX11STD`
-else
- CXX11=`"${RBIN}" CMD config CXX1X`
- CXX11STD=`"${RBIN}" CMD config CXX1XSTD`
-fi
-
+CXX11=`"${RBIN}" CMD config CXX11`
+CXX11STD=`"${RBIN}" CMD config CXX11STD`
 CXX="${CXX11} ${CXX11STD}"
-
-if test -n "${CXX11}"; then
-HAVE_CXX11=1
-else
-HAVE_CXX11=0
-AC_MSG_ERROR([gdalcubes required support for C++11.])
-fi
-
 
 
 
@@ -126,15 +109,6 @@ GDAL_MAJOR=`echo $GDAL_VERSION | cut -f1 -d"."`
 GDAL_MINOR=`echo $GDAL_VERSION | cut -f2 -d"."`
 GDAL_PATCH=`echo $GDAL_VERSION | cut -f3 -d"."`
 
-if test ${GDAL_MAJOR} = 2 -a ${GDAL_MINOR} -ge 3 ; then
-  AC_MSG_CHECKING([C++11 support for GDAL >= 2.3.0])
-  if test ${HAVE_CXX11} = 1 ; then
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([provide at least CXX11 compiler support for GDAL >= 2.3.0])
-  fi
-fi
 
 AC_MSG_CHECKING([GDAL version >= 2.0.1])
 if test ${GDAL_MAJOR} -lt 2 ; then
