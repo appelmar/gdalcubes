@@ -28,6 +28,13 @@ public:
   chunk_processor_multithread_interruptible(uint16_t nthreads) : _nthreads(nthreads) {}
   
   /**
+   * @copydoc chunk_processor::max_threads
+   */
+  uint32_t max_threads() {
+    return _nthreads;
+  }
+  
+  /**
    * @copydoc chunk_processor::apply
    */
   void apply(std::shared_ptr<cube> c,
@@ -1398,6 +1405,26 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
     Rcpp::stop(s);
   }
 }
+
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::vector<std::vector<double>> res = vector_queries::query_points(*aa, px, py, pt, srs);
+    Rcpp::List df(res.size());
+  
+    for (uint16_t i=0; i<res.size(); ++i) {
+     df[i] = res[i];
+    }
+    return df;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {
