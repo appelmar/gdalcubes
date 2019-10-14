@@ -22,8 +22,8 @@ a data.frame with one row per point and one column per data cube band or variabl
 }
 \description{
 This function will overlay provided spatiotemporal points with a data cube and return all band values
-of the cells for each query point, as a data.frame where rows correspoind to points and columns represent bands.
-If needed, point coordinates are automativally transformed to the SRS of the data cube.
+of the cells for each query point, as a data.frame where rows correspond to points and columns represent bands.
+If needed, point coordinates are automatically transformed to the SRS of the data cube.
 }
 \details{
 Date and time of the query points can be provided as vector of class character, Date, or POSIXct.

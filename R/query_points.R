@@ -2,8 +2,8 @@
 #' Query data cube values at irregular spatiotemporal points
 #' 
 #' This function will overlay provided spatiotemporal points with a data cube and return all band values
-#' of the cells for each query point, as a data.frame where rows correspoind to points and columns represent bands.
-#' If needed, point coordinates are automativally transformed to the SRS of the data cube.
+#' of the cells for each query point, as a data.frame where rows correspond to points and columns represent bands.
+#' If needed, point coordinates are automatically transformed to the SRS of the data cube.
 #'
 #' @param x source data cube
 #' @param px vector of x coordinates
