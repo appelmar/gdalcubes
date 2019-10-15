@@ -1,7 +1,8 @@
 # gdalcubes 0.2.2 (2019-10-15)
 
 * support for GDAL subdatasets in collection format
-* fixed configure.ac for R 4.0.0
+* MODIS collection formats now use subdatasets automatically
+* fixed configure.ac for R-devel
 * add `query_points()` to query data cube values at irregular spatiotemporal points
 
 
