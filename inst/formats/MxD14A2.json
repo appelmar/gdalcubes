@@ -1,0 +1,22 @@
+{
+  "description" : "Collection format for the MODIS MxD14A2 (Aqua and Terra) product",
+  "tags" : ["MODIS", "Fire"],
+  "pattern" : ".*\\.hdf.*",
+  "subdatasets" : true,
+  "images" : {
+    "pattern" : "HDF4_EOS:EOS_GRID:\"(.+)\\.hdf.*"
+  },
+  "datetime" : {
+    "pattern" : ".*M[OY]D14A2\\.A(.{7})[^/]*",
+    "format" : "%Y%j"
+  },
+  "bands" : {
+    "FireMask" : {
+      "pattern" : ".+FireMask.*",
+      "nodata" : 0
+    },
+    "QA" : {
+      "pattern" : ".+QA.*"
+    }
+  }
+}

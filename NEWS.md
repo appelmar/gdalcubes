@@ -1,3 +1,9 @@
+# gdalcubes 0.2.3 (2019-10-21)
+
+* fixed clang compiler warnings 
+* fixed MODIS collection formats
+* new collection formats MxD14A2 and MxD13A2
+
 # gdalcubes 0.2.2 (2019-10-15)
 
 * support for GDAL subdatasets in collection format

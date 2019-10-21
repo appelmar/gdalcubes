@@ -30,7 +30,7 @@ public:
   /**
    * @copydoc chunk_processor::max_threads
    */
-  uint32_t max_threads() {
+  uint32_t max_threads() override {
     return _nthreads;
   }
   
