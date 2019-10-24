@@ -149,6 +149,10 @@ libgdalcubes_create_fill_time_cube <- function(pin, method) {
     .Call('_gdalcubes_libgdalcubes_create_fill_time_cube', PACKAGE = 'gdalcubes', pin, method)
 }
 
+libgdalcubes_query_points <- function(pin, px, py, pt, srs) {
+    .Call('_gdalcubes_libgdalcubes_query_points', PACKAGE = 'gdalcubes', pin, px, py, pt, srs)
+}
+
 libgdalcubes_set_threads <- function(n) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_threads', PACKAGE = 'gdalcubes', n))
 }

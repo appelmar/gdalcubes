@@ -452,6 +452,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_query_points
+SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs);
+RcppExport SEXP _gdalcubes_libgdalcubes_query_points(SEXP pinSEXP, SEXP pxSEXP, SEXP pySEXP, SEXP ptSEXP, SEXP srsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type px(pxSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type py(pySEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type pt(ptSEXP);
+    Rcpp::traits::input_parameter< std::string >::type srs(srsSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_query_points(pin, px, py, pt, srs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_set_threads
 void libgdalcubes_set_threads(IntegerVector n);
 RcppExport SEXP _gdalcubes_libgdalcubes_set_threads(SEXP nSEXP) {
@@ -522,6 +537,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_write_tif", (DL_FUNC) &_gdalcubes_libgdalcubes_write_tif, 8},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
+    {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
