@@ -61,7 +61,8 @@ Suggests:
     processx,
     rmarkdown,
     stars,
-    magick
+    magick,
+    sf
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

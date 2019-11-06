@@ -467,6 +467,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_zonal_statistics
+std::vector<std::string> libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_dir, std::string out_prefix, std::string ogr_layer);
+RcppExport SEXP _gdalcubes_libgdalcubes_zonal_statistics(SEXP pinSEXP, SEXP ogr_datasetSEXP, SEXP agg_funcsSEXP, SEXP agg_bandsSEXP, SEXP out_dirSEXP, SEXP out_prefixSEXP, SEXP ogr_layerSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type ogr_dataset(ogr_datasetSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type agg_funcs(agg_funcsSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type agg_bands(agg_bandsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_dir(out_dirSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_prefix(out_prefixSEXP);
+    Rcpp::traits::input_parameter< std::string >::type ogr_layer(ogr_layerSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_zonal_statistics(pin, ogr_dataset, agg_funcs, agg_bands, out_dir, out_prefix, ogr_layer));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_set_threads
 void libgdalcubes_set_threads(IntegerVector n);
 RcppExport SEXP _gdalcubes_libgdalcubes_set_threads(SEXP nSEXP) {
@@ -538,6 +555,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
+    {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
