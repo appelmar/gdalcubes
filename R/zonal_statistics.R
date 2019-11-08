@@ -33,21 +33,20 @@
 #'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 #' }
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(extent=list(left=388941.2, right=766552.4,
-#'                           bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-02"),
-#'               srs="EPSG:32618", dy=300, dx=300, dt="P1M", aggregation = "median", resampling = "bilinear")
+#' v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M", 
+#'               aggregation = "median", resampling = "bilinear",
+#'               extent=list(left=388941.2, right=766552.4,
+#'                           bottom=4345299, top=4744931, 
+#'                           t0="2018-01-01", t1="2018-12-31"))
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #' L8.ndvi
 #' 
 #' # toy example: overlay NDVI data with NYC districts
-#' x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),expr = "median(NDVI)", prefix = "nycd_ndvi_")
-#' 
-#' 
-#' if (requireNamespace("sf", quietly = TRUE)) {
-#'   plot(sf::read_sf(x[8]))
-#' }
+#' x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
+#'                      expr = "median(NDVI)", prefix = "nycd_ndvi_")
+#' x
 #' 
 #' @export
 zonal_statistics <- function(x, geom, expr, out_dir = tempdir(), prefix=basename(tempfile()), ogr_layer=NULL) {
