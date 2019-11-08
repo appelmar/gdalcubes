@@ -21,26 +21,33 @@
 #' Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", and "prod". 
 #' 
 #' 
-#' @note Currently, the spatial reference systems of the data cube and the feautures must be identical.
+#' @note Currently, the spatial reference systems of the data cube and the features must be identical.
 #' 
 #' 
 #' 
 #' @examples 
-#' # create image collection from example Landsat data only 
 #' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 #' }
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'               bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-02"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P14D")
+#' v = cube_view(extent=list(left=388941.2, right=766552.4,
+#'                           bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-02"),
+#'               srs="EPSG:32618", dy=300, dx=300, dt="P1M", aggregation = "median", resampling = "bilinear")
 #' L8.cube = raster_cube(L8.col, v) 
-#' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
+#' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
+#' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
+#' L8.ndvi
 #' 
-#' #TODO
+#' # toy example: overlay NDVI data with NYC districts
+#' x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),expr = "median(NDVI)", prefix = "nycd_ndvi_")
+#' 
+#' 
+#' if (requireNamespace("sf", quietly = TRUE)) {
+#'   plot(sf::read_sf(x[8]))
+#' }
 #' 
 #' @export
 zonal_statistics <- function(x, geom, expr, out_dir = tempdir(), prefix=basename(tempfile()), ogr_layer=NULL) {
@@ -56,19 +63,19 @@ zonal_statistics <- function(x, geom, expr, out_dir = tempdir(), prefix=basename
     if (!requireNamespace("sf", quietly = TRUE))
       stop("sf package not found, please install first") 
     geom_file = tempfile(fileext = ".gpkg")
-    st_write(st_geometry(geom), geom_file, quiet = TRUE)
+    sf::st_write(sf::st_geometry(geom), geom_file, quiet = TRUE)
     geom = geom_file
   }
   else if ("sfc" %in% class(geom)) {
     if (!requireNamespace("sf", quietly = TRUE))
       stop("sf package not found, please install first") 
     geom_file = tempfile(fileext = ".gpkg")
-    st_write(geom, geom_file, quiet = TRUE)
+    sf::st_write(geom, geom_file, quiet = TRUE)
     geom = geom_file
     
   }
   if (!is.character(geom) || length(geom) > 1) {
-    stop("geom must be either a character vector with length 1, or an sf object")
+    stop("geom must be either a length-one character vector, or an sf object")
   }
   
   
