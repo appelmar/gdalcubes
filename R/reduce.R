@@ -74,7 +74,7 @@ reduce_space <- function(x, ...) {
 #' @param cube source data cube
 #' @param reducer reducer function, currently "min", "max", "median", "mean", "count", "sd", "var", or "sum"
 #' @return proxy data cube object
-#' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
+#' @note Implemented reducers will ignore any NAN values (as \code{na.rm=TRUE} does).
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples

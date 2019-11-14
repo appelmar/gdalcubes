@@ -18,7 +18,7 @@ proxy data cube object
 Create a proxy data cube, which applies a single reducer function over per-band pixel time series of a data cube
 }
 \note{
-Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
+Implemented reducers will ignore any NAN values (as \code{na.rm=TRUE} does).
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 

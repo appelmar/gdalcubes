@@ -468,20 +468,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_zonal_statistics
-std::vector<std::string> libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_dir, std::string out_prefix, std::string ogr_layer);
-RcppExport SEXP _gdalcubes_libgdalcubes_zonal_statistics(SEXP pinSEXP, SEXP ogr_datasetSEXP, SEXP agg_funcsSEXP, SEXP agg_bandsSEXP, SEXP out_dirSEXP, SEXP out_prefixSEXP, SEXP ogr_layerSEXP) {
+void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer);
+RcppExport SEXP _gdalcubes_libgdalcubes_zonal_statistics(SEXP pinSEXP, SEXP ogr_datasetSEXP, SEXP agg_funcsSEXP, SEXP agg_bandsSEXP, SEXP out_pathSEXP, SEXP overwriteSEXP, SEXP ogr_layerSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type ogr_dataset(ogr_datasetSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type agg_funcs(agg_funcsSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type agg_bands(agg_bandsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type out_dir(out_dirSEXP);
-    Rcpp::traits::input_parameter< std::string >::type out_prefix(out_prefixSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_path(out_pathSEXP);
+    Rcpp::traits::input_parameter< bool >::type overwrite(overwriteSEXP);
     Rcpp::traits::input_parameter< std::string >::type ogr_layer(ogr_layerSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_zonal_statistics(pin, ogr_dataset, agg_funcs, agg_bands, out_dir, out_prefix, ogr_layer));
-    return rcpp_result_gen;
+    libgdalcubes_zonal_statistics(pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer);
+    return R_NilValue;
 END_RCPP
 }
 // libgdalcubes_set_threads

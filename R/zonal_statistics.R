@@ -2,27 +2,32 @@
 #' Query summary statistics of data cube values over polygons
 #' 
 #' This function will overlay spatial polygons with a data cube and compute summary statistics
-#' of pixels within polygons over all time slices. 
+#' of pixel values within the polygons over all time slices. 
 #'
 #' @param x source data cube
-#' @param geom Either an sf object, or a path to an OGR dataset (Shapefile, GeoPackage, or similar) with input polygon geometries 
+#' @param geom Either an sf object, or a path to an OGR dataset (Shapefile, GeoPackage, or similar) with input (multi)polygon geometries 
 #' @param expr character vector of summary statistics expressions, describing pairs of aggregation functions and data cube bands (e.g. "mean(band1)")  
-#' @param out_dir output directory where resulting files will be written to
-#' @param prefix prefix of resulting filenames; will be followed by date/time
+#' @param out_path path to where resulting GeoPackage will be written to
+#' @param overwrite logical; overwrite \code{out_path} if file already exists, defaults to FALSE
 #' @param ogr_layer If the input OGR dataset has multiple layers, a layer can be chosen by name
-#' @return vector of paths to produced GeoPackage files 
+#' @return character length-one vector containing the path to the resulting GeoPackage file (see Details)
 #' @details 
 #' 
-#' Input geometries must be stored as OGR dataset (e.g. shapefile, geopackage, or similar). 
+#' The function creates a single GeoPackage output file containing:
+#' \itemize{
+#'    \item A single layer "geom" containing the geometries (and feature identifiers) only.
+#'    \item Attribute tables (layers without geometry) for each time slice of the data cube containing summary statistics as columns. 
+#'    Corresponding layer names start with "attr_", followed by date and time.
+#'    \item Virtual spatial views for each time slice, joining the geometries and attribute tables. 
+#'    Corresponding layer names start with "map_", followed by date and time.
+#' }
+#' You will most-likely want to use the spatial view layers directly e.g. with the sf package.  
 #' 
-#' The function creates one geopackage per time slice. Each geopackage contains all polygons as geometries and all computed 
-#' statistics as attributes. 
 #' 
 #' Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", and "prod". 
 #' 
 #' 
 #' @note Currently, the spatial reference systems of the data cube and the features must be identical.
-#' 
 #' 
 #' 
 #' @examples 
@@ -45,17 +50,17 @@
 #' 
 #' # toy example: overlay NDVI data with NYC districts
 #' x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
-#'                      expr = "median(NDVI)", prefix = "nycd_ndvi_")
+#'                      expr = "median(NDVI)")
 #' x
 #' 
 #' @export
-zonal_statistics <- function(x, geom, expr, out_dir = tempdir(), prefix=basename(tempfile()), ogr_layer=NULL) {
+zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL) {
 
   
   stopifnot(is.cube(x))
-  
-  if (!dir.exists(out_dir)) {
-    stop("Output directory does not exist")
+  out_path = path.expand(out_path)
+  if (file.exists(out_path) && !overwrite) {
+    stop("Output file already exists; set overwrite = TRUE or choose a different output file")
   }
   
   if ("sf" %in% class(geom)) {
@@ -86,6 +91,6 @@ zonal_statistics <- function(x, geom, expr, out_dir = tempdir(), prefix=basename
   agg_bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
   stopifnot(length(agg_funcs) == length(agg_bands))
   
-  return(libgdalcubes_zonal_statistics(x, geom, agg_funcs, agg_bands, out_dir, prefix, ogr_layer))
-  
+  libgdalcubes_zonal_statistics(x, geom, agg_funcs, agg_bands, out_path, overwrite, ogr_layer)
+  return(out_path)
 }
