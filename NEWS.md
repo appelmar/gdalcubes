@@ -3,6 +3,8 @@
 
 * optional global SRS definition in collection formats
 * new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
+* new `zonal_statistics()` function to xompute summary statistics of data cubes over polygons
+* add support for image collections without collection format in `create_image_collection()`
 
 
 # gdalcubes 0.2.3 (2019-10-21)
