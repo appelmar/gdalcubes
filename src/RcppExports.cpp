@@ -165,16 +165,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// libgdalcubes_create_image_collection
-void libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives);
-RcppExport SEXP _gdalcubes_libgdalcubes_create_image_collection(SEXP filesSEXP, SEXP format_fileSEXP, SEXP outfileSEXP, SEXP unroll_archivesSEXP) {
+// libgdalcubes_create_image_collection_from_format
+void libgdalcubes_create_image_collection_from_format(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_image_collection_from_format(SEXP filesSEXP, SEXP format_fileSEXP, SEXP outfileSEXP, SEXP unroll_archivesSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<std::string> >::type files(filesSEXP);
     Rcpp::traits::input_parameter< std::string >::type format_file(format_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
     Rcpp::traits::input_parameter< bool >::type unroll_archives(unroll_archivesSEXP);
-    libgdalcubes_create_image_collection(files, format_file, outfile, unroll_archives);
+    libgdalcubes_create_image_collection_from_format(files, format_file, outfile, unroll_archives);
+    return R_NilValue;
+END_RCPP
+}
+// libgdalcubes_create_image_collection_from_datetime
+void libgdalcubes_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, std::vector<std::string> date_time, bool use_subdatasets, std::vector<std::string> band_names);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_image_collection_from_datetime(SEXP outfileSEXP, SEXP filesSEXP, SEXP date_timeSEXP, SEXP use_subdatasetsSEXP, SEXP band_namesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type files(filesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type date_time(date_timeSEXP);
+    Rcpp::traits::input_parameter< bool >::type use_subdatasets(use_subdatasetsSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type band_names(band_namesSEXP);
+    libgdalcubes_create_image_collection_from_datetime(outfile, files, date_time, use_subdatasets, band_names);
     return R_NilValue;
 END_RCPP
 }
@@ -531,7 +545,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_open_image_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_open_image_collection, 1},
     {"_gdalcubes_libgdalcubes_image_collection_info", (DL_FUNC) &_gdalcubes_libgdalcubes_image_collection_info, 1},
     {"_gdalcubes_libgdalcubes_image_collection_extent", (DL_FUNC) &_gdalcubes_libgdalcubes_image_collection_extent, 2},
-    {"_gdalcubes_libgdalcubes_create_image_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection, 4},
+    {"_gdalcubes_libgdalcubes_create_image_collection_from_format", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection_from_format, 4},
+    {"_gdalcubes_libgdalcubes_create_image_collection_from_datetime", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection_from_datetime, 5},
     {"_gdalcubes_libgdalcubes_add_images", (DL_FUNC) &_gdalcubes_libgdalcubes_add_images, 4},
     {"_gdalcubes_libgdalcubes_list_collection_formats", (DL_FUNC) &_gdalcubes_libgdalcubes_list_collection_formats, 0},
     {"_gdalcubes_libgdalcubes_create_view", (DL_FUNC) &_gdalcubes_libgdalcubes_create_view, 1},

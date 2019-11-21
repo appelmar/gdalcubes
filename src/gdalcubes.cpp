@@ -722,8 +722,7 @@ Rcpp::List libgdalcubes_image_collection_extent( SEXP pin, std::string srs) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_create_image_collection(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
-
+void libgdalcubes_create_image_collection_from_format(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
   try {
     collection_format cfmt(format_file);
     if (unroll_archives) {
@@ -737,6 +736,19 @@ void libgdalcubes_create_image_collection(std::vector<std::string> files, std::s
 }
 
 // [[Rcpp::export]]
+void libgdalcubes_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, 
+                                                        std::vector<std::string> date_time, bool use_subdatasets, 
+                                                        std::vector<std::string> band_names) {
+  try {
+    image_collection::create(files, date_time, band_names, use_subdatasets)->write(outfile);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unroll_archives=true, std::string outfile = "") {
   
   try {
@@ -747,7 +759,7 @@ void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unro
     if (unroll_archives) {
       files = image_collection::unroll_archives(files);
     }
-    (*aa)->add(files);
+    (*aa)->add_with_collection_format(files);
   }
   catch (std::string s) {
     Rcpp::stop(s);

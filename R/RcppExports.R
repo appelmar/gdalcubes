@@ -61,8 +61,12 @@ libgdalcubes_image_collection_extent <- function(pin, srs) {
     .Call('_gdalcubes_libgdalcubes_image_collection_extent', PACKAGE = 'gdalcubes', pin, srs)
 }
 
-libgdalcubes_create_image_collection <- function(files, format_file, outfile, unroll_archives = TRUE) {
-    invisible(.Call('_gdalcubes_libgdalcubes_create_image_collection', PACKAGE = 'gdalcubes', files, format_file, outfile, unroll_archives))
+libgdalcubes_create_image_collection_from_format <- function(files, format_file, outfile, unroll_archives = TRUE) {
+    invisible(.Call('_gdalcubes_libgdalcubes_create_image_collection_from_format', PACKAGE = 'gdalcubes', files, format_file, outfile, unroll_archives))
+}
+
+libgdalcubes_create_image_collection_from_datetime <- function(outfile, files, date_time, use_subdatasets, band_names) {
+    invisible(.Call('_gdalcubes_libgdalcubes_create_image_collection_from_datetime', PACKAGE = 'gdalcubes', outfile, files, date_time, use_subdatasets, band_names))
 }
 
 libgdalcubes_add_images <- function(pin, files, unroll_archives = TRUE, outfile = "") {

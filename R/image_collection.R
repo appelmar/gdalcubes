@@ -107,11 +107,20 @@ print.image_collection <- function(x, ..., n=6) {
 #' 
 #' @details
 #' An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
+#' 
+#' Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, and metadata are automatically
+#' extracted from provided files / GDAL datasets. Second, image collections can be created without collection format by manually specifying date/time of images 
+#' (argument \code{date_time}) and (optional) names of bands. In this case, however, all provided images must contain the same bands. If this is not 
+#' possible for a dataset, a collection format must be used. 
+#' 
 #' @param files character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
 #' @param out_file optional name of the output SQLite database file, defaults to a temporary file
 #' @param format collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file
 #' @param unroll_archives automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files  
 #' @param quiet logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable
+#' @param date_time vector with date/ time for files; can be of class character, Date, or POSIXct (argument is only applicable for image collections without collection format)
+#' @param band_names character vector with band names, length must match the number of bands in provided files (argument is only applicable for image collections without collection format)
+#' @param use_subdatasets logical; use GDAL subdatasets of provided files (argument is only applicable for image collections without collection format)
 #' @return image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -122,9 +131,41 @@ print.image_collection <- function(x, ..., n=6) {
 #'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
 #' }
 #' @export
-create_image_collection <-function(files, format, out_file=tempfile(fileext = ".sqlite"), unroll_archives=TRUE, quiet=FALSE)
+create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext = ".sqlite"), date_time=NULL, band_names=NULL, use_subdatasets=FALSE, unroll_archives=TRUE, quiet=FALSE)
 {
-  libgdalcubes_create_image_collection(files, format, out_file, unroll_archives)
+  
+  if (is.null(format) && is.null(date_time)) {
+    stop("Function expects either a collection format (argument format), or a date/time vector (argument date_time)")
+  }
+  if (!is.null(format) && !is.null(date_time)) {
+    warning("Date/time values will be extracted using the collection format; ignoring date_time argument")
+    date_time = NULL
+  }
+  if (is.null(date_time) && !is.null(band_names)) {
+    warning("Band names will be taken from the collection format; ignoring band_names argument")
+    band_names = NULL
+  }
+  
+  if (is.null(date_time)) {
+    # use collection format
+    libgdalcubes_create_image_collection_from_format(files, format, out_file, unroll_archives)
+  }
+  else {
+    # no collection format, use date_time and band_names (if given)
+    if ("POSIXct" %in% class(date_time) || "Date" %in% class(date_time)) {
+      date_time = format(date_time,format = "%Y-%m-%dT%H:%M:%S")
+    }
+    else if (!is.character(date_time)) {
+      date_time = as.character(date_time)
+    }
+    
+    if (is.null(band_names)) {
+      band_names=character()
+    }
+      libgdalcubes_create_image_collection_from_datetime(out_file, files, date_time, use_subdatasets, band_names)
+  }
+  
+  
   if (quiet) {
     return(invisible(image_collection(out_file)))
   }
