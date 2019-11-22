@@ -57,6 +57,10 @@ L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 L8.rgb.median
 
+\donttest{
+plot(L8.rgb.median, rgb=3:1)
+}
+
 # user defined reducer calculating interquartile ranges
 L8.rgb.iqr = reduce_time(L8.rgb, names=c("iqr_R", "iqr_G","iqr_B"), FUN = function(x) {
     c(diff(quantile(x["B04",],c(0.25,0.75), na.rm=TRUE)),
@@ -64,5 +68,8 @@ L8.rgb.iqr = reduce_time(L8.rgb, names=c("iqr_R", "iqr_G","iqr_B"), FUN = functi
       diff(quantile(x["B02",],c(0.25,0.75), na.rm=TRUE)))
 })
 L8.rgb.iqr
+\donttest{
+plot(L8.rgb.iqr, key.pos=1)
+}
 
 }
