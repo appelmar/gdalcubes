@@ -369,7 +369,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
                               Rcpp::Named("dimensions") = dims,
                               Rcpp::Named("srs") = x->st_reference()->srs(),
                               Rcpp::Named("proj4") = sproj4,
-                              Rcpp::Named("graph") = x->make_constructible_json().dump(2),
+                              Rcpp::Named("graph") = x->make_constructible_json().dump(),
                               Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3])); // TODO: remove size element
     
   }

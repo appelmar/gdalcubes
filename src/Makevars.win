@@ -6,6 +6,10 @@ RWINLIB_SQLITE = ../windows/sqlite-amalgamation-3260000
 
 OBJECTS =   gdalcubes/src/apply_pixel.o \
             gdalcubes/src/config.o \
+            gdalcubes/src/collection_format.o \
+            gdalcubes/src/datetime.o \
+            gdalcubes/src/filesystem.o \
+            gdalcubes/src/utils.o \
 			gdalcubes/src/cube.o \
 			gdalcubes/src/cube_factory.o \
 			gdalcubes/src/error.o \
@@ -29,6 +33,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/external/tinyexpr/tinyexpr.o \
 			gdalcubes/src/external/tiny-process-library/process.o \
 			gdalcubes/src/external/tiny-process-library/process_win.o \
+			gdalcubes/src/external/json11/json11.o \
 			gdalcubes.o \
 			RcppExports.o
 
