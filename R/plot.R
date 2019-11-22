@@ -739,7 +739,7 @@ plot.cube  <-
           #ncdf4::ncvar_get(f, b, start=c(t,1,1), count = c(1, f$dim[[2]]$len,f$dim[[3]]$len))
           dat <- ncdf4::ncvar_get(f, b, raw_datavals = TRUE)
           
-          dat[which(dat < breaks[1] || dat > breaks[length(breaks)-1], arr.ind = TRUE)] <- breaks[1] - 1 # do not plot values outside breaks / zlim
+          dat[which(dat < breaks[1] | dat > breaks[length(breaks)-1], arr.ind = TRUE)] <- breaks[1] - 1 # do not plot values outside breaks / zlim
           dat[which(is.na(dat),arr.ind = TRUE)] <- breaks[length(breaks)] # plot NA with special color
           
           xaxt = "s"
