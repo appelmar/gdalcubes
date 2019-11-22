@@ -17,11 +17,15 @@
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-07"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
 #' L8.rgb
+#' \donttest{
+#' plot(L8.rgb, rgb=3:1)
+#' }
+#' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @note For performance reasons, \code{select_bands} should always be called directly on a cube created with \code{\link{raster_cube}} and 
 #' drop all unneded bands. This allows to reduce RasterIO and warp operations in GDAL.

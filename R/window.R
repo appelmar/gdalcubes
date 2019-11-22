@@ -21,7 +21,11 @@
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.nir = select_bands(L8.cube, c("B05"))
 #' window_time(L8.nir, window = c(2,2), "min(B05)")  
-#' window_time(L8.nir, kernel=c(-1,1), window=c(1,0)) 
+#' window_time(L8.nir, kernel=c(-1,1), window=c(1,0))
+#' 
+#' \donttest{
+#' plot(window_time(L8.nir, kernel=c(-1,1), window=c(1,0)), key.pos=1)
+#' } 
 #' @export
 window_time <- function(x, ...) {
   UseMethod("window_time")
