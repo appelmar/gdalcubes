@@ -1437,6 +1437,24 @@ SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<dou
   }
 }
 
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::vector<std::vector<std::vector<double>>> res = vector_queries::query_timeseries(*aa, px, py, srs);
+    Rcpp::List dflist(res.size());
+    
+    for (uint16_t i=0; i<res.size(); ++i) {
+      dflist[i] = res[i];
+    }
+    return dflist;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 // [[Rcpp::export]]
 void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
  try {

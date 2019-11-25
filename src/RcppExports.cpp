@@ -481,6 +481,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_query_timeseries
+SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs);
+RcppExport SEXP _gdalcubes_libgdalcubes_query_timeseries(SEXP pinSEXP, SEXP pxSEXP, SEXP pySEXP, SEXP srsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type px(pxSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type py(pySEXP);
+    Rcpp::traits::input_parameter< std::string >::type srs(srsSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_query_timeseries(pin, px, py, srs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_zonal_statistics
 void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer);
 RcppExport SEXP _gdalcubes_libgdalcubes_zonal_statistics(SEXP pinSEXP, SEXP ogr_datasetSEXP, SEXP agg_funcsSEXP, SEXP agg_bandsSEXP, SEXP out_pathSEXP, SEXP overwriteSEXP, SEXP ogr_layerSEXP) {
@@ -569,6 +583,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
+    {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},

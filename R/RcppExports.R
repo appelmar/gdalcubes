@@ -157,6 +157,10 @@ libgdalcubes_query_points <- function(pin, px, py, pt, srs) {
     .Call('_gdalcubes_libgdalcubes_query_points', PACKAGE = 'gdalcubes', pin, px, py, pt, srs)
 }
 
+libgdalcubes_query_timeseries <- function(pin, px, py, srs) {
+    .Call('_gdalcubes_libgdalcubes_query_timeseries', PACKAGE = 'gdalcubes', pin, px, py, srs)
+}
+
 libgdalcubes_zonal_statistics <- function(pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer) {
     invisible(.Call('_gdalcubes_libgdalcubes_zonal_statistics', PACKAGE = 'gdalcubes', pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer))
 }
