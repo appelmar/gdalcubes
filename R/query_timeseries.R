@@ -34,7 +34,6 @@
 #' 
 #' @export
 query_timeseries <- function(x, px, py, srs) {
-  
   if (length(px) != length(py)) {
     stop("Expected identical length for point coordinates px and py.")
   }
