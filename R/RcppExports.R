@@ -141,6 +141,10 @@ libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L, with_VR
     invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level, with_VRT, write_bounds, packing))
 }
 
+libgdalcubes_write_chunks_ncdf <- function(pin, dir, name, compression_level = 0L) {
+    invisible(.Call('_gdalcubes_libgdalcubes_write_chunks_ncdf', PACKAGE = 'gdalcubes', pin, dir, name, compression_level))
+}
+
 libgdalcubes_write_tif <- function(pin, dir, prefix = "", overviews = FALSE, cog = FALSE, creation_options = NULL, rsmpl_overview = "nearest", packing = NULL) {
     invisible(.Call('_gdalcubes_libgdalcubes_write_tif', PACKAGE = 'gdalcubes', pin, dir, prefix, overviews, cog, creation_options, rsmpl_overview, packing))
 }

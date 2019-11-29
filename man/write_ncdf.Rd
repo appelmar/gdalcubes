@@ -2,11 +2,11 @@
 % Please edit documentation in R/cube.R
 \name{write_ncdf}
 \alias{write_ncdf}
-\title{Export a data cube as a netCDF file}
+\title{Export a data cube as netCDF file(s)}
 \usage{
 write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
   overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE,
-  pack = NULL)
+  pack = NULL, chunked = FALSE)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -20,26 +20,33 @@ write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
 \item{with_VRT}{logical; write additional VRT datasets (one per time slice)}
 
 \item{pack}{reduce output file size by packing values (see Details), defaults to no packing}
+
+\item{chunked}{logical; if TRUE, write one netCDF file per chunk; defaults to FALSE}
 }
 \value{
-returns (invisibly) the path of the created netCDF file
+returns (invisibly) the path of the created netCDF file(s)
 }
 \description{
-This function will read chunks of a data cube and write them to a single netCDF file. The resulting
-file uses the enhanced netCDF-4 format (for chunking and compression).
+This function will read chunks of a data cube and write them to a single (the default) or multitple (if \code{chunked = TRUE}) netCDF file(s). The resulting
+file(s) uses the enhanced netCDF-4 format, supporting chunking and compression.
 }
 \details{
-The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+The resulting netCDF file(s) contain three dimensions (t, y, x) and bands as variables.
 
 If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
 ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
 
 To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
-integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+integer data type for storage (only supported if \code{chunked = TRUE}). The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
 and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
 \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
 The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
 original scale.
+
+If \code{chunked = TRUE}, names of the produced files will start with \code{name} (with removed extension), followed by an underscore and the internal integer chunk number.
+}
+\note{
+Packing is currently ignored if \code{chunked = TRUE}
 }
 \examples{
 # create image collection from example Landsat data only 

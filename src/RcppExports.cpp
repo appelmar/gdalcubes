@@ -425,6 +425,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// libgdalcubes_write_chunks_ncdf
+void libgdalcubes_write_chunks_ncdf(SEXP pin, std::string dir, std::string name, uint8_t compression_level);
+RcppExport SEXP _gdalcubes_libgdalcubes_write_chunks_ncdf(SEXP pinSEXP, SEXP dirSEXP, SEXP nameSEXP, SEXP compression_levelSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dir(dirSEXP);
+    Rcpp::traits::input_parameter< std::string >::type name(nameSEXP);
+    Rcpp::traits::input_parameter< uint8_t >::type compression_level(compression_levelSEXP);
+    libgdalcubes_write_chunks_ncdf(pin, dir, name, compression_level);
+    return R_NilValue;
+END_RCPP
+}
 // libgdalcubes_write_tif
 void libgdalcubes_write_tif(SEXP pin, std::string dir, std::string prefix, bool overviews, bool cog, SEXP creation_options, std::string rsmpl_overview, SEXP packing);
 RcppExport SEXP _gdalcubes_libgdalcubes_write_tif(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP, SEXP overviewsSEXP, SEXP cogSEXP, SEXP creation_optionsSEXP, SEXP rsmpl_overviewSEXP, SEXP packingSEXP) {
@@ -579,6 +592,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},
     {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 6},
+    {"_gdalcubes_libgdalcubes_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_libgdalcubes_write_chunks_ncdf, 4},
     {"_gdalcubes_libgdalcubes_write_tif", (DL_FUNC) &_gdalcubes_libgdalcubes_write_tif, 8},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},

@@ -1331,6 +1331,18 @@ void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_
 }
 
 // [[Rcpp::export]]
+void libgdalcubes_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t compression_level=0) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    (*aa)->write_chunks_netcdf(dir, name, compression_level);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 void libgdalcubes_write_tif( SEXP pin, std::string dir, std::string prefix="", 
                              bool overviews = false, bool cog = false, 
                              SEXP creation_options = R_NilValue,
