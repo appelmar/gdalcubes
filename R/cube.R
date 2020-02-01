@@ -550,10 +550,10 @@ nx <- function(obj) {
 as_json <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
-  return(x$graph)
+  return(jsonlite::prettify(x$graph))
 }
 
-
+      
 
 
 #' Helper function to define packed data exports by min / max values 
