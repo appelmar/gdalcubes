@@ -1,3 +1,8 @@
+# gdalcubes 0.2.4 (2020-02-02)
+
+* fixed axis order issues with GDAL3 and PROJ6
+* fixed compiler warnings with GDAL3
+
 # gdalcubes 0.2.3 (2019-10-21)
 
 * fixed clang compiler warnings 
