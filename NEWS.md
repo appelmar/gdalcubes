@@ -6,6 +6,8 @@
 * new `zonal_statistics()` function to compute summary statistics of data cubes over polygons
 * add support for image collections without collection format in `create_image_collection()`
 * new `query_timeseries()` function to extract time series at irregular spatial points
+* removed `reduce()` function
+* remove `cube` argument in `cube_view` function
 
 # gdalcubes 0.2.3 (2019-10-21)
 

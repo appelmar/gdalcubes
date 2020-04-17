@@ -295,7 +295,7 @@ plot.cube  <-
       }
       dtvalues = libgdalcubes_datetime_values(x)
       if (periods.in.title)
-        dtvalues = paste(dtvalues, cube_view(x)$time$dt)
+        dtvalues = paste(dtvalues, dimensions(x)$t$pixel_size)
       if (!is.null(t)) {
         if (is.numeric(t)) {
           stopifnot(all(is.wholenumber(t)))

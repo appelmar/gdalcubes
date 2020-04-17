@@ -45,10 +45,6 @@ libgdalcubes_dimension_values <- function(pin, dt_unit = "") {
     .Call('_gdalcubes_libgdalcubes_dimension_values', PACKAGE = 'gdalcubes', pin, dt_unit)
 }
 
-libgdalcubes_get_cube_view <- function(pin) {
-    .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
-}
-
 libgdalcubes_open_image_collection <- function(filename) {
     .Call('_gdalcubes_libgdalcubes_open_image_collection', PACKAGE = 'gdalcubes', filename)
 }
@@ -89,10 +85,6 @@ libgdalcubes_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_libgdalcubes_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }
 
-libgdalcubes_create_reduce_cube <- function(pin, reducer) {
-    .Call('_gdalcubes_libgdalcubes_create_reduce_cube', PACKAGE = 'gdalcubes', pin, reducer)
-}
-
 libgdalcubes_create_reduce_time_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }
@@ -119,6 +111,10 @@ libgdalcubes_create_join_bands_cube <- function(pinA, pinB, prefix_A, prefix_B) 
 
 libgdalcubes_create_select_bands_cube <- function(pin, bands) {
     .Call('_gdalcubes_libgdalcubes_create_select_bands_cube', PACKAGE = 'gdalcubes', pin, bands)
+}
+
+libgdalcubes_create_select_time_cube <- function(pin, t) {
+    .Call('_gdalcubes_libgdalcubes_create_select_time_cube', PACKAGE = 'gdalcubes', pin, t)
 }
 
 libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names, keep_bands = FALSE) {
