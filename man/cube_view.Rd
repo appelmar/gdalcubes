@@ -58,8 +58,9 @@ a diagnostic message.
  L8.col = create_image_collection(L8_files, "L8_L1TP")
  
  # 1. Create a new data cube view specification
- cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
+ v = cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
+ v
 
  # 2. overwrite parts of an existing data cube view
  vnew = cube_view(v, dt="P1M")

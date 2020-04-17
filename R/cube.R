@@ -176,6 +176,13 @@ print.cube <- function(x, ...) {
     pixel_size = sapply(y$dimensions, function(z) z$pixel_size),
     chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
   )
+  if (!is.null(y$dimensions$t$values)) {
+    nmax = 5
+    str = paste(head(y$dimensions$t$values,nmax), collapse=",")
+    if (length(y$dimensions$t$values) > nmax)
+      str = paste0(str, ",...")
+    dimensions$values = c(str, "","")
+  }
   rownames(dimensions) = c("t","y","x")
   print(dimensions)
   
