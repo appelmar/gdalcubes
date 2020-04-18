@@ -1,5 +1,5 @@
 
-#' Create, update, or query a spatiotemporal data cube view
+#' Creat or update a spatiotemporal data cube view
 #'
 #' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs).
 #' They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
