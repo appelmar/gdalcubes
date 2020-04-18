@@ -176,6 +176,13 @@ print.cube <- function(x, ...) {
     pixel_size = sapply(y$dimensions, function(z) z$pixel_size),
     chunk_size = sapply(y$dimensions, function(z) z$chunk_size)
   )
+  if (!is.null(y$dimensions$t$values)) {
+    nmax = 5
+    str = paste(head(y$dimensions$t$values,nmax), collapse=",")
+    if (length(y$dimensions$t$values) > nmax)
+      str = paste0(str, ",...")
+    dimensions$values = c(str, "","")
+  }
   rownames(dimensions) = c("t","y","x")
   print(dimensions)
   
@@ -550,10 +557,10 @@ nx <- function(obj) {
 as_json <- function(obj) {
   stopifnot(is.cube(obj))
   x = libgdalcubes_cube_info(obj)
-  return(x$graph)
+  return(jsonlite::prettify(x$graph))
 }
 
-
+      
 
 
 #' Helper function to define packed data exports by min / max values 
@@ -638,10 +645,10 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 
 
 
-#' Export a data cube as a netCDF file
+#' Export a data cube as netCDF file(s)
 #' 
-#' This function will read chunks of a data cube and write them to a single netCDF file. The resulting
-#' file uses the enhanced netCDF-4 format (for chunking and compression).
+#' This function will read chunks of a data cube and write them to a single (the default) or multitple (if \code{chunked = TRUE}) netCDF file(s). The resulting
+#' file(s) uses the enhanced netCDF-4 format, supporting chunking and compression.
 #' 
 #' @seealso \url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
 #' @seealso \code{\link{gdalcubes_set_ncdf_compression}} 
@@ -650,24 +657,29 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 #' @param overwrite logical; overwrite output file if it already exists
 #' @param write_json_descr logical; write a JSON description of x as additional file
 #' @param with_VRT logical; write additional VRT datasets (one per time slice)
-#' @param pack reduce output file size by packing values (see Details), defaults to no packing  
+#' @param pack reduce output file size by packing values (see Details), defaults to no packing
+#' @param chunked logical; if TRUE, write one netCDF file per chunk; defaults to FALSE 
 #' 
 #' @seealso \code{\link{pack_minmax}}
 #' 
 #' @details 
-#' The resulting netCDF file contains three dimensions (t, y, x) and bands as variables.
+#' The resulting netCDF file(s) contain three dimensions (t, y, x) and bands as variables.
 #' 
 #' If \code{write_json_descr} is TRUE, the function will write an addition file with the same name as the NetCDF file but 
 #' ".json" suffix. This file includes a serialized description of the input data cube, including all chained data cube operations.
 #'
 #' To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
-#' integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+#' integer data type for storage (only supported if \code{chunked = TRUE}). The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
 #' and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
 #' \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
 #' The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
 #' original scale.
 #' 
-#' @return returns (invisibly) the path of the created netCDF file 
+#' If \code{chunked = TRUE}, names of the produced files will start with \code{name} (with removed extension), followed by an underscore and the internal integer chunk number. 
+#' 
+#' @note Packing is currently ignored if \code{chunked = TRUE}
+#' 
+#' @return returns (invisibly) the path of the created netCDF file(s) 
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -685,12 +697,13 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 #' write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 #' @export
 write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"), overwrite = FALSE, 
-                       write_json_descr = FALSE, with_VRT = FALSE, pack = NULL) {
+                       write_json_descr = FALSE, with_VRT = FALSE, pack = NULL, chunked = FALSE) {
   stopifnot(is.cube(x))
   fname = path.expand(fname)
   if (!overwrite && file.exists(fname)) {
     stop("File already exists, please change the output filename or set overwrite = TRUE")
   }
+  
   
   if (!is.null(pack)) {
     stopifnot(is.list(pack))
@@ -701,23 +714,41 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
     stopifnot(length(pack$offset) == length(pack$nodata))
   }
   
-  if (.pkgenv$use_cube_cache) {
-    j = as_json(x)
-    if (!is.null(.pkgenv$cube_cache[[j]])
-        && file.exists(.pkgenv$cube_cache[[j]])) {
-      file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
+  if (!is.null(pack) && chunked) {
+    warning("Since chunked = TRUE, packing will be ignored (data type will remain 8 byte double)")
+  }
+  if (.pkgenv$ncdf_write_bounds && chunked) {
+    warning("Since chunked = TRUE, resulting netCDF files will not include bounds variables.")
+  }
+  
+  if (!chunked) {
+    if (.pkgenv$use_cube_cache) {
+      j = as_json(x)
+      if (!is.null(.pkgenv$cube_cache[[j]])
+          && file.exists(.pkgenv$cube_cache[[j]])) {
+        file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
+      }
+      else {
+        libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
+      }
     }
     else {
       libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
     }
   }
   else {
-    libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
+    libgdalcubes_write_chunks_ncdf(x, dirname(fname), tools::file_path_sans_ext(basename(fname)), .pkgenv$compression_level)
   }
+  
   if (write_json_descr) {
     writeLines(as_json(x), paste(fname, ".json", sep=""))
   }
-  invisible(fname)
+  if (!chunked) {
+    invisible(fname)
+  }
+  else {
+    list.files(dirname(fname), pattern=paste(tools::file_path_sans_ext(basename(fname)), "_[0-9]+.nc", sep=""), full.names = TRUE)
+  }
 }
 
 

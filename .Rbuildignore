@@ -56,6 +56,12 @@
 ^src/gdalcubes/src/external/exprtk\.hpp$
 ^src/gdalcubes/src/external/tiny-process-library/examples\.cpp$
 ^src/gdalcubes/src/external/tiny-process-library/CMakeLists\.txt$
+^src/gdalcubes/src/external/json11/CMakeLists\.txt$
+^src/gdalcubes/src/external/json11/json11\.pc\.in$
+^src/gdalcubes/src/external/json11/LICENSE\.txt$
+^src/gdalcubes/src/external/json11/Makefile$
+^src/gdalcubes/src/external/json11/README\.md$
+^src/gdalcubes/src/external/json11/README\test\.cpp$
 ^_pkgdown\.yml$
 ^docs$
 ^L8_Amazon\.zip$

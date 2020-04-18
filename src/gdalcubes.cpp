@@ -288,7 +288,7 @@ Rcpp::StringVector libgdalcubes_datetime_values(SEXP pin) {
   Rcpp::CharacterVector out(x->size_t());
   
   for (uint32_t i = 0; i < x->size_t(); ++i) {
-    out[i] = (x->st_reference()->t0() + ( x->st_reference()->dt() * i)).to_string();
+    out[i] = x->st_reference()->datetime_at_index(i).to_string();
   }
   return out;
 }
@@ -301,16 +301,30 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
     
     std::shared_ptr<cube> x = *aa;
     
+    Rcpp::List tdim_list;
+    if (x->st_reference()->has_regular_time()) {
+      std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>( x->st_reference());
+      tdim_list = Rcpp::List::create(
+        Rcpp::Named("low") = stref->t0().to_string(),
+        Rcpp::Named("high") = stref->t1().to_string(),
+        Rcpp::Named("count") = stref->nt(),
+        Rcpp::Named("pixel_size") = stref->dt().to_string(),
+        Rcpp::Named("chunk_size") = x->chunk_size()[0]);
+    }
+    else {
+      std::shared_ptr<cube_stref_labeled_time> stref = std::dynamic_pointer_cast<cube_stref_labeled_time>( x->st_reference());
+      tdim_list = Rcpp::List::create(
+        Rcpp::Named("low") = stref->t0().to_string(),
+        Rcpp::Named("high") = stref->t1().to_string(),
+        Rcpp::Named("count") = stref->nt(),
+        Rcpp::Named("values") = stref->get_time_labels_as_string(), 
+        Rcpp::Named("pixel_size") = stref->dt().to_string(),
+        Rcpp::Named("chunk_size") = x->chunk_size()[0]);
+    }
     
     Rcpp::List dims =
       Rcpp::List::create(
-        Rcpp::Named("t")=
-          Rcpp::List::create(
-            Rcpp::Named("low") = x->st_reference()->t0().to_string(),
-            Rcpp::Named("high") = x->st_reference()->t1().to_string(),
-            Rcpp::Named("count") = x->st_reference()->nt(),
-            Rcpp::Named("pixel_size") = x->st_reference()->dt().to_string(),
-            Rcpp::Named("chunk_size") = x->chunk_size()[0]),
+        Rcpp::Named("t")= tdim_list,
         Rcpp::Named("y") =  
           Rcpp::List::create(
             Rcpp::Named("low") = x->st_reference()->bottom(),
@@ -369,7 +383,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
                               Rcpp::Named("dimensions") = dims,
                               Rcpp::Named("srs") = x->st_reference()->srs(),
                               Rcpp::Named("proj4") = sproj4,
-                              Rcpp::Named("graph") = x->make_constructible_json().dump(2),
+                              Rcpp::Named("graph") = x->make_constructible_json().dump(),
                               Rcpp::Named("size") = Rcpp::IntegerVector::create(x->size()[0], x->size()[1], x->size()[2], x->size()[3])); // TODO: remove size element
     
   }
@@ -387,39 +401,40 @@ Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string 
   cube_view cv;
   
   if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-    cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
     cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
     cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-    cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+      std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
+      cv.srs(srs);
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    cv.t0() = datetime::from_string(tmp);
+    cv.t0(datetime::from_string(tmp));
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    cv.t1() = datetime::from_string(tmp);
+    cv.t1(datetime::from_string(tmp));
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
     cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
@@ -496,8 +511,15 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
   Rcpp::NumericVector dimx(x->st_reference()->nx());
   Rcpp::NumericVector dimy(x->st_reference()->ny());
   
+  if (!x->st_reference()->has_regular_space()) {
+    Rcpp::stop("Irregular spatial dimensions are currently not supprted");
+  }
   
-  datetime_unit u = x->st_reference()->dt_unit();
+  // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
+  std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>(x->st_reference());
+  
+  
+  datetime_unit u = stref->dt_unit();
   if (dt_unit == "Y") {
     u = datetime_unit::YEAR;
   }
@@ -510,7 +532,7 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
   else if (dt_unit == "H") {
     u = datetime_unit::HOUR;
   }
-  else if (dt_unit == "M") {
+  else if (dt_unit == "M") {  
     u = datetime_unit::MINUTE;
   }
   else if (dt_unit == "S") {
@@ -518,13 +540,13 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
   }
   
   for (uint32_t i = 0; i < x->st_reference()->nt(); ++i) {
-    dimt[i] = (x->st_reference()->t0() + x->st_reference()->dt() * i).to_string(u); 
+    dimt[i] = stref->datetime_at_index(i).to_string(u);
   }
   for (uint32_t i = 0; i < x->st_reference()->ny(); ++i) {
-    dimy[i] = (x->st_reference()->win().bottom + x->st_reference()->dy() * i); 
+    dimy[i] = (stref->win().bottom + stref->dy() * i); 
   }
   for (uint32_t i = 0; i < x->st_reference()->nx(); ++i) {
-    dimx[i] = (x->st_reference()->win().left + x->st_reference()->dx() * i); 
+    dimx[i] = (stref->win().left + stref->dx() * i); 
   }
   
   return Rcpp::List::create(Rcpp::Named("t") = dimt,
@@ -533,41 +555,6 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
   
 }
 
-
-// [[Rcpp::export]]
-Rcpp::List libgdalcubes_get_cube_view( SEXP pin) {
-  
-  
-  Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-  
-  std::shared_ptr<cube> x = *aa;
-  
-  std::shared_ptr<cube_view> v = std::dynamic_pointer_cast<cube_view>(x->st_reference());
-  
-  Rcpp::List view = Rcpp::List::create(
-    Rcpp::Named("space") = Rcpp::List::create(
-      Rcpp::Named("right") = x->st_reference()->right(),
-      Rcpp::Named("left") = x->st_reference()->left(),
-      Rcpp::Named("top") = x->st_reference()->top(),
-      Rcpp::Named("bottom") = x->st_reference()->bottom(),
-      Rcpp::Named("nx") = x->st_reference()->nx(),
-      Rcpp::Named("ny") = x->st_reference()->ny(),
-      Rcpp::Named("srs") = x->st_reference()->srs(),
-      Rcpp::Named("dx") = x->st_reference()->dx(),
-      Rcpp::Named("dy") = x->st_reference()->dy()
-    ),
-    Rcpp::Named("time") = Rcpp::List::create(
-      Rcpp::Named("t0") = x->st_reference()->t0().to_string(),
-      Rcpp::Named("t1") = x->st_reference()->t1().to_string(),
-      Rcpp::Named("dt") = x->st_reference()->dt().to_string(),
-      Rcpp::Named("nt") = x->st_reference()->nt()
-    ),
-    Rcpp::Named("aggregation") = v ? aggregation::to_string(v->aggregation_method()) : "none",
-    Rcpp::Named("resampling") = v ? resampling::to_string(v->resampling_method()) : "near"
-  );
-  return view;
-}
- 
 
 
 // [[Rcpp::export]]
@@ -802,39 +789,40 @@ SEXP libgdalcubes_create_view(SEXP v) {
   cube_view cv;
   
   if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-    cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
     cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
     cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
   }
   if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-    cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+    std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
+    cv.srs(srs);
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    cv.t0() = datetime::from_string(tmp);
+    cv.t0(datetime::from_string(tmp));
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    cv.t1() = datetime::from_string(tmp);
+    cv.t1(datetime::from_string(tmp));
   }
   if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
     cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
@@ -896,39 +884,40 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       cube_view cv;
       
       if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-        cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+        cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-        cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+        cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-        cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+        cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-        cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+        cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
         cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-        cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+        cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
         cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-        cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+        cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-        cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+        std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
+        cv.srs(srs);
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-        cv.t0() = datetime::from_string(tmp);
+        cv.t0(datetime::from_string(tmp));
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-        cv.t1() = datetime::from_string(tmp);
+        cv.t1(datetime::from_string(tmp));
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
         cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
@@ -1000,45 +989,44 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
   
   try {
     
- 
-    
       Rcpp::List view = Rcpp::as<Rcpp::List>(v);
       cube_view cv;
       
       if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-        cv.right() = Rcpp::as<Rcpp::List>(view["space"])["right"];
+        cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-        cv.left() = Rcpp::as<Rcpp::List>(view["space"])["left"];
+        cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-        cv.top() = Rcpp::as<Rcpp::List>(view["space"])["top"];
+        cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-        cv.bottom() = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+        cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
         cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-        cv.nx() = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+        cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
         cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-        cv.ny() = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+        cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
       }
       if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-        cv.srs() = Rcpp::as<Rcpp::CharacterVector>(Rcpp::as<Rcpp::List>(view["space"])["srs"])[0];
+        std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
+        cv.srs(srs);  
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-        cv.t0() = datetime::from_string(tmp);
+        cv.t0(datetime::from_string(tmp));
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-        cv.t1() = datetime::from_string(tmp);
+        cv.t1(datetime::from_string(tmp));
       }
       if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
         cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
@@ -1076,23 +1064,6 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
 
 
 
-
-
-// [[Rcpp::export]]
-SEXP libgdalcubes_create_reduce_cube(SEXP pin, std::string reducer) {
-  try {
-    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
-    
-    std::shared_ptr<reduce_cube>* x = new std::shared_ptr<reduce_cube>(reduce_cube::create(*aa, reducer));
-    Rcpp::XPtr< std::shared_ptr<reduce_cube> > p(x, true) ;
-    
-    return p;
-    
-  }
-  catch (std::string s) {
-    Rcpp::stop(s);
-  }
-}
 
 
 
@@ -1227,6 +1198,22 @@ SEXP libgdalcubes_create_select_bands_cube(SEXP pin, std::vector<std::string> ba
   }
 }
 
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_select_time_cube(SEXP pin, std::vector<std::string> t) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+      std::shared_ptr<select_time_cube>* x = new std::shared_ptr<select_time_cube>(select_time_cube::create(*aa, t));
+    Rcpp::XPtr< std::shared_ptr<select_time_cube> > p(x, true) ;
+    
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names, bool keep_bands=false) {
   try {
@@ -1331,6 +1318,18 @@ void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_
 }
 
 // [[Rcpp::export]]
+void libgdalcubes_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t compression_level=0) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    (*aa)->write_chunks_netcdf(dir, name, compression_level);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 void libgdalcubes_write_tif( SEXP pin, std::string dir, std::string prefix="", 
                              bool overviews = false, bool cog = false, 
                              SEXP creation_options = R_NilValue,
@@ -1431,6 +1430,24 @@ SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<dou
      df[i] = res[i];
     }
     return df;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::vector<std::vector<std::vector<double>>> res = vector_queries::query_timeseries(*aa, px, py, srs);
+    Rcpp::List dflist(res.size());
+    
+    for (uint16_t i=0; i<res.size(); ++i) {
+      dflist[i] = res[i];
+    }
+    return dflist;
   }
   catch (std::string s) {
     Rcpp::stop(s);

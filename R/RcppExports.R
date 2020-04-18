@@ -45,10 +45,6 @@ libgdalcubes_dimension_values <- function(pin, dt_unit = "") {
     .Call('_gdalcubes_libgdalcubes_dimension_values', PACKAGE = 'gdalcubes', pin, dt_unit)
 }
 
-libgdalcubes_get_cube_view <- function(pin) {
-    .Call('_gdalcubes_libgdalcubes_get_cube_view', PACKAGE = 'gdalcubes', pin)
-}
-
 libgdalcubes_open_image_collection <- function(filename) {
     .Call('_gdalcubes_libgdalcubes_open_image_collection', PACKAGE = 'gdalcubes', filename)
 }
@@ -89,10 +85,6 @@ libgdalcubes_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_libgdalcubes_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }
 
-libgdalcubes_create_reduce_cube <- function(pin, reducer) {
-    .Call('_gdalcubes_libgdalcubes_create_reduce_cube', PACKAGE = 'gdalcubes', pin, reducer)
-}
-
 libgdalcubes_create_reduce_time_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }
@@ -121,6 +113,10 @@ libgdalcubes_create_select_bands_cube <- function(pin, bands) {
     .Call('_gdalcubes_libgdalcubes_create_select_bands_cube', PACKAGE = 'gdalcubes', pin, bands)
 }
 
+libgdalcubes_create_select_time_cube <- function(pin, t) {
+    .Call('_gdalcubes_libgdalcubes_create_select_time_cube', PACKAGE = 'gdalcubes', pin, t)
+}
+
 libgdalcubes_create_apply_pixel_cube <- function(pin, expr, names, keep_bands = FALSE) {
     .Call('_gdalcubes_libgdalcubes_create_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, expr, names, keep_bands)
 }
@@ -141,6 +137,10 @@ libgdalcubes_eval_cube <- function(pin, outfile, compression_level = 0L, with_VR
     invisible(.Call('_gdalcubes_libgdalcubes_eval_cube', PACKAGE = 'gdalcubes', pin, outfile, compression_level, with_VRT, write_bounds, packing))
 }
 
+libgdalcubes_write_chunks_ncdf <- function(pin, dir, name, compression_level = 0L) {
+    invisible(.Call('_gdalcubes_libgdalcubes_write_chunks_ncdf', PACKAGE = 'gdalcubes', pin, dir, name, compression_level))
+}
+
 libgdalcubes_write_tif <- function(pin, dir, prefix = "", overviews = FALSE, cog = FALSE, creation_options = NULL, rsmpl_overview = "nearest", packing = NULL) {
     invisible(.Call('_gdalcubes_libgdalcubes_write_tif', PACKAGE = 'gdalcubes', pin, dir, prefix, overviews, cog, creation_options, rsmpl_overview, packing))
 }
@@ -155,6 +155,10 @@ libgdalcubes_create_fill_time_cube <- function(pin, method) {
 
 libgdalcubes_query_points <- function(pin, px, py, pt, srs) {
     .Call('_gdalcubes_libgdalcubes_query_points', PACKAGE = 'gdalcubes', pin, px, py, pt, srs)
+}
+
+libgdalcubes_query_timeseries <- function(pin, px, py, srs) {
+    .Call('_gdalcubes_libgdalcubes_query_timeseries', PACKAGE = 'gdalcubes', pin, px, py, srs)
 }
 
 libgdalcubes_zonal_statistics <- function(pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer) {

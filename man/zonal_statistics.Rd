@@ -39,7 +39,7 @@ The function creates a single GeoPackage output file containing:
 You will most-likely want to use the spatial view layers directly e.g. with the sf package.  
 
 
-Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", and "prod".
+Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", "prod", "var", and "sd".
 }
 \note{
 Currently, the spatial reference systems of the data cube and the features must be identical.

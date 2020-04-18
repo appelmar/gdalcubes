@@ -17,12 +17,15 @@
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4,
-#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-05"),
 #'                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v)
 #' L8.cube.b04 = select_bands(raster_cube(L8.col, v), c("B04"))
 #' L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
 #' join_bands(L8.cube.b04,L8.cube.b05)
+#' \donttest{
+#' plot(join_bands(L8.cube.b04,L8.cube.b05))
+#' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
 #' Names of bands will be taken from the input cubes. If both cubes, however, have bands with identical name, prefixes are added to all band names. Prefixes

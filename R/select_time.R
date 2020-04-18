@@ -1,10 +1,10 @@
-#' Select bands of a data cube
+#' Select time slices of a data cube
 #' 
-#' Create a proxy data cube, which selects specific bands of a data cube. The resulting cube
-#' will drop any other bands.
+#' Create a proxy data cube, which selects specific time slices of a data cube. The time dimension of the resulting cube
+#' will be irregular / labeled.
 #'
 #' @param cube source data cube
-#' @param bands character vector with band names
+#' @param t character vector with date/time
 #' @return proxy data cube object
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -21,28 +21,27 @@
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v) 
 #' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
+#' L8.rgb = select_time(L8.rgb, c("2018-04", "2018-07"))
 #' L8.rgb
 #' \donttest{
 #' plot(L8.rgb, rgb=3:1)
 #' }
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @note For performance reasons, \code{select_bands} should always be called directly on a cube created with \code{\link{raster_cube}} and 
-#' drop all unneded bands. This allows to reduce RasterIO and warp operations in GDAL.
 #' @export
-select_bands <- function(cube, bands) {
+select_time <- function(cube, t) {
   stopifnot(is.cube(cube))
   
-  x = libgdalcubes_create_select_bands_cube(cube, bands)
-  class(x) <- c("select_bands_cube", "cube", "xptr")
+  x = libgdalcubes_create_select_time_cube(cube, t)
+  class(x) <- c("select_time_cube", "cube", "xptr")
   return(x)
 }
 
 
 
 
-is.select_bands_cube  <- function(obj) {
-  if(!("select_bands_cube" %in% class(obj))) {
+is.select_time_cube  <- function(obj) {
+  if(!("select_time_cube" %in% class(obj))) {
     return(FALSE)
   }
   if (libgdalcubes_is_null(obj)) {

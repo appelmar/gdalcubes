@@ -34,6 +34,8 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
 apply_pixel(raster_cube(L8.col, v), "(B05-B04)/(B05+B04)", "NDVI") 
 
+
+
 d <- c(4,16,128,128)
 x <- array(rnorm(prod(d)), d)
 y <- apply_pixel(x, function(v) {
