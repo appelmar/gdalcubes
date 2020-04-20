@@ -9,9 +9,9 @@ filter_geom(cube, geom, srs = NULL)
 \arguments{
 \item{cube}{source data cube}
 
-\item{geom}{either a WKT string, or an sfg object}
+\item{geom}{either a WKT string, or an sfc or sfg object (sf package)}
 
-\item{srs}{string identifier of spatial reference system ()}
+\item{srs}{string identifier of the polygon's coordinate reference system understandable for GDAL}
 }
 \value{
 a proxy data cube object
@@ -19,11 +19,20 @@ a proxy data cube object
 \description{
 Create a proxy data cube, which filters pixels by a spatial (multi)polygon For all pixels whose center is within the polygon, the original
 }
+\details{
+The resulting data cube will not be cropped but pixels outside of the 
+polygon will be set to NAN. 
+
+If \code{geom} is provided as an sfc object with length > 1, geometries will
+be combined with \code{sf::st_combine()} before.
+
+The geometry is automatically transformed to the data cube's spatial reference
+system if needed.
+}
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
-TODO
 # create image collection from example Landsat data only 
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {

@@ -4,10 +4,19 @@
 #' Create a proxy data cube, which filters pixels by a spatial (multi)polygon For all pixels whose center is within the polygon, the original
 #'
 #' @param cube source data cube
-#' @param geom either a WKT string, or an sfg object
-#' @param srs string identifier of spatial reference system ()
+#' @param geom either a WKT string, or an sfc or sfg object (sf package)
+#' @param srs string identifier of the polygon's coordinate reference system understandable for GDAL
 #' @return a proxy data cube object
-#' @examples TODO
+#' @details The resulting data cube will not be cropped but pixels outside of the 
+#' polygon will be set to NAN. 
+#' 
+#' If \code{geom} is provided as an sfc object with length > 1, geometries will
+#' be combined with \code{sf::st_combine()} before.
+#' 
+#' The geometry is automatically transformed to the data cube's spatial reference
+#' system if needed.
+#'  
+#' @examples
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
@@ -40,12 +49,12 @@
 filter_geom <- function(cube, geom, srs = NULL) {
   stopifnot(is.cube(cube))
   
-  if ("sfg" %in% class(geom)) {
+  if ("sfc" %in% class(geom) || "sfg" %in% class(geom)) {
     if (!requireNamespace("sf", quietly = TRUE)) {
       stop("package sf required; please install first")
     }
-    temp = st_crs(geom)
     if (is.null(srs)) {
+      temp = st_crs(geom)
       if(!is.null(temp$wkt)) {
         srs = temp$wkt
       }
@@ -53,7 +62,7 @@ filter_geom <- function(cube, geom, srs = NULL) {
         srs = temp$proj4string
       }
       else {
-        stop ("Cannot fetch coordinate reference system of geometry")
+        stop ("cannot fetch coordinate reference system of geometry")
       }
     }
     if (length(geom) > 1) {
