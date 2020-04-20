@@ -129,6 +129,10 @@ libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
     .Call('_gdalcubes_libgdalcubes_create_filter_predicate_cube', PACKAGE = 'gdalcubes', pin, pred)
 }
 
+libgdalcubes_create_filter_geom_cube <- function(pin, wkt, srs) {
+    .Call('_gdalcubes_libgdalcubes_create_filter_geom_cube', PACKAGE = 'gdalcubes', pin, wkt, srs)
+}
+
 libgdalcubes_debug_output <- function(debug) {
     invisible(.Call('_gdalcubes_libgdalcubes_debug_output', PACKAGE = 'gdalcubes', debug))
 }

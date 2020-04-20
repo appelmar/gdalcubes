@@ -2,7 +2,7 @@
 % Please edit documentation in R/view.R
 \name{cube_view}
 \alias{cube_view}
-\title{Creat or update a spatiotemporal data cube view}
+\title{Create or update a spatiotemporal data cube view}
 \usage{
 cube_view(view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
   resampling, keep.asp = TRUE)

@@ -1257,7 +1257,18 @@ SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
   }
 }
 
-
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<filter_geom_cube>* x = new std::shared_ptr<filter_geom_cube>(filter_geom_cube::create(*aa, wkt, srs));
+    Rcpp::XPtr< std::shared_ptr<filter_geom_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]

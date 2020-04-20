@@ -1,0 +1,63 @@
+
+#' Filter data cube pixels by a polygon
+#' 
+#' Create a proxy data cube, which filters pixels by a spatial (multi)polygon For all pixels whose center is within the polygon, the original
+#'
+#' @param cube source data cube
+#' @param geom either a WKT string, or an sfg object
+#' @param srs string identifier of spatial reference system ()
+#' @return a proxy data cube object
+#' @examples TODO
+#' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
+#' @export
+filter_geom <- function(cube, geom, srs = NULL) {
+  stopifnot(is.cube(cube))
+  
+  if ("sfg" %in% class(geom)) {
+    if (!requireNamespace("sf", quietly = TRUE)) {
+      stop("package sf required; please install first")
+    }
+    temp = st_crs(geom)
+    if (is.null(srs)) {
+      if(!is.null(temp$wkt)) {
+        srs = temp$wkt
+      }
+      else if(!is.null(temp$proj4string)) {
+        srs = temp$proj4string
+      }
+      else {
+        stop ("Cannot fetch coordinate reference system of geometry")
+      }
+    }
+    if (length(geom) > 1) {
+      geom = st_combine(geom)
+    }
+    geom = st_as_text(geom)
+  }
+  else if (is.character(geom)) {
+    if (is.null(srs)) {
+      stop("srs argument required for WKT input")
+    }
+  }
+ 
+  x = libgdalcubes_create_filter_geom_cube(cube, wkt, srs)
+  class(x) <- c("filter_geom_cube", "cube", "xptr")
+  return(x)
+}
+
+
+
+is.filter_geom_cube  <- function(obj) {
+  if(!("filter_geom_cube" %in% class(obj))) {
+    return(FALSE)
+  }
+  if (libgdalcubes_is_null(obj)) {
+    warning("GDAL data cube proxy object is invalid")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
+
+
