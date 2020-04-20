@@ -8,6 +8,32 @@
 #' @param srs string identifier of spatial reference system ()
 #' @return a proxy data cube object
 #' @examples TODO
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' L8.cube = raster_cube(L8.col, v) 
+#' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
+#' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
+#' WKT = "Polygon ((-74.3541305485767765 40.92543146037175461, 
+#'                  -73.98137080024996237 41.24676672089783835, 
+#'                  -73.99974047396648302 41.44004737793600412,
+#'                  -74.53625579746851315 41.17952562412768458, 
+#'                  -74.62864061915520608 40.91376644437148968, 
+#'                  -74.3541305485767765 40.92543146037175461))"
+#' L8.ndvi.filtered = filter_geom(L8.ndvi, WKT, "EPSG:4326")
+#' L8.ndvi.filtered
+#' \donttest{
+#' plot(L8.ndvi.filtered)
+#' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 filter_geom <- function(cube, geom, srs = NULL) {
@@ -40,7 +66,7 @@ filter_geom <- function(cube, geom, srs = NULL) {
     }
   }
  
-  x = libgdalcubes_create_filter_geom_cube(cube, wkt, srs)
+  x = libgdalcubes_create_filter_geom_cube(cube, geom, srs)
   class(x) <- c("filter_geom_cube", "cube", "xptr")
   return(x)
 }
