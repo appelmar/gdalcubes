@@ -54,7 +54,7 @@ filter_geom <- function(cube, geom, srs = NULL) {
       stop("package sf required; please install first")
     }
     if (is.null(srs)) {
-      temp = st_crs(geom)
+      temp = sf::st_crs(geom)
       if(!is.null(temp$wkt)) {
         srs = temp$wkt
       }
@@ -66,9 +66,9 @@ filter_geom <- function(cube, geom, srs = NULL) {
       }
     }
     if (length(geom) > 1) {
-      geom = st_combine(geom)
+      geom = sf::st_combine(geom)
     }
-    geom = st_as_text(geom)
+    geom = sf::st_as_text(geom)
   }
   else if (is.character(geom)) {
     if (is.null(srs)) {
