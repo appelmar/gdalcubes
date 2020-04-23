@@ -536,6 +536,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// libgdalcubes_set_use_overviews
+void libgdalcubes_set_use_overviews(bool use_overviews);
+RcppExport SEXP _gdalcubes_libgdalcubes_set_use_overviews(SEXP use_overviewsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type use_overviews(use_overviewsSEXP);
+    libgdalcubes_set_use_overviews(use_overviews);
+    return R_NilValue;
+END_RCPP
+}
 // libgdalcubes_set_swarm
 void libgdalcubes_set_swarm(std::vector<std::string> swarm);
 RcppExport SEXP _gdalcubes_libgdalcubes_set_swarm(SEXP swarmSEXP) {
@@ -602,6 +612,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
+    {"_gdalcubes_libgdalcubes_set_use_overviews", (DL_FUNC) &_gdalcubes_libgdalcubes_set_use_overviews, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
     {NULL, NULL, 0}

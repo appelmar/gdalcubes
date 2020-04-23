@@ -14,6 +14,7 @@
   .pkgenv$threads = 1
   .pkgenv$debug = FALSE
   .pkgenv$ncdf_write_bounds = TRUE 
+  .pkgenv$use_overview_images = TRUE
   #.pkgenv$swarm = NULL
   
   # for windows, rwinlib includes GDAL data and PROJ data in the package and we must set the environment variables

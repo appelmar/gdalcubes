@@ -1488,6 +1488,12 @@ void libgdalcubes_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
 
+
+// [[Rcpp::export]]
+void libgdalcubes_set_use_overviews(bool use_overviews) {
+  config::instance()->set_gdal_use_overviews(use_overviews);
+}
+
 // [[Rcpp::export]]
 void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
   auto p = gdalcubes_swarm::from_urls(swarm);

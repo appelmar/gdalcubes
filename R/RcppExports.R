@@ -173,6 +173,10 @@ libgdalcubes_set_threads <- function(n) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_threads', PACKAGE = 'gdalcubes', n))
 }
 
+libgdalcubes_set_use_overviews <- function(use_overviews) {
+    invisible(.Call('_gdalcubes_libgdalcubes_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
+}
+
 libgdalcubes_set_swarm <- function(swarm) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_swarm', PACKAGE = 'gdalcubes', swarm))
 }

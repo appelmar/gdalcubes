@@ -5,7 +5,7 @@
 \title{Set or read global options of the gdalcubes package}
 \usage{
 gdalcubes_options(..., threads, ncdf_compression_level, debug, cache,
-  ncdf_write_bounds)
+  ncdf_write_bounds, use_overview_images)
 }
 \arguments{
 \item{...}{not used}
@@ -19,6 +19,8 @@ gdalcubes_options(..., threads, ncdf_compression_level, debug, cache,
 \item{cache}{logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes}
 
 \item{ncdf_write_bounds}{logical; write dimension bounds as additional variables in netCDF files}
+
+\item{use_overview_images}{logical; if FALSE, all images are read on original resolution and existing overviews will be ignored}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
