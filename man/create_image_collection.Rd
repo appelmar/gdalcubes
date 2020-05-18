@@ -4,8 +4,13 @@
 \alias{create_image_collection}
 \title{Create an image collection from a set of GDAL datasets or files}
 \usage{
-create_image_collection(files, format, out_file = tempfile(fileext =
-  ".sqlite"), unroll_archives = TRUE, quiet = FALSE)
+create_image_collection(
+  files,
+  format,
+  out_file = tempfile(fileext = ".sqlite"),
+  unroll_archives = TRUE,
+  quiet = FALSE
+)
 }
 \arguments{
 \item{files}{character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)}

@@ -4,8 +4,21 @@
 \alias{cube_view}
 \title{Create, update, or query a spatiotemporal data cube view}
 \usage{
-cube_view(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
-  resampling, keep.asp = TRUE)
+cube_view(
+  cube,
+  view,
+  extent,
+  srs,
+  nx,
+  ny,
+  nt,
+  dx,
+  dy,
+  dt,
+  aggregation,
+  resampling,
+  keep.asp = TRUE
+)
 }
 \arguments{
 \item{cube}{data cube object; if provided, return the view of this data cube and ignore other arguments}

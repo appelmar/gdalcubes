@@ -1,3 +1,8 @@
+# gdalcubes 0.2.5 (2020-05-17)
+
+* fixed compiler warnings on CRAN
+* temporarily removed `as_stars()`, will be added again in 0.3
+
 # gdalcubes 0.2.4 (2020-02-02)
 
 * fixed axis order issues with GDAL3 and PROJ6

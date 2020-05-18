@@ -4,8 +4,13 @@
 \alias{add_images}
 \title{Add images to an existing image collection}
 \usage{
-add_images(image_collection, files, unroll_archives = TRUE,
-  out_file = "", quiet = FALSE)
+add_images(
+  image_collection,
+  files,
+  unroll_archives = TRUE,
+  out_file = "",
+  quiet = FALSE
+)
 }
 \arguments{
 \item{image_collection}{image_collection object or path to an existing collection file}

@@ -4,9 +4,14 @@
 \alias{write_ncdf}
 \title{Export a data cube as a netCDF file}
 \usage{
-write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
-  overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE,
-  pack = NULL)
+write_ncdf(
+  x,
+  fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
+  overwrite = FALSE,
+  write_json_descr = FALSE,
+  with_VRT = FALSE,
+  pack = NULL
+)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
@@ -57,7 +62,7 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 }
 \seealso{
-\url{https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html}
+\url{https://www.unidata.ucar.edu/software/netcdf/docs}
 
 \code{\link{gdalcubes_set_ncdf_compression}}
 
