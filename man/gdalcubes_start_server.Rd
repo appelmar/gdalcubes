@@ -4,8 +4,13 @@
 \alias{gdalcubes_start_server}
 \title{Start one or more gdalcubes_server background processes}
 \usage{
-gdalcubes_start_server(port = 1111, endpoint = "/gdalcubes/api",
-  whitelist = NULL, threads = 1, n = 1)
+gdalcubes_start_server(
+  port = 1111,
+  endpoint = "/gdalcubes/api",
+  whitelist = NULL,
+  threads = 1,
+  n = 1
+)
 }
 \arguments{
 \item{port}{port number(s) where gdalcubes server(s) will listen for incoming requests}

@@ -3,7 +3,6 @@
 \docType{package}
 \name{gdalcubes}
 \alias{gdalcubes}
-\alias{gdalcubes-package}
 \title{gdalcubes: Earth Observation Data Cubes from Satellite Image Collections}
 \description{
 Processing collections of Earth observation images as on-demand multispectral, multitemporal raster data cubes. Users

@@ -12,7 +12,6 @@
 #' @param plot logical; plot the animation (default is TRUE) 
 #' @details 
 #' Animations can be created for single band data cubes or RGB plots of multi-band data cubes (by providing the argument rgb) only.
-#' @seealso \code{\link[magick]{image_animate}}
 #' @seealso \code{\link{plot.cube}}
 #' @examples 
 #' \donttest{

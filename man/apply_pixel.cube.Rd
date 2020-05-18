@@ -4,8 +4,7 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE,
-  ..., FUN)
+\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE, ..., FUN)
 }
 \arguments{
 \item{x}{source data cube}

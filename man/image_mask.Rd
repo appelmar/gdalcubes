@@ -4,8 +4,14 @@
 \alias{image_mask}
 \title{Create a mask for images in a raster data cube}
 \usage{
-image_mask(band, min = NULL, max = NULL, values = NULL,
-  bits = NULL, invert = FALSE)
+image_mask(
+  band,
+  min = NULL,
+  max = NULL,
+  values = NULL,
+  bits = NULL,
+  invert = FALSE
+)
 }
 \arguments{
 \item{band}{name of the mask band}
