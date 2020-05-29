@@ -93,6 +93,10 @@ libgdalcubes_create_stream_reduce_time_cube <- function(pin, cmd, nbands, names)
     .Call('_gdalcubes_libgdalcubes_create_stream_reduce_time_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
 }
 
+libgdalcubes_create_stream_reduce_space_cube <- function(pin, cmd, nbands, names) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_reduce_space_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
+}
+
 libgdalcubes_create_reduce_space_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_space_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }

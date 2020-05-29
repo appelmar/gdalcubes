@@ -1103,6 +1103,19 @@ SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<stream_reduce_space_cube>* x = new std::shared_ptr<stream_reduce_space_cube>(stream_reduce_space_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_reduce_space_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
