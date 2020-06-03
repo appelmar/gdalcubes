@@ -1103,6 +1103,19 @@ SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint
   }
 }
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<stream_reduce_space_cube>* x = new std::shared_ptr<stream_reduce_space_cube>(stream_reduce_space_cube::create(*aa, cmd, nbands, names));
+    Rcpp::XPtr< std::shared_ptr<stream_reduce_space_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
 
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
@@ -1257,7 +1270,18 @@ SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
   }
 }
 
-
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<filter_geom_cube>* x = new std::shared_ptr<filter_geom_cube>(filter_geom_cube::create(*aa, wkt, srs));
+    Rcpp::XPtr< std::shared_ptr<filter_geom_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]
@@ -1475,6 +1499,12 @@ void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vecto
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
+}
+
+
+// [[Rcpp::export]]
+void libgdalcubes_set_use_overviews(bool use_overviews) {
+  config::instance()->set_gdal_use_overviews(use_overviews);
 }
 
 // [[Rcpp::export]]

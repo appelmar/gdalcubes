@@ -10,7 +10,6 @@
 #' @param py vector of y coordinates
 #' @param srs spatial reference system string identifer (as GDAL understands) 
 #' @return a list of data.frames (one per band / variable) with one row per point and one column per data cube time slice
-
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 

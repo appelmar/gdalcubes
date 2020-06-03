@@ -4,11 +4,25 @@
 \alias{plot.cube}
 \title{Plot a gdalcubes data cube}
 \usage{
-\method{plot}{cube}(x, y, ..., nbreaks = 11, breaks = NULL,
-  col = grey(1:(nbreaks - 1)/nbreaks), key.pos = NULL, bands = NULL,
-  t = NULL, rgb = NULL, zlim = NULL, periods.in.title = TRUE,
-  join.timeseries = FALSE, axes = TRUE, ncol = NULL, nrow = NULL,
-  na.color = "#AAAAAA")
+\method{plot}{cube}(
+  x,
+  y,
+  ...,
+  nbreaks = 11,
+  breaks = NULL,
+  col = grey(1:(nbreaks - 1)/nbreaks),
+  key.pos = NULL,
+  bands = NULL,
+  t = NULL,
+  rgb = NULL,
+  zlim = NULL,
+  periods.in.title = TRUE,
+  join.timeseries = FALSE,
+  axes = TRUE,
+  ncol = NULL,
+  nrow = NULL,
+  na.color = "#AAAAAA"
+)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}

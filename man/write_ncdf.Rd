@@ -4,9 +4,15 @@
 \alias{write_ncdf}
 \title{Export a data cube as netCDF file(s)}
 \usage{
-write_ncdf(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
-  overwrite = FALSE, write_json_descr = FALSE, with_VRT = FALSE,
-  pack = NULL, chunked = FALSE)
+write_ncdf(
+  x,
+  fname = tempfile(pattern = "gdalcubes", fileext = ".nc"),
+  overwrite = FALSE,
+  write_json_descr = FALSE,
+  with_VRT = FALSE,
+  pack = NULL,
+  chunked = FALSE
+)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}

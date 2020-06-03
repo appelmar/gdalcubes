@@ -4,8 +4,7 @@
 \alias{raster_cube}
 \title{Create a data cube from an image collection}
 \usage{
-raster_cube(image_collection, view, mask = NULL, chunking = c(16, 256,
-  256))
+raster_cube(image_collection, view, mask = NULL, chunking = c(16, 256, 256))
 }
 \arguments{
 \item{image_collection}{Source image collection as from \code{image_collection} or \code{create_image_collection}}

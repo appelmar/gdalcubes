@@ -270,6 +270,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_stream_reduce_space_cube
+SEXP libgdalcubes_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_stream_reduce_space_cube(SEXP pinSEXP, SEXP cmdSEXP, SEXP nbandsSEXP, SEXP namesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cmd(cmdSEXP);
+    Rcpp::traits::input_parameter< uint16_t >::type nbands(nbandsSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type names(namesSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_stream_reduce_space_cube(pin, cmd, nbands, names));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_reduce_space_cube
 SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_reduce_space_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
@@ -386,6 +400,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type pred(predSEXP);
     rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_filter_predicate_cube(pin, pred));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_create_filter_geom_cube
+SEXP libgdalcubes_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_filter_geom_cube(SEXP pinSEXP, SEXP wktSEXP, SEXP srsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type wkt(wktSEXP);
+    Rcpp::traits::input_parameter< std::string >::type srs(srsSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_filter_geom_cube(pin, wkt, srs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -523,6 +550,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// libgdalcubes_set_use_overviews
+void libgdalcubes_set_use_overviews(bool use_overviews);
+RcppExport SEXP _gdalcubes_libgdalcubes_set_use_overviews(SEXP use_overviewsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type use_overviews(use_overviewsSEXP);
+    libgdalcubes_set_use_overviews(use_overviews);
+    return R_NilValue;
+END_RCPP
+}
 // libgdalcubes_set_swarm
 void libgdalcubes_set_swarm(std::vector<std::string> swarm);
 RcppExport SEXP _gdalcubes_libgdalcubes_set_swarm(SEXP swarmSEXP) {
@@ -569,6 +606,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_dummy_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_dummy_cube, 4},
     {"_gdalcubes_libgdalcubes_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_time_cube, 3},
     {"_gdalcubes_libgdalcubes_create_stream_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_time_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_stream_reduce_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_space_cube, 4},
     {"_gdalcubes_libgdalcubes_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_space_cube, 3},
     {"_gdalcubes_libgdalcubes_create_window_time_cube_reduce", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_reduce, 4},
     {"_gdalcubes_libgdalcubes_create_window_time_cube_kernel", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_kernel, 3},
@@ -578,6 +616,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_apply_pixel_cube, 4},
     {"_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube, 5},
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
+    {"_gdalcubes_libgdalcubes_create_filter_geom_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_geom_cube, 3},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},
     {"_gdalcubes_libgdalcubes_eval_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_eval_cube, 6},
     {"_gdalcubes_libgdalcubes_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_libgdalcubes_write_chunks_ncdf, 4},
@@ -588,6 +627,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
+    {"_gdalcubes_libgdalcubes_set_use_overviews", (DL_FUNC) &_gdalcubes_libgdalcubes_set_use_overviews, 1},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
     {NULL, NULL, 0}

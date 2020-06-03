@@ -4,10 +4,17 @@
 \alias{write_tif}
 \title{Export a data cube as a collection of GeoTIFF files}
 \usage{
-write_tif(x, dir = tempfile(pattern = ""),
-  prefix = basename(tempfile(pattern = "cube_")), overviews = FALSE,
-  COG = FALSE, rsmpl_overview = "nearest", creation_options = NULL,
-  write_json_descr = FALSE, pack = NULL)
+write_tif(
+  x,
+  dir = tempfile(pattern = ""),
+  prefix = basename(tempfile(pattern = "cube_")),
+  overviews = FALSE,
+  COG = FALSE,
+  rsmpl_overview = "nearest",
+  creation_options = NULL,
+  write_json_descr = FALSE,
+  pack = NULL
+)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}

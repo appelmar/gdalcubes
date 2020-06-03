@@ -57,10 +57,12 @@ read_chunk_as_array <-function(with.dimnames=TRUE) {
     return(NULL)
   }
   bandnames <- character(s[1])
+ 
   for (i in 1:s[1]) {
     nchars= readBin(f, integer(), n=1)
     bandnames[i] = readChar(f, nchars = nchars)
   }
+  
   dims <- readBin(f, double(), n=sum(s[2:4]))
   proj.length = readBin(f, integer(), n=1)
   proj = readChar(f, nchars = proj.length)

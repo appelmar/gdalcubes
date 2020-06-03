@@ -213,6 +213,8 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' @param x source data cube
 #' @param expr either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube
 #' @param ... optional additional expressions (if \code{expr} is not a vector)
+#' @param FUN a user-defined R function applied over pixel time series (see Details)
+#' @param names character vector; if FUN is provided, names can be used to define the number and name of output bands
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 #' @examples 
@@ -242,21 +244,81 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
 #' @export
-reduce_space.cube <- function(x, expr, ...) {
+reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
   stopifnot(is.cube(x))
-  stopifnot(is.character(expr))
-  if (length(list(...))> 0) {
-    stopifnot(all(sapply(list(...), is.character)))
-    expr = c(expr, unlist(list(...)))
+  if (missing(expr) && missing(FUN)) {
+    stop("either a expr or FUN must be provided ")
+  }
+  if (!missing(FUN) && !missing(expr)) {
+    warning("received both expr and FUN, ignoring FUN")
+    FUN = NULL
+  }
+  if (!missing(FUN) && !is.function(FUN)) {
+    stop ("FUN must be a function")
   }
   
-  # parse expr to separate reducers and bands
-  reducers = gsub("\\(.*\\)", "", expr)
-  bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
-  stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
-  class(x) <- c("reduce_space_cube", "cube", "xptr")
-  return(x)
+  
+  if (!missing(expr)) {
+    stopifnot(is.character(expr))
+    if (length(list(...))> 0) {
+      stopifnot(all(sapply(list(...), is.character)))
+      expr = c(expr, unlist(list(...)))
+    }
+    
+    # parse expr to separate reducers and bands
+    reducers = gsub("\\(.*\\)", "", expr)
+    bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
+    stopifnot(length(reducers) == length(bands))
+    x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
+    class(x) <- c("reduce_space_cube", "cube", "xptr")
+    return(x)
+  }
+  else {
+    if (!is.null(names)) {
+      nb = length(names)
+    }
+    else {
+      # guess number of bands from provided function
+      dummy_values = matrix(rnorm(nbands(x)*10), nrow = nbands(x), ncol=10)
+      rownames(dummy_values) <- names(x)
+      tryCatch({
+        res <- as.vector(FUN(dummy_values))
+        nb <- length(res)
+        # set names
+        if (!is.null(names(res))) {
+          names = names(res)
+        }
+        else {
+          names = paste("band", 1:nb, sep="")
+        }
+      }
+      , error = function(e) {
+        stop("Failed to derive the length of the output from FUN automatically, please specify output band names with the correct size.")
+      })
+    }
+    
+    # create src file
+    # TODO: load the same packages as in the current workspace? see (.packages())
+    funstr = serialize_function(FUN)
+    funhash = libgdalcubes_simple_hash(funstr)
+    srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
+    srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
+    
+    cat(funstr,  file = srcfile1, append = FALSE)
+    srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
+    srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    
+    cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
+    cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
+    cat("write_chunk_from_array(reduce_space(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
+    cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
+    
+    x = libgdalcubes_create_stream_reduce_space_cube(x, cmd, nb, names)
+    class(x) <- c("reduce_space_cube", "cube", "xptr")
+    return(x)
+    
+  }
+  
 }
 
 

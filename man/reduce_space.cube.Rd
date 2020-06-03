@@ -4,7 +4,7 @@
 \alias{reduce_space.cube}
 \title{Reduce a data cube over spatial (x,y or lat,lon) dimensions}
 \usage{
-\method{reduce_space}{cube}(x, expr, ...)
+\method{reduce_space}{cube}(x, expr, ..., FUN, names = NULL)
 }
 \arguments{
 \item{x}{source data cube}
@@ -12,6 +12,10 @@
 \item{expr}{either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube}
 
 \item{...}{optional additional expressions (if \code{expr} is not a vector)}
+
+\item{FUN}{a user-defined R function applied over pixel time series (see Details)}
+
+\item{names}{character vector; if FUN is provided, names can be used to define the number and name of output bands}
 }
 \value{
 proxy data cube object

@@ -93,6 +93,10 @@ libgdalcubes_create_stream_reduce_time_cube <- function(pin, cmd, nbands, names)
     .Call('_gdalcubes_libgdalcubes_create_stream_reduce_time_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
 }
 
+libgdalcubes_create_stream_reduce_space_cube <- function(pin, cmd, nbands, names) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_reduce_space_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
+}
+
 libgdalcubes_create_reduce_space_cube <- function(pin, reducers, bands) {
     .Call('_gdalcubes_libgdalcubes_create_reduce_space_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
 }
@@ -127,6 +131,10 @@ libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names,
 
 libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
     .Call('_gdalcubes_libgdalcubes_create_filter_predicate_cube', PACKAGE = 'gdalcubes', pin, pred)
+}
+
+libgdalcubes_create_filter_geom_cube <- function(pin, wkt, srs) {
+    .Call('_gdalcubes_libgdalcubes_create_filter_geom_cube', PACKAGE = 'gdalcubes', pin, wkt, srs)
 }
 
 libgdalcubes_debug_output <- function(debug) {
@@ -167,6 +175,10 @@ libgdalcubes_zonal_statistics <- function(pin, ogr_dataset, agg_funcs, agg_bands
 
 libgdalcubes_set_threads <- function(n) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_threads', PACKAGE = 'gdalcubes', n))
+}
+
+libgdalcubes_set_use_overviews <- function(use_overviews) {
+    invisible(.Call('_gdalcubes_libgdalcubes_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
 }
 
 libgdalcubes_set_swarm <- function(swarm) {
