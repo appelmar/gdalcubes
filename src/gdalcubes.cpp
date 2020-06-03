@@ -500,6 +500,62 @@ Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string 
 
 
 
+// [[Rcpp::export]]
+Rcpp::List libgdalcubes_dimension_bounds(SEXP pin, std::string dt_unit="") {
+  
+  Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+  
+  std::shared_ptr<cube> x = *aa;
+  Rcpp::CharacterVector dimt(2*x->st_reference()->nt());
+  Rcpp::NumericVector dimx(2*x->st_reference()->nx());
+  Rcpp::NumericVector dimy(2*x->st_reference()->ny());
+  
+  if (!x->st_reference()->has_regular_space()) {
+    Rcpp::stop("Irregular spatial dimensions are currently not supprted");
+  }
+  
+  // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
+  std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>(x->st_reference());
+  
+  
+  datetime_unit u = stref->dt_unit();
+  if (dt_unit == "Y") {
+    u = datetime_unit::YEAR;
+  }
+  else if (dt_unit == "m") {
+    u = datetime_unit::MONTH;
+  }
+  else if (dt_unit == "d") {
+    u = datetime_unit::DAY;
+  }
+  else if (dt_unit == "H") {
+    u = datetime_unit::HOUR;
+  }
+  else if (dt_unit == "M") {  
+    u = datetime_unit::MINUTE;
+  }
+  else if (dt_unit == "S") {
+    u = datetime_unit::SECOND;
+  }
+  
+  for (uint32_t i = 0; i < x->st_reference()->nt(); ++i) {
+    dimt[2*i] = stref->datetime_at_index(i).to_string(u);
+    dimt[2*i+1] = stref->datetime_at_index(i+1).to_string(u);
+  }
+  for (uint32_t i = 0; i < x->st_reference()->ny(); ++i) {
+    dimy[2*i] = (stref->win().bottom + stref->dy() * i); 
+    dimy[2*i+1] = (stref->win().bottom + stref->dy() * (i+1)); 
+  }
+  for (uint32_t i = 0; i < x->st_reference()->nx(); ++i) {
+    dimx[2*i] = (stref->win().left + stref->dx() * i); 
+    dimx[2*i+1] = (stref->win().left + stref->dx() * (i+1)); 
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("t") = dimt,
+                            Rcpp::Named("y") = dimy,
+                            Rcpp::Named("x") = dimx);
+  
+}
 
 // [[Rcpp::export]]
 Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {

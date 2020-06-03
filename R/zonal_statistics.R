@@ -143,6 +143,7 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
     attr(out,"dimensions") <- dims
 
     class(out) = "stars"
+    # TODO: make time intervals as in st_as_stars
     return(out)
   }
  

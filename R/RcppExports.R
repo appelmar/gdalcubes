@@ -41,6 +41,10 @@ libgdalcubes_dimension_values_from_view <- function(view, dt_unit = "") {
     .Call('_gdalcubes_libgdalcubes_dimension_values_from_view', PACKAGE = 'gdalcubes', view, dt_unit)
 }
 
+libgdalcubes_dimension_bounds <- function(pin, dt_unit = "") {
+    .Call('_gdalcubes_libgdalcubes_dimension_bounds', PACKAGE = 'gdalcubes', pin, dt_unit)
+}
+
 libgdalcubes_dimension_values <- function(pin, dt_unit = "") {
     .Call('_gdalcubes_libgdalcubes_dimension_values', PACKAGE = 'gdalcubes', pin, dt_unit)
 }

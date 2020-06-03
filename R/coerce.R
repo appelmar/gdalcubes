@@ -46,13 +46,20 @@ st_as_stars.cube <- function(.x, ...) {
   attr(out, "dimensions")$time$offset = NA
   attr(out, "dimensions")$time$delta = NA
   pst = dimensions(.x)$t$pixel_size
-  if (endsWith(pst, "Y") || (endsWith(pst, "M"))) {
-    attr(out, "dimensions")$time$values = as.POSIXct(dimension_values(.x, "d")$t)
+  if (endsWith(pst, "Y") || endsWith(pst, "M") || endsWith(pst, "D")) {
+    tt = dimension_bounds(.x, "d")$t
+    #attr(out, "dimensions")$time$values = as.Date(dimension_values(.x, "d")$t)
+    values = list(start = as.Date(tt$start), end = as.Date(tt$end))
+    class(values) <- "intervals"
+    attr(out, "dimensions")$time$values = values
   }
  else {
-   attr(out, "dimensions")$time$values = as.POSIXct(dimension_values(.x)$t)
+   tt = dimension_bounds(.x, "S")$t
+   #attr(out, "dimensions")$time$values = as.POSIXct(dimension_values(.x)$t)
+   values = list(start = as.Date(tt$start), end = as.Date(tt$end))
+   class(values) <- "intervals"
+   attr(out, "dimensions")$time$values = values
  }
-  
   return(out)
 }
 

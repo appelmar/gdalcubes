@@ -906,3 +906,37 @@ dimension_values <- function(obj, datetime_unit=NULL) {
 
 
 
+#' Query coordinate bounds for all dimensions of a data cube 
+#' 
+#' Dimension values give the coordinates bounds the spatial and temporal axes of a data cube.
+#' 
+#' @param obj a data cube proxy (class cube)
+#' @param datetime_unit unit used to format values in the datetime dimension, one of "Y", "m", "d", "H", "M", "S", defaults to the unit of the cube.
+#' @return list with elements t,y,x, each a list with two elements, start and end
+#' @examples 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' dimension_bounds(raster_cube(L8.col, v))
+#' @export
+dimension_bounds <- function(obj, datetime_unit=NULL) {
+  stopifnot(is.cube(obj))
+  if (is.null(datetime_unit)) {
+    datetime_unit = ""
+  }
+  bnds = libgdalcubes_dimension_bounds(obj, datetime_unit)
+  out = list(t = list(start = bnds$t[seq(1,length(bnds$t), by = 2)], end = bnds$t[seq(2,length(bnds$t), by = 2)]),
+             y = list(start = bnds$y[seq(1,length(bnds$y), by = 2)], end = bnds$y[seq(2,length(bnds$y), by = 2)]),
+             x = list(start = bnds$x[seq(1,length(bnds$x), by = 2)], end = bnds$x[seq(2,length(bnds$x), by = 2)]))
+  return(out) 
+}
+
