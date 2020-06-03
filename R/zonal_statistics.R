@@ -10,7 +10,8 @@
 #' @param out_path path to where resulting GeoPackage will be written to
 #' @param overwrite logical; overwrite \code{out_path} if file already exists, defaults to FALSE
 #' @param ogr_layer If the input OGR dataset has multiple layers, a layer can be chosen by name
-#' @return character length-one vector containing the path to the resulting GeoPackage file (see Details)
+#' @param as_stars logical; if TRUE, the created gpkg file will be loaded as a stars vector data cube
+#' @return character length-one vector containing the path to the resulting GeoPackage file (see Details) or a stars object (if as_stars is TRUE)
 #' @details 
 #' 
 #' The function creates a single GeoPackage output file containing:
@@ -54,7 +55,7 @@
 #' x
 #' 
 #' @export
-zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL) {
+zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL, as_stars = FALSE) {
 
   
   stopifnot(is.cube(x))
@@ -92,5 +93,57 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
   stopifnot(length(agg_funcs) == length(agg_bands))
   
   libgdalcubes_zonal_statistics(x, geom, agg_funcs, agg_bands, out_path, overwrite, ogr_layer)
-  return(out_path)
+  
+  if (!as_stars) {
+    return(out_path)
+  }
+  else {
+    if (!requireNamespace("sf",quietly = TRUE)) {
+      stop("missing sf package; please install first")
+    }
+    if (!requireNamespace("stars",quietly = TRUE)) {
+      stop("missing stars package; please install first")
+    }
+    x.geom = sf::read_sf(out_path, layer="geom")
+    
+    
+    layers = sf::st_layers(out_path)
+    attr_layers = layers$name[grep("attr_", layers$name)]
+    pst = dimensions(x)$t$pixel_size
+    if (endsWith(pst, "Y")) {
+      datetime = sort(as.POSIXct(paste0(sub("attr_", "", attr_layers), "-01-01"))) 
+    }
+    else if (endsWith(pst, "M")) {
+      datetime = sort(as.POSIXct(paste0(sub("attr_", "", attr_layers), "-01"))) # trick for monthly aggregated data
+    }
+    else {
+      datetime = sort(as.POSIXct(sub("attr_", "", attr_layers))) 
+    }
+    
+    out = list()
+    for (i in 1:length(attr_layers)) {
+      xsf = sf::read_sf(out_path, layer=attr_layers[i], quiet = TRUE)
+      if (i == 1) {
+        for (j in 1:ncol(xsf)) {
+          out[[colnames(xsf)[j]]] = matrix(NA, nrow=nrow(xsf), ncol=length(attr_layers))
+          dimnames(out[[colnames(xsf)[j]]]) <- list("geom" = 1:nrow(xsf),"time" = 1:length(attr_layers))
+        }
+      }
+      for (j in 1:ncol(xsf)) {
+        out[[colnames(xsf)[j]]][,i] =  xsf[[colnames(xsf)[j]]]
+      }
+    }
+    
+    dims = list(geom = list(from = 1, to = nrow(x.geom), offset = NA, delta = NA, refsys = sf::st_crs(srs(x)), point = FALSE, values = x.geom$geom),
+                time = list(from = 1, to = length(attr_layers), offset = NA, delta = NA, refsys = "POSIXct", point = FALSE, values = datetime))
+    class(dims$geom) = "dimension"
+    class(dims$time) = "dimension"
+    class(dims) = "dimensions"
+
+    attr(out,"dimensions") <- dims
+
+    class(out) = "stars"
+    return(out)
+  }
+ 
 }
