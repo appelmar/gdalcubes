@@ -3,7 +3,7 @@
 #' The function materializes a data cube as a temporary netCDF file and loads the file 
 #' with the stars package.
 #' 
-#' @param from data cube object to coerce
+#' @param .x data cube object to coerce
 #' @return stars object
 #' @examples 
 #' \donttest{
@@ -22,23 +22,36 @@
 #' as_stars(select_bands(raster_cube(L8.col, v), c("B04", "B05")))
 #' }
 #' @export
-as_stars <- function(from) { 
-  stopifnot(inherits(from, "cube"))
-  if (!requireNamespace("stars", quietly = TRUE))
-    stop("stars package not found, please install first") 
-
+st_as_stars.cube <- function(.x, ...) { 
+  
   outnc = tempfile(fileext = ".nc")
   #subdatasets = paste0("NETCDF:\"", outnc, "\":", names(from), sep="", collapse = NULL)
   
-  write_ncdf(from, outnc)
-  out = stars::read_ncdf(outnc)
-  out = stars::st_set_dimensions(out, "x", point = FALSE)
-  out = stars::st_set_dimensions(out, "y", point = FALSE)
-  out = stars::st_set_dimensions(out, "time", point = FALSE, values=as.POSIXct(dimension_values(from, "S")$t, tz = "GMT"))
+  write_ncdf(.x, outnc)
+  sds = paste0("NETCDF:\"", outnc, "\":", names(.x))
+  out = stars::read_stars(sds)
+  #  
+  #  attr(out, "dimensions")$x$offset = dimensions(from)$x$low
+  #  attr(out, "dimensions")$x$delta  = dimensions(from)$x$pixel_size
+  #  attr(out, "dimensions")$x["values"] = list(NULL)
+  #  #attr(out, "dimensions")$x$point = FALSE
+  #  
+  #  attr(out, "dimensions")$y$offset = dimensions(from)$y$high
+  #  attr(out, "dimensions")$y$delta  = -dimensions(from)$y$pixel_size
+  #  attr(out, "dimensions")$y["values"]  = list(NULL)
+  #  #attr(out, "dimensions")$y$point = FALSE
+  #  
+  attr(out, "dimensions")$time$point = FALSE
+  attr(out, "dimensions")$time$offset = NA
+  attr(out, "dimensions")$time$delta = NA
+  pst = dimensions(.x)$t$pixel_size
+  if (endsWith(pst, "Y") || (endsWith(pst, "M"))) {
+    attr(out, "dimensions")$time$values = as.POSIXct(dimension_values(.x, "d")$t)
+  }
+ else {
+   attr(out, "dimensions")$time$values = as.POSIXct(dimension_values(.x)$t)
+ }
   
-  attr(out, "dimensions")$x$refsys = proj4(from)
-  attr(out, "dimensions")$y$refsys = proj4(from)
- 
   return(out)
 }
 
