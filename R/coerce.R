@@ -19,7 +19,8 @@
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' as_stars(select_bands(raster_cube(L8.col, v), c("B04", "B05")))
+#' if(requireNamespace("stars",quietly = FALSE))
+#'     st_as_stars(select_bands(raster_cube(L8.col, v), c("B04", "B05")))
 #' }
 #' @export
 st_as_stars.cube <- function(.x, ...) { 
