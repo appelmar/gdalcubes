@@ -4,8 +4,15 @@
 \alias{gdalcubes_options}
 \title{Set or read global options of the gdalcubes package}
 \usage{
-gdalcubes_options(..., threads, ncdf_compression_level, debug, cache,
-  ncdf_write_bounds, use_overview_images)
+gdalcubes_options(
+  ...,
+  threads,
+  ncdf_compression_level,
+  debug,
+  cache,
+  ncdf_write_bounds,
+  use_overview_images
+)
 }
 \arguments{
 \item{...}{not used}

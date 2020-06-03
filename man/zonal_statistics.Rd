@@ -4,8 +4,14 @@
 \alias{zonal_statistics}
 \title{Query summary statistics of data cube values over polygons}
 \usage{
-zonal_statistics(x, geom, expr, out_path = tempfile(fileext = ".gpkg"),
-  overwrite = FALSE, ogr_layer = NULL)
+zonal_statistics(
+  x,
+  geom,
+  expr,
+  out_path = tempfile(fileext = ".gpkg"),
+  overwrite = FALSE,
+  ogr_layer = NULL
+)
 }
 \arguments{
 \item{x}{source data cube}

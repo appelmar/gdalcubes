@@ -4,8 +4,20 @@
 \alias{cube_view}
 \title{Create or update a spatiotemporal data cube view}
 \usage{
-cube_view(view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation,
-  resampling, keep.asp = TRUE)
+cube_view(
+  view,
+  extent,
+  srs,
+  nx,
+  ny,
+  nt,
+  dx,
+  dy,
+  dt,
+  aggregation,
+  resampling,
+  keep.asp = TRUE
+)
 }
 \arguments{
 \item{view}{if provided, update this cube_view object instead of creating a new data cube view where fields that are already set will be overwritten}

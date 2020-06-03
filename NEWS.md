@@ -8,8 +8,22 @@
 * new `query_timeseries()` function to extract time series at irregular spatial points
 * new `select_time()` function to create data cubes with irregular / labeled time dimension
 * new `filter_geom()` function to filter pixels by a spatial polygon
-* removed `reduce()` function
-* removed `cube` argument in `cube_view` function
+* remove `reduce()` function
+* remove `cube` argument in `cube_view` function
+* conversion to stars objects with `st_as_stars()`
+* fix CRS metadata in produced netCDF files   
+
+
+# gdalcubes 0.2.5 (2020-05-17)
+
+* fixed compiler warnings on CRAN
+* temporarily removed `as_stars()`, will be added again in 0.3
+
+# gdalcubes 0.2.4 (2020-02-02)
+
+* fixed axis order issues with GDAL3 and PROJ6
+* fixed compiler warnings with GDAL3
+
 
 # gdalcubes 0.2.3 (2019-10-21)
 

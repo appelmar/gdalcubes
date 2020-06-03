@@ -4,8 +4,7 @@
 \alias{raster_cube_dummy}
 \title{Create a dummy data cube with a fill value}
 \usage{
-raster_cube_dummy(view, nbands = 1, fill = 1, chunking = c(16, 256,
-  256))
+raster_cube_dummy(view, nbands = 1, fill = 1, chunking = c(16, 256, 256))
 }
 \arguments{
 \item{view}{a data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference)}

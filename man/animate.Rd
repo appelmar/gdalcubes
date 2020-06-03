@@ -4,8 +4,16 @@
 \alias{animate}
 \title{Animate a data cube as an image time series}
 \usage{
-animate(x, ..., fps = 1, loop = 0, width = dev.size(units = "px")[1],
-  height = dev.size(units = "px")[2], save_as = NULL, plot = TRUE)
+animate(
+  x,
+  ...,
+  fps = 1,
+  loop = 0,
+  width = dev.size(units = "px")[1],
+  height = dev.size(units = "px")[2],
+  save_as = NULL,
+  plot = TRUE
+)
 }
 \arguments{
 \item{x}{a data cube proxy object (class cube)}
