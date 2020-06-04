@@ -27,6 +27,10 @@ and irregular temporal sampling.
   - Execute data cube operation chains using parallel processing and
     lazy evaluation.
 
+Among others, the package has been successfully used to process data
+from the Sentinel-2, Landsat, PlanetScope, MODIS, and Global
+Precipitation Measurement Earth observation satellites / missions.
+
 # Installation
 
 Install from CRAN with:
@@ -109,7 +113,7 @@ to print a list of available formats).
 library(gdalcubes)
 ```
 
-    ## Using gdalcubes library version 0.2.3
+    ## Using gdalcubes library version 0.2.9999
 
 ``` r
 gdalcubes_options(threads=8)
@@ -134,7 +138,7 @@ L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
 ## Creating data cubes
 
 To create a regular raster data cube from the image collection, we
-define the geometry of our targetr cube as a *data cube view*, using the
+define the geometry of our target cube as a *data cube view*, using the
 `cube_view()` function. We define a simple overview, covering the full
 spatiotemporal extent of the imagery at 1km x 1km pixel size where one
 data cube cell represents a duration of one year. The provided
@@ -262,21 +266,15 @@ x
     ## dimensions : 559, 783, 437697, 7  (nrow, ncol, ncell, nlayers)
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
-    ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs 
-    ## names      : cube_4f176cddecc32013, cube_4f176cddecc32014, cube_4f176cddecc32015, cube_4f176cddecc32016, cube_4f176cddecc32017, cube_4f176cddecc32018, cube_4f176cddecc32019
+    ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +no_defs 
+    ## names      : cube_5f7aecc5f032013, cube_5f7aecc5f032014, cube_5f7aecc5f032015, cube_5f7aecc5f032016, cube_5f7aecc5f032017, cube_5f7aecc5f032018, cube_5f7aecc5f032019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
 raster_cube(L8.col, v.overview) %>%
   select_bands(c("B04","B05")) %>%
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  as_stars() -> y
-```
-
-    ## Warning: All elements of `...` must be named.
-    ## Did you want `variables = c(variable)`?
-
-``` r
+  st_as_stars() -> y
 y
 ```
 
@@ -289,21 +287,34 @@ y
     ##  Mean   : 0.57  
     ##  3rd Qu.: 0.85  
     ##  Max.   : 0.89  
-    ##  NA's   :79497  
+    ##  NA's   :79500  
     ## dimension(s):
-    ##      from  to   offset delta                       refsys point
-    ## x       1 783 -6582280  1000 +proj=merc +a=6378137 +b=... FALSE
-    ## y       1 559  -205014 -1000 +proj=merc +a=6378137 +b=... FALSE
-    ## time    1   7       NA    NA                      POSIXct FALSE
-    ##                         values    
-    ## x                         NULL [x]
-    ## y                         NULL [y]
-    ## time 2013-01-01,...,2019-01-01
+    ##      from  to   offset delta                   refsys point
+    ## x       1 783 -6582280  1000 WGS 84 / Pseudo-Mercator    NA
+    ## y       1 559  -205014 -1000 WGS 84 / Pseudo-Mercator    NA
+    ## time    1   7       NA    NA                  POSIXct FALSE
+    ##                                                   values    
+    ## x                                                   NULL [x]
+    ## y                                                   NULL [y]
+    ## time [2013-01-01,2014-01-01),...,[2019-01-01,2020-01-01)
 
 To reduce the size of exported data cubes, compression and packing
 (conversion of doubles to smaller integer types) are supported.
 
-### User-defined functions
+If only specific time slices of a data cube are needed, `select_time()`
+can be called before plotting / exporting.
+
+``` r
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+  select_time(c("2015", "2018")) %>%
+  plot(zlim=c(0,1), nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
+```
+
+![](.img/select_time-1.png)<!-- -->
+
+## User-defined functions
 
 Users can pass custom R functions to `reduce_time()` and
 `apply_pixel()`. Below, we derive a *greenest pixel composite* by
@@ -325,7 +336,105 @@ raster_cube(L8.col, v.subarea.monthly) %>%
 
 ![](.img/greenest_pixel_composite-1.png)<!-- -->
 
-# Advanced Features
+## Extraction of pixels, time series, and summary statistics over polygons
+
+In many cases, one is interested in extracting sets of points, time
+series, or summary statistics over polygons, e.g., to generate training
+data for machine learning models. Package version 0.3 therefore
+introduces the functions `query_points()`, `query_timeseries()`, and
+`zonal_statistics()`.
+
+Below, we randomly select 10 locations and query values of single data
+cube cells and complete time series.
+
+``` r
+x = runif(10, v.overview$space$left, v.overview$space$right)
+y = runif(10, v.overview$space$bottom, v.overview$space$top)
+t = sample(as.character(2013:2019), 10, replace = TRUE)
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  query_points(x,y,t, v.overview$space$srs)
+```
+
+    ##          B04      B05
+    ## 1   258.9018 3049.573
+    ## 2        NaN      NaN
+    ## 3   230.3475 3329.359
+    ## 4        NaN      NaN
+    ## 5   334.1618 2269.766
+    ## 6   209.3888 2907.231
+    ## 7   256.0719 3300.665
+    ## 8        NaN      NaN
+    ## 9  7711.9037 7772.228
+    ## 10  366.2021 3046.725
+
+``` r
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  query_timeseries(x, y, v.overview$space$srs)
+```
+
+    ## $B04
+    ##         2013     2014     2015      2016     2017     2018      2019
+    ## 1   396.5433 259.6805 208.1757  217.6962 176.3635 258.9018  179.4177
+    ## 2   248.1954 177.3339 320.5452  228.9156 393.0006      NaN       NaN
+    ## 3   325.6795 230.3475 185.0954  204.6250 246.0916 190.0207  182.8453
+    ## 4        NaN      NaN      NaN       NaN      NaN      NaN       NaN
+    ## 5        NaN 374.8409 447.1408  329.9995 334.1618 392.9118       NaN
+    ## 6        NaN 209.3888      NaN 7094.2514 151.5665 339.1125  175.3885
+    ## 7  1100.5899 256.0719 277.2271  371.1198 260.9517 332.0111  625.5913
+    ## 8        NaN      NaN      NaN       NaN      NaN      NaN       NaN
+    ## 9   264.0742 247.9711 259.2477  232.0077 276.2899 250.5457 7711.9037
+    ## 10  366.2021 216.2955 260.9449  185.2800 249.2565 216.7119  591.2057
+    ## 
+    ## $B05
+    ##        2013     2014     2015     2016     2017     2018     2019
+    ## 1  2892.671 3244.639 3145.802 3010.066 3086.547 3049.573 3020.965
+    ## 2  1696.388 1417.797 1799.151 1906.917 2014.631      NaN      NaN
+    ## 3  2919.731 3329.359 3109.554 3033.240 3249.752 3134.065 3064.439
+    ## 4       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 5       NaN 2134.138 2906.735 2023.735 2269.766 3120.462      NaN
+    ## 6       NaN 2907.231      NaN 7602.566 2832.440 2856.486 2816.193
+    ## 7  2598.048 3300.665 3076.471 3040.468 3252.881 3469.783 3268.905
+    ## 8       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 9  3189.172 3181.051 3095.615 2922.048 3204.925 2840.464 7772.228
+    ## 10 3046.725 3177.317 3091.082 3058.439 3090.122 3062.155 3390.703
+
+To compute time series of summary statistics over spatial polygons, we
+need to specify polygon geometries (e.g., as an `sf` object) and specify
+one or more statistics that we are interested in, similar as we can do
+in `reduce_time()` or `reduce_space()`. In the following, we use the
+example Landsat dataset (reduced resolution) provided with the package
+and compute median NDVI within some administrative regions in New York
+City. The result is a vector data cube in a GeoPackage file that can be
+further processed and plotted by the `stars` package.
+
+``` r
+suppressPackageStartupMessages(library(sf))
+
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M", 
+              aggregation = "median", resampling = "bilinear",
+              extent=list(left=388941.2, right=766552.4,
+                          bottom=4345299, top=4744931, 
+                          t0="2018-01-01", t1="2018-12-31"))
+raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) %>%
+  select_bands(c("B04", "B05")) %>%
+  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") %>%
+  zonal_statistics(system.file("nycd.gpkg", package = "gdalcubes"),
+                  expr = "median(NDVI)", as_stars = TRUE) %>%
+  plot(max.plot = 12)
+```
+
+![](.img/zonal_statistics-1.png)<!-- -->
+
+Though this is a small toy example only, the implementation works for a
+large number of polygons and bigger data cubes, too (tested with 50k
+polygons and approx. 500GB Sentinel-2 imagery at 10m spatial
+resolution).
+
+# More Features
 
 **Mask bands**: Imagery that comes with existing masks (e.g. general
 pixel quality measures or cloud masks) can apply masks during the
@@ -346,14 +455,18 @@ user-defined R functions independently over all chunks, by using the
   - Data cubes are limited to four dimensions
     ([stars](https://cran.r-project.org/package=stars) has cubes with
     any number of dimensions).
-  - Operations such as `reduce_space()` or `window_time()` do not
-    support user-defined functions at the moment.
+  - Some operations such as `window_time()` do not support user-defined
+    functions at the moment.
   - Images must be orthorectified / regularly gridded, Sentinel-1 or
     Sentinel-5P products require additional preprocessing.
-  - Using gdalcubes in cloud infrastructures is still work in progress.
+  - Using gdalcubes in distributed computing cloud infrastructures is
+    still work in
+    progress.
 
 # Further reading
 
+  - [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
+    presented at OpenGeoHub Summer School 2019
   - [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
     on r-spatial.org
   - [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the

@@ -108,21 +108,22 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
     
     
     layers = sf::st_layers(out_path)
-    attr_layers = layers$name[grep("attr_", layers$name)]
+    attr_layers = layers$name[grep("map_", layers$name)] # working with attribute only layers "attr_" would be more efficient but produces sf warnings due to missing geometries
     pst = dimensions(x)$t$pixel_size
-    if (endsWith(pst, "Y")) {
-      datetime = sort(as.POSIXct(paste0(sub("attr_", "", attr_layers), "-01-01"))) 
-    }
-    else if (endsWith(pst, "M")) {
-      datetime = sort(as.POSIXct(paste0(sub("attr_", "", attr_layers), "-01"))) # trick for monthly aggregated data
+    if (endsWith(pst, "Y") || endsWith(pst, "M") || endsWith(pst, "D")) {
+      tt = dimension_bounds(x, "d")$t
+      datetime_values = list(start = as.Date(tt$start), end = as.Date(tt$end))
+      class(datetime_values) <- "intervals"
     }
     else {
-      datetime = sort(as.POSIXct(sub("attr_", "", attr_layers))) 
+      tt = dimension_bounds(x, "S")$t
+      datetime_values = list(start = as.Date(tt$start), end = as.Date(tt$end))
+      class(datetime_values) <- "intervals"
     }
     
     out = list()
     for (i in 1:length(attr_layers)) {
-      xsf = sf::read_sf(out_path, layer=attr_layers[i], quiet = TRUE)
+      xsf = sf::st_drop_geometry(sf::read_sf(out_path, layer=attr_layers[i], quiet = TRUE))
       if (i == 1) {
         for (j in 1:ncol(xsf)) {
           out[[colnames(xsf)[j]]] = matrix(NA, nrow=nrow(xsf), ncol=length(attr_layers))
@@ -135,7 +136,7 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
     }
     
     dims = list(geom = list(from = 1, to = nrow(x.geom), offset = NA, delta = NA, refsys = sf::st_crs(srs(x)), point = FALSE, values = x.geom$geom),
-                time = list(from = 1, to = length(attr_layers), offset = NA, delta = NA, refsys = "POSIXct", point = FALSE, values = datetime))
+                time = list(from = 1, to = length(attr_layers), offset = NA, delta = NA, refsys = "POSIXct", point = FALSE, values = datetime_values))
     class(dims$geom) = "dimension"
     class(dims$time) = "dimension"
     class(dims) = "dimensions"
