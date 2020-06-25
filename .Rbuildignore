@@ -70,3 +70,4 @@
 ^Dockerfile$
 ^.*Dockerfile$
 ^\.dockerignore$
+^.github$
