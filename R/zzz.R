@@ -48,10 +48,10 @@
   if(Sys.getenv("GDALCUBES_STREAMING") == "1") {
     sink(stderr())
   }
-  else {
-    x = libgdalcubes_version()
-    packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, sep=""))
-  }
+  #else {
+  #  x = libgdalcubes_version()
+  #  #packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, sep=""))
+  #}
 }
 
 
