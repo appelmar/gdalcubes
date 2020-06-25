@@ -1,5 +1,5 @@
 
-# gdalcubes 0.2.9999 
+# gdalcubes 0.3.0
 
 * optional global SRS definition in collection formats
 * new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
