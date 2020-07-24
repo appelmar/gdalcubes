@@ -82,13 +82,18 @@ apply_time <- function(x, ...) {
 #'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v) 
-#' 
+#' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
+#' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
+#'
 #' # Apply a user defined R function
-#' L8.ndvi.resid = apply_time(L8.cube, names="NDVI_residuals", 
+#' L8.ndvi.resid = apply_time(L8.ndvi, names="NDVI_residuals", 
 #'    FUN=function(x) {
-#'         y = x["NDVI",]
-#'         t = 1:ncol(x)
-#'         return(residuals(lm(y ~ t)))
+#'       y = x["NDVI",]
+#'       if (sum(is.finite(y)) < 3) {
+#'          return(rep(NA,ncol(x)))
+#'       }
+#'       t = 1:ncol(x)
+#'       return(predict(lm(y ~ t)) -  x["NDVI",])
 #'    })
 #' L8.ndvi.resid
 #' 
