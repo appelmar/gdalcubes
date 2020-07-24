@@ -403,6 +403,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_stream_apply_time_cube
+SEXP libgdalcubes_create_stream_apply_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_stream_apply_time_cube(SEXP pinSEXP, SEXP cmdSEXP, SEXP nbandsSEXP, SEXP namesSEXP, SEXP keep_bandsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cmd(cmdSEXP);
+    Rcpp::traits::input_parameter< uint16_t >::type nbands(nbandsSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type names(namesSEXP);
+    Rcpp::traits::input_parameter< bool >::type keep_bands(keep_bandsSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_stream_apply_time_cube(pin, cmd, nbands, names, keep_bands));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_filter_predicate_cube
 SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_filter_predicate_cube(SEXP pinSEXP, SEXP predSEXP) {
@@ -628,6 +643,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_select_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_select_time_cube, 2},
     {"_gdalcubes_libgdalcubes_create_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_apply_pixel_cube, 4},
     {"_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube, 5},
+    {"_gdalcubes_libgdalcubes_create_stream_apply_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_apply_time_cube, 5},
     {"_gdalcubes_libgdalcubes_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_predicate_cube, 2},
     {"_gdalcubes_libgdalcubes_create_filter_geom_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_filter_geom_cube, 3},
     {"_gdalcubes_libgdalcubes_debug_output", (DL_FUNC) &_gdalcubes_libgdalcubes_debug_output, 1},

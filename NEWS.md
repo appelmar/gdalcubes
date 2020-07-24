@@ -12,7 +12,8 @@
 * remove `cube` argument in `cube_view` function
 * conversion to stars objects with `st_as_stars()`
 * fix CRS metadata in produced netCDF files   
-
+* default chunk size is now (t,y,x) = (1,256,256)
+* new `apply_time()` function to apply R function on time series without reduction
 
 # gdalcubes 0.2.5 (2020-05-17)
 

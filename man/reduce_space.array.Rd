@@ -2,7 +2,8 @@
 % Please edit documentation in R/streaming.R
 \name{reduce_space.array}
 \alias{reduce_space.array}
-\title{Apply a function over space and bands in a four-dimensional (band, time, y, x) array}
+\title{Apply a function over space and bands in a four-dimensional (band, time, y, x) array and reduce
+spatial dimensions}
 \usage{
 \method{reduce_space}{array}(x, FUN, ...)
 }
@@ -14,7 +15,8 @@
 \item{...}{further arguments passed to FUN}
 }
 \description{
-Apply a function over space and bands in a four-dimensional (band, time, y, x) array
+Apply a function over space and bands in a four-dimensional (band, time, y, x) array and reduce
+spatial dimensions
 }
 \details{
 FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.

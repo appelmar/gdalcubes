@@ -133,6 +133,10 @@ libgdalcubes_create_stream_apply_pixel_cube <- function(pin, cmd, nbands, names,
     .Call('_gdalcubes_libgdalcubes_create_stream_apply_pixel_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names, keep_bands)
 }
 
+libgdalcubes_create_stream_apply_time_cube <- function(pin, cmd, nbands, names, keep_bands = FALSE) {
+    .Call('_gdalcubes_libgdalcubes_create_stream_apply_time_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names, keep_bands)
+}
+
 libgdalcubes_create_filter_predicate_cube <- function(pin, pred) {
     .Call('_gdalcubes_libgdalcubes_create_filter_predicate_cube', PACKAGE = 'gdalcubes', pin, pred)
 }

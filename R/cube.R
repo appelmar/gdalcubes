@@ -36,7 +36,7 @@
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-raster_cube <- function(image_collection, view, mask=NULL, chunking=c(16, 256, 256)) {
+raster_cube <- function(image_collection, view, mask=NULL, chunking=c(1, 256, 256)) {
 
   stopifnot(is.image_collection(image_collection))
   stopifnot(length(chunking) == 3)
