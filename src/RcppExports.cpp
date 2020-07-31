@@ -337,16 +337,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_create_join_bands_cube
-SEXP libgdalcubes_create_join_bands_cube(SEXP pinA, SEXP pinB, std::string prefix_A, std::string prefix_B);
-RcppExport SEXP _gdalcubes_libgdalcubes_create_join_bands_cube(SEXP pinASEXP, SEXP pinBSEXP, SEXP prefix_ASEXP, SEXP prefix_BSEXP) {
+SEXP libgdalcubes_create_join_bands_cube(Rcpp::List pin_list, std::vector<std::string> cube_names);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_join_bands_cube(SEXP pin_listSEXP, SEXP cube_namesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type pinA(pinASEXP);
-    Rcpp::traits::input_parameter< SEXP >::type pinB(pinBSEXP);
-    Rcpp::traits::input_parameter< std::string >::type prefix_A(prefix_ASEXP);
-    Rcpp::traits::input_parameter< std::string >::type prefix_B(prefix_BSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_join_bands_cube(pinA, pinB, prefix_A, prefix_B));
+    Rcpp::traits::input_parameter< Rcpp::List >::type pin_list(pin_listSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type cube_names(cube_namesSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_join_bands_cube(pin_list, cube_names));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -638,7 +636,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_space_cube, 3},
     {"_gdalcubes_libgdalcubes_create_window_time_cube_reduce", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_reduce, 4},
     {"_gdalcubes_libgdalcubes_create_window_time_cube_kernel", (DL_FUNC) &_gdalcubes_libgdalcubes_create_window_time_cube_kernel, 3},
-    {"_gdalcubes_libgdalcubes_create_join_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_join_bands_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_join_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_join_bands_cube, 2},
     {"_gdalcubes_libgdalcubes_create_select_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_select_bands_cube, 2},
     {"_gdalcubes_libgdalcubes_create_select_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_select_time_cube, 2},
     {"_gdalcubes_libgdalcubes_create_apply_pixel_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_apply_pixel_cube, 4},

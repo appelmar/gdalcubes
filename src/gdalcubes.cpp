@@ -1235,12 +1235,14 @@ SEXP libgdalcubes_create_window_time_cube_kernel(SEXP pin, std::vector<int> wind
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_join_bands_cube(SEXP pinA, SEXP pinB, std::string prefix_A, std::string prefix_B) {
+SEXP libgdalcubes_create_join_bands_cube(Rcpp::List pin_list,  std::vector<std::string> cube_names) {
   try {
-    Rcpp::XPtr< std::shared_ptr<cube> > A = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pinA);
-    Rcpp::XPtr< std::shared_ptr<cube> > B = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pinB);
-    
-    std::shared_ptr<join_bands_cube>* x = new std::shared_ptr<join_bands_cube>(join_bands_cube::create(*A, *B, prefix_A, prefix_B));
+    std::vector< std::shared_ptr<cube> > cube_list;
+    for (uint16_t i=0; i<pin_list.size(); ++i) {
+      cube_list.push_back(*(Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin_list[i])));
+    }
+  
+    std::shared_ptr<join_bands_cube>* x = new std::shared_ptr<join_bands_cube>(join_bands_cube::create(cube_list, cube_names));
     Rcpp::XPtr< std::shared_ptr<join_bands_cube> > p(x, true) ;
     
     return p;
