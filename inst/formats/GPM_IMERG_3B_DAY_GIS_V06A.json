@@ -1,0 +1,41 @@
+{
+  "description" : "Collection format for daily IMERG_3B_DAY_GIS_V06A data",
+  "tags" : ["Precipitation", "GPM", "IMERG"],
+  "pattern" : ".*3B-DAY-GIS\\.MS\\.MRG\\.3IMERG.*\\.tif",
+  "images" : {
+    "pattern" : ".*3B-DAY-GIS\\.MS\\.MRG\\.3IMERG\\.(.{8}).*\\.tif"
+  },
+  "datetime" : {
+    "pattern" : ".*3B-DAY-GIS\\.MS\\.MRG\\.3IMERG\\.(.{8}).*\\.tif",
+    "format" : "%Y%m%d"
+  },
+  "bands": {
+    "total_rate" : {
+      "pattern" : ".+total\\.rate\\.tif",
+      "nodata" : 29999
+    },
+    "total_accum" : {
+      "pattern" : ".+total\\.accum\\.tif",
+      "nodata" : 29999
+    },
+    "ice_rate" : {
+      "pattern" : ".+ice\\.rate\\.tif",
+      "nodata" : 29999
+    },
+    "ice_accum" : {
+      "pattern" : ".+ice\\.accum\\.tif",
+      "nodata" : 29999
+    },
+    "liquid_rate" : {
+      "pattern" : ".+liquid\\.rate\\.tif",
+      "nodata" : 29999
+    },
+    "liquid_accum" : {
+      "pattern" : ".+liquid\\.accum\\.tif",
+      "nodata" : 29999
+    },
+    "liquid_percent" : {
+      "pattern" : ".+liquidPercent\\.tif"
+    }
+  }
+}
