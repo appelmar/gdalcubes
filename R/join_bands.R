@@ -22,9 +22,9 @@
 #' L8.cube = raster_cube(L8.col, v)
 #' L8.cube.b04 = select_bands(raster_cube(L8.col, v), c("B04"))
 #' L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
-#' join_bands(L8.cube.b04,L8.cube.b05)
+#' join_bands(list(L8.cube.b04,L8.cube.b05))
 #' \donttest{
-#' plot(join_bands(L8.cube.b04,L8.cube.b05))
+#' plot(join_bands(list(L8.cube.b04,L8.cube.b05)))
 #' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
