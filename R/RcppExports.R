@@ -189,6 +189,14 @@ libgdalcubes_set_use_overviews <- function(use_overviews) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
 }
 
+libgdalcubes_translate_cog <- function(collection, out_dir, nthreads, overwrite, creation_options) {
+    .Call('_gdalcubes_libgdalcubes_translate_cog', PACKAGE = 'gdalcubes', collection, out_dir, nthreads, overwrite, creation_options)
+}
+
+libgdalcubes_translate_gtiff <- function(collection, out_dir, nthreads, overwrite, creation_options) {
+    .Call('_gdalcubes_libgdalcubes_translate_gtiff', PACKAGE = 'gdalcubes', collection, out_dir, nthreads, overwrite, creation_options)
+}
+
 libgdalcubes_set_swarm <- function(swarm) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_swarm', PACKAGE = 'gdalcubes', swarm))
 }

@@ -1579,6 +1579,35 @@ void libgdalcubes_set_use_overviews(bool use_overviews) {
   config::instance()->set_gdal_use_overviews(use_overviews);
 }
 
+
+// [[Rcpp::export]]
+std::string libgdalcubes_translate_cog(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options) {
+  try {
+    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(collection);
+    image_collection_ops::translate_cog(*aa, out_dir, nthreads, overwrite, creation_options);
+    return filesystem::join(out_dir, filesystem::filename((*aa)->get_filename()));
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  } 
+  
+}
+
+
+// [[Rcpp::export]]
+std::string libgdalcubes_translate_gtiff(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options) {
+  try {
+    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(collection);
+    image_collection_ops::translate_gtiff(*aa, out_dir, nthreads, overwrite, creation_options);
+    return filesystem::join(out_dir, filesystem::filename((*aa)->get_filename()));
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  } 
+  
+}
+
+
 // [[Rcpp::export]]
 void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
   auto p = gdalcubes_swarm::from_urls(swarm);
