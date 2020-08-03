@@ -1,20 +1,31 @@
 # gdalcubes 0.3.0
 
-* optional global SRS definition in collection formats
-* new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
-* new `zonal_statistics()` function to compute summary statistics of data cubes over polygons
+## New Features
+
+* Compute summary statistics of data cubes over polygons with `zonal_statistics()` 
+* Extracts time series at irregular spatial points with `query_timeseries()` 
+* Time dimension may be irregular / labeled after selecting slices with the new `select_time()` function
+* Filter pixels of a data cube by a spatial polygon with `filter_geom()`
+* Apply an R function on time series without reduction using `apply_time()`
+* Batch format conversion of images in a collection with `translate_cog()` and `translate_gtiff()`
+
+## Minor improvements
+
+* conversion to stars objects with `st_as_stars()`
 * add support for image collections without collection format in `create_image_collection()`
-* new `query_timeseries()` function to extract time series at irregular spatial points
-* new `select_time()` function to create data cubes with irregular / labeled time dimension
-* new `filter_geom()` function to filter pixels by a spatial polygon
+* optional global SRS definition in collection formats
+* default chunk size is now (t,y,x) = (1,256,256)
 * remove `reduce()` function
 * remove `cube` argument in `cube_view` function
-* conversion to stars objects with `st_as_stars()`
-* fix CRS metadata in produced netCDF files   
-* default chunk size is now (t,y,x) = (1,256,256)
-* new `apply_time()` function to apply R function on time series without reduction
+* new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
 * new collection formats for ESA CCI soil moisture products
-* new functions `translate_cog()` and `translate_gtiff()` for batch conversion of images in collection
+* new collection format for daily precipitation observations from GPM / IMERG
+
+## Bug fixes
+
+* fix CRS metadata in produced netCDF files  
+* fix multithreading locking issues with GDAL 3
+
 
 
 
