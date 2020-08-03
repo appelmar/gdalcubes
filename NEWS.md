@@ -14,11 +14,15 @@
 * fix CRS metadata in produced netCDF files   
 * default chunk size is now (t,y,x) = (1,256,256)
 * new `apply_time()` function to apply R function on time series without reduction
+* new collection formats for ESA CCI soil moisture products
+* new functions `translate_cog()` and `translate_gtiff()` for batch conversion of images in collection
+
 
 # gdalcubes 0.2.5 (2020-05-17)
 
 * fixed compiler warnings on CRAN
 * temporarily removed `as_stars()`, will be added again in 0.3
+
 
 # gdalcubes 0.2.4 (2020-02-02)
 
@@ -26,11 +30,13 @@
 * fixed compiler warnings with GDAL3
 
 
+
 # gdalcubes 0.2.3 (2019-10-21)
 
 * fixed clang compiler warnings 
 * fixed MODIS collection formats
 * new collection formats MxD14A2 and MxD13A2
+
 
 # gdalcubes 0.2.2 (2019-10-15)
 
