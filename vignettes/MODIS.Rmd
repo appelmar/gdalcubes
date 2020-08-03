@@ -4,7 +4,7 @@ author: "Marius Appel"
 output: 
   html_document:
     toc: true
-    theme: united
+    theme: united 
 vignette: >
   %\VignetteIndexEntry{1. Processing MODIS data with gdalcubes}
   %\VignetteEngine{knitr::rmarkdown}

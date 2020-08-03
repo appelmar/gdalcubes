@@ -13,7 +13,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib gdalcubes
 #' 
-#' @importFrom grDevices grey rainbow dev.off dev.size png
+#' @importFrom grDevices grey rainbow dev.off dev.size png col2rgb
 #' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title legend lines
 #' @importFrom stats quantile rnorm
 #' @importFrom utils head download.file

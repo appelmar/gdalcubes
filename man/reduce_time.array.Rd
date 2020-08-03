@@ -2,7 +2,7 @@
 % Please edit documentation in R/streaming.R
 \name{reduce_time.array}
 \alias{reduce_time.array}
-\title{Apply a function over time and bands in a four-dimensional (band, time, y, x) array}
+\title{Apply a function over time and bands in a four-dimensional (band, time, y, x) array and reduce time dimension}
 \usage{
 \method{reduce_time}{array}(x, FUN, ...)
 }
@@ -14,7 +14,7 @@
 \item{...}{further arguments passed to FUN}
 }
 \description{
-Apply a function over time and bands in a four-dimensional (band, time, y, x) array
+Apply a function over time and bands in a four-dimensional (band, time, y, x) array and reduce time dimension
 }
 \details{
 FUN is expected to produce a numeric vector (or scalar) where elements are interpreted as new bands in the result.

@@ -1,11 +1,10 @@
 
-#' Create, update, or query a spatiotemporal data cube view
+#' Create or update a spatiotemporal data cube view
 #'
-#' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs) how to look at the data.
+#' Data cube views define the shape of a cube, i.e., the spatiotemporal extent, resolution, and spatial reference system (srs).
 #' They are used to access image collections as on-demand data cubes. The data cube will filter images based on the view's
 #' extent, read image data at the defined resolution, and warp / reproject images to the target srs automatically. 
 #' 
-#' @param cube data cube object; if provided, return the view of this data cube and ignore other arguments
 #' @param view if provided, update this cube_view object instead of creating a new data cube view where fields that are already set will be overwritten
 #' @param extent spatioptemporal extent as a list e.g. from \code{\link{extent}} or an image collection object, see Details
 #' @param srs target spatial reference system as a string; can be a proj4 definition, WKT, or in the form "EPSG:XXXX"
@@ -23,9 +22,8 @@
 #' In the latter case, the \code{\link{extent}} function is automatically called on the image collection object to get the full spatiotemporal extent of the collection. In the former case, datetimes 
 #' are expressed as ISO8601 datetime strings.
 #' 
-#' The function can be used in three different ways. First, if the cube argument is given, the function simply returns the data cube view of the provided cube and ignores any other values. Second, the function can
-#' be used to create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
-#' Third, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
+#' The function can be used in two different ways. First, it can create data cube views from scratch by defining the extent, the spatial reference system, and for each dimension either the cell size (dx, dy, dt) or the total number of cells (nx, ny, nt).
+#' Second, the function can update an existing data cube view by overwriting specific fields. In this case, the extent or some elements of the extent may be missing. 
 #'
 #' In some cases, the extent of the view is automatically extended if the provided resolution would end within a pixel. For example,
 #' if the spatial extent covers an area of 1km x 1km and dx = dy = 300m, the extent would be enlarged to 1.2 km x 1.2km. The alignment will be reported to the user in 
@@ -38,31 +36,20 @@
 #'  L8.col = create_image_collection(L8_files, "L8_L1TP")
 #'  
 #'  # 1. Create a new data cube view specification
-#'  cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
+#'  v = cube_view(extent=extent(L8.col,"EPSG:4326"), srs="EPSG:4326", dt="P1M", 
 #'            nx=1000, ny=500, aggregation = "mean", resampling="bilinear")
+#'  v
 #'
-#'  # 2. read existing data cube
-#'  v = cube_view(raster_cube(L8.col))
-#'
-#'  # 3. overwrite parts of an existing data cube view
-#'  vnew = cube_view(view = v, dt="P1M")
+#'  # 2. overwrite parts of an existing data cube view
+#'  vnew = cube_view(v, dt="P1M")
 #' @return A list with data cube view properties
 #' @export
-cube_view <- function(cube, view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation, resampling, keep.asp=TRUE) {
+cube_view <- function(view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation, resampling, keep.asp=TRUE) {
   
- 
-  if (!missing(cube)) {
-    if (length(as.list(match.call())) > 2) {
-      warning("provided arguments except cube will be ignored")
-    }
-    stopifnot(is.cube(cube))
-    x = libgdalcubes_get_cube_view(cube)
-    class(x) <- c("cube_view", class(x))
-    return(x)
-  }
   
   # general parameter checks
-  if (!missing(view)) stopifnot(is.cube_view(view))
+  if (!missing(view)) 
+    stopifnot(is.cube_view(view))
   if (!missing(extent)) stopifnot(is.list(extent) || is.image_collection(extent))
   if (!missing(nx)) stopifnot(length(nx) == 1, nx %% 1 == 0)
   if (!missing(ny)) stopifnot(length(ny) == 1, ny %% 1 == 0)

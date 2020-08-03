@@ -1,0 +1,49 @@
+{
+  "description" : "Collection format for ESA CCI soil moisture passive product (version 4.7)",
+  "url" : "https://www.esa-soilmoisture-cci.org",
+  "tags" : ["Soil Moisture", "ESA", "CCI"],
+  "pattern" : ".*\\.nc.*",
+  "subdatasets" : true,
+  "srs" : "EPSG:4326",
+  "images" : {
+    "pattern" : "NETCDF:\"(.+)\\.nc.*"
+  },
+  "datetime" : {
+    "pattern" : ".*ESACCI-SOILMOISTURE-L3S-SSMV-PASSIVE-([0-9]{8}).*",
+    "format" : "%Y%m%d"
+  },
+  "bands" : {
+    "t0" : {
+      "pattern" : ".+:t0",
+      "nodata" : -9999
+    },
+    "sm" : {
+      "pattern" : ".+:sm",
+      "nodata" : -9999
+    },
+    "sm_uncertainty" : {
+      "pattern" : ".+:sm_uncertainty",
+      "nodata" : -9999
+    },
+    "dnflag" : {
+      "pattern" : ".+:dnflag",
+      "nodata" : 0
+    },
+    "flag" : {
+      "pattern" : ".+:flag",
+      "nodata" : 127
+    },
+    "freqbandID" : {
+      "pattern" : ".+:freqbandID",
+      "nodata" : 0
+    },
+    "mode" : {
+      "pattern" : ".+:mode",
+      "nodata" : 0
+    },
+    "sensor" : {
+      "pattern" : ".+:sensor",
+      "nodata" : 0
+    }
+  }
+}

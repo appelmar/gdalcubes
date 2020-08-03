@@ -43,4 +43,7 @@ L8.cube = select_bands(L8.cube, c("B04", "B05"))
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 L8.ndvi.filtered = filter_pixel(L8.ndvi, "NDVI > 0.5") 
 L8.ndvi.filtered
+\donttest{
+plot(L8.ndvi.filtered)
+}
 }

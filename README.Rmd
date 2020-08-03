@@ -28,6 +28,8 @@ The package represents the data as _regular raster data cubes_ with dimensions `
 - Execute data cube operation chains using parallel processing and lazy evaluation.
 
 
+Among others, the package has been successfully used to process data from the Sentinel-2, Landsat, PlanetScope, MODIS, and Global Precipitation Measurement Earth observation satellites / missions.
+
 # Installation
 
 Install from CRAN with:
@@ -106,7 +108,7 @@ L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
 
 ## Creating data cubes
 
-To create a regular raster data cube from the image collection, we define the geometry of our targetr cube as
+To create a regular raster data cube from the image collection, we define the geometry of our target cube as
 a _data cube view_, using the `cube_view()` function. We define a simple overview, covering the full spatiotemporal extent 
 of the imagery at 1km x 1km pixel size where one data cube cell represents a duration of one year. The provided resampling
 and aggregation methods are used to spatially reproject, crop, and rescale individual images and combine pixel values from many images within one year respectively. The `raster_cube()` function returns a _proxy_ object, i.e., it returns immediately without doing any expensive computations.
@@ -175,14 +177,24 @@ suppressPackageStartupMessages(library(stars))
 raster_cube(L8.col, v.overview) %>%
   select_bands(c("B04","B05")) %>%
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  as_stars() -> y
+  st_as_stars() -> y
 y
 ```
 
 To reduce the size of exported data cubes, compression and packing (conversion of doubles to smaller integer types) are supported.
 
+If only specific time slices of a data cube are needed, `select_time()` can be called before plotting / exporting.
 
-### User-defined functions
+```{r select_time}
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+  select_time(c("2015", "2018")) %>%
+  plot(zlim=c(0,1), nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
+```
+
+
+## User-defined functions
 
 Users can pass custom R functions to `reduce_time()` and `apply_pixel()`. Below, we derive a _greenest pixel composite_ by returning RGB values from pixels with maximum NDVI for all pixel time-series.
 
@@ -200,7 +212,52 @@ raster_cube(L8.col, v.subarea.monthly) %>%
 ```
 
 
-# Advanced Features 
+## Extraction of pixels, time series, and summary statistics over polygons 
+
+In many cases, one is interested in extracting sets of points, time series, or summary statistics over polygons, e.g., to generate training data for machine learning models. 
+Package version 0.3 therefore introduces the functions `query_points()`, `query_timeseries()`, and `zonal_statistics()`.
+
+Below, we randomly select 10 locations and query values of single data cube cells and complete time series.
+
+```{r query}
+x = runif(10, v.overview$space$left, v.overview$space$right)
+y = runif(10, v.overview$space$bottom, v.overview$space$top)
+t = sample(as.character(2013:2019), 10, replace = TRUE)
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  query_points(x,y,t, v.overview$space$srs)
+
+raster_cube(L8.col, v.overview) %>%
+  select_bands(c("B04","B05")) %>%
+  query_timeseries(x, y, v.overview$space$srs)
+```
+
+To compute time series of summary statistics over spatial polygons, we need to specify polygon geometries (e.g., as an `sf` object) and specify one or more statistics that we are interested in, similar as we can do in `reduce_time()` or `reduce_space()`. In the following, we use the example Landsat dataset (reduced resolution)  provided with the package and compute median NDVI  within some administrative regions in New York City. The result is a vector data cube in a GeoPackage file that can be further processed and plotted by the `stars` package.
+
+```{r zonal_statistics}
+suppressPackageStartupMessages(library(sf))
+
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M", 
+              aggregation = "median", resampling = "bilinear",
+              extent=list(left=388941.2, right=766552.4,
+                          bottom=4345299, top=4744931, 
+                          t0="2018-01-01", t1="2018-12-31"))
+raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) %>%
+  select_bands(c("B04", "B05")) %>%
+  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") %>%
+  zonal_statistics(system.file("nycd.gpkg", package = "gdalcubes"),
+                  expr = "median(NDVI)", as_stars = TRUE) %>%
+  plot(max.plot = 12)
+```
+
+Though this is a small toy example only, the implementation works for a large number of polygons and bigger data cubes, too (tested with 50k polygons and approx. 500GB Sentinel-2 imagery at 10m spatial resolution). 
+
+
+
+
+# More Features 
 
 
 **Mask bands**: Imagery that comes with existing masks (e.g. general pixel quality measures or cloud masks) can apply masks during the construction of the raster data cube, such that masked values will not contribute to data cube values. 
@@ -214,14 +271,15 @@ raster_cube(L8.col, v.subarea.monthly) %>%
 
 * There is no support for vector data cubes ([stars](https://cran.r-project.org/package=stars) has vector data cubes). 
 * Data cubes are limited to four dimensions ([stars](https://cran.r-project.org/package=stars) has cubes with any number of dimensions). 
-* Operations such as `reduce_space()` or `window_time()` do not support user-defined functions at the moment.
+* Some operations such as `window_time()` do not support user-defined functions at the moment.
 * Images must be orthorectified / regularly gridded, Sentinel-1 or Sentinel-5P products require additional preprocessing.
-* Using gdalcubes in cloud infrastructures is still work in progress.
+* Using gdalcubes in distributed computing cloud infrastructures is still work in progress.
 
 
 
 # Further reading
 
+* [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
 * [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) on r-spatial.org
 * [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal
 * Some [introductory slides](https://github.com/appelmar/gdalcubes_docs/blob/master/gdalcubes_overview_slides.pdf)

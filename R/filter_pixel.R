@@ -27,6 +27,9 @@
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #' L8.ndvi.filtered = filter_pixel(L8.ndvi, "NDVI > 0.5") 
 #' L8.ndvi.filtered
+#' \donttest{
+#' plot(L8.ndvi.filtered)
+#' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 filter_pixel <- function(cube, pred) {

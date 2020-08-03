@@ -67,41 +67,6 @@ reduce_space <- function(x, ...) {
   UseMethod("reduce_space")
 }
 
-#' Reduce all bands of a data cube over the time dimension with a single reducer function
-#' 
-#' Create a proxy data cube, which applies a single reducer function over per-band pixel time series of a data cube
-#'
-#' @param cube source data cube
-#' @param reducer reducer function, currently "min", "max", "median", "mean", "count", "sd", "var", or "sum"
-#' @return proxy data cube object
-#' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
-#' @examples 
-#' # create image collection from example Landsat data only 
-#' # if not already done in other examples
-#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
-#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-#'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
-#' }
-#' 
-#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
-#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' L8.cube = raster_cube(L8.col, v) 
-#' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
-#' L8.rgb.median = reduce(L8.rgb, "median")  
-#' L8.rgb.median
-#' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @note This function is deprecated and will be replaced by the more flexible \code{\link{reduce_time}}.
-#' @export
-reduce <- function(cube, reducer=c("mean","median","min","max")) {
-  stopifnot(is.cube(cube))
-
-  x = libgdalcubes_create_reduce_cube(cube, reducer)
-  class(x) <- c("reduce_cube", "cube", "xptr")
-  return(x)
-}
 
 
 #' Reduce a data cube over the time dimension
@@ -133,6 +98,10 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #' L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
 #' L8.rgb.median
 #' 
+#' \donttest{
+#' plot(L8.rgb.median, rgb=3:1)
+#' }
+#' 
 #' # user defined reducer calculating interquartile ranges
 #' L8.rgb.iqr = reduce_time(L8.rgb, names=c("iqr_R", "iqr_G","iqr_B"), FUN = function(x) {
 #'     c(diff(quantile(x["B04",],c(0.25,0.75), na.rm=TRUE)),
@@ -140,6 +109,9 @@ reduce <- function(cube, reducer=c("mean","median","min","max")) {
 #'       diff(quantile(x["B02",],c(0.25,0.75), na.rm=TRUE)))
 #' })
 #' L8.rgb.iqr
+#' \donttest{
+#' plot(L8.rgb.iqr, key.pos=1)
+#' }
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
@@ -241,6 +213,8 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' @param x source data cube
 #' @param expr either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube
 #' @param ... optional additional expressions (if \code{expr} is not a vector)
+#' @param FUN a user-defined R function applied over pixel time series (see Details)
+#' @param names character vector; if FUN is provided, names can be used to define the number and name of output bands
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 #' @examples 
@@ -260,41 +234,94 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' L8.b02 = select_bands(L8.cube, c("B02"))
 #' L8.b02.median = reduce_space(L8.b02, "median(B02)")  
 #' L8.b02.median
+#' \donttest{
+#' plot(L8.b02.median, key.pos=1)
+#' }
+#' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.
 #' 
 #' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
 #' @export
-reduce_space.cube <- function(x, expr, ...) {
+reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
   stopifnot(is.cube(x))
-  stopifnot(is.character(expr))
-  if (length(list(...))> 0) {
-    stopifnot(all(sapply(list(...), is.character)))
-    expr = c(expr, unlist(list(...)))
+  if (missing(expr) && missing(FUN)) {
+    stop("either a expr or FUN must be provided ")
+  }
+  if (!missing(FUN) && !missing(expr)) {
+    warning("received both expr and FUN, ignoring FUN")
+    FUN = NULL
+  }
+  if (!missing(FUN) && !is.function(FUN)) {
+    stop ("FUN must be a function")
   }
   
-  # parse expr to separate reducers and bands
-  reducers = gsub("\\(.*\\)", "", expr)
-  bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
-  stopifnot(length(reducers) == length(bands))
-  x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
-  class(x) <- c("reduce_space_cube", "cube", "xptr")
-  return(x)
+  
+  if (!missing(expr)) {
+    stopifnot(is.character(expr))
+    if (length(list(...))> 0) {
+      stopifnot(all(sapply(list(...), is.character)))
+      expr = c(expr, unlist(list(...)))
+    }
+    
+    # parse expr to separate reducers and bands
+    reducers = gsub("\\(.*\\)", "", expr)
+    bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
+    stopifnot(length(reducers) == length(bands))
+    x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
+    class(x) <- c("reduce_space_cube", "cube", "xptr")
+    return(x)
+  }
+  else {
+    if (!is.null(names)) {
+      nb = length(names)
+    }
+    else {
+      # guess number of bands from provided function
+      dummy_values = matrix(rnorm(nbands(x)*10), nrow = nbands(x), ncol=10)
+      rownames(dummy_values) <- names(x)
+      tryCatch({
+        res <- as.vector(FUN(dummy_values))
+        nb <- length(res)
+        # set names
+        if (!is.null(names(res))) {
+          names = names(res)
+        }
+        else {
+          names = paste("band", 1:nb, sep="")
+        }
+      }
+      , error = function(e) {
+        stop("Failed to derive the length of the output from FUN automatically, please specify output band names with the correct size.")
+      })
+    }
+    
+    # create src file
+    # TODO: load the same packages as in the current workspace? see (.packages())
+    funstr = serialize_function(FUN)
+    funhash = libgdalcubes_simple_hash(funstr)
+    srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
+    srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
+    
+    cat(funstr,  file = srcfile1, append = FALSE)
+    srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
+    srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+    
+    cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
+    cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
+    cat("write_chunk_from_array(reduce_space(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
+    cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
+    
+    x = libgdalcubes_create_stream_reduce_space_cube(x, cmd, nb, names)
+    class(x) <- c("reduce_space_cube", "cube", "xptr")
+    return(x)
+    
+  }
+  
 }
 
 
-
-is.reduce_cube  <- function(obj) {
-  if(!("reduce_cube" %in% class(obj))) {
-    return(FALSE)
-  }
-  if (libgdalcubes_is_null(obj)) {
-    warning("GDAL data cube proxy object is invalid")
-    return(FALSE)
-  }
-  return(TRUE)
-}
 
 
 is.reduce_time_cube  <- function(obj) {

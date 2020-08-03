@@ -3,8 +3,8 @@
 #' Create a proxy data cube, which joins the bands of two identically shaped data cubes. The resulting cube
 #' will have bands from both input cubes.
 #'
-#' @param X first source data cube
-#' @param Y second source data cube
+#' @param cube_list a list with two or more source data cubes
+#' @param cube_names list or character vector with optional name prefixes for bands in the output data cube (see Details)
 #' @return proxy data cube object
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -17,35 +17,58 @@
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' v = cube_view(extent=list(left=388941.2, right=766552.4,
-#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'                           bottom=4345299, top=4744931, t0="2018-01", t1="2018-05"),
 #'                           srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube(L8.col, v)
 #' L8.cube.b04 = select_bands(raster_cube(L8.col, v), c("B04"))
 #' L8.cube.b05 = select_bands(raster_cube(L8.col, v), c("B05"))
-#' join_bands(L8.cube.b04,L8.cube.b05)
+#' join_bands(list(L8.cube.b04,L8.cube.b05))
+#' \donttest{
+#' plot(join_bands(list(L8.cube.b04,L8.cube.b05)))
+#' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @details 
-#' Names of bands will be taken from the input cubes. If both cubes, however, have bands with identical name, prefixes are added to all band names. Prefixes
-#' are tried to derive from names of provided X and Y arguments (derived with \code{substitute}) or simply set to "X." and "Y.". 
+#' The number of provided cube_names must match the number of provided input cubes.
+#' If no cube_names are provided, bands of the output cube will adopt original names from the input cubes (without any prefix). If any two of the input bands have identical names,
+#' prefixes default prefixes ("X1", "X2", ...) will be used.
+#' 
 #' @export 
-join_bands <- function(X, Y) {
-  stopifnot(is.cube(X))
-  stopifnot(is.cube(Y))
+join_bands <- function(cube_list, cube_names = NULL) {
   
-  prefix_X = ""
-  prefix_Y = ""
-  if (anyDuplicated(c(names(X),names(Y))) > 0) {
-    prefix_X = "X"
-    prefix_Y = "Y"
-    if (is.name(substitute(X))) {
-      prefix_X = as.character(substitute(X))
+  
+  ncubes = length(cube_list)
+  
+  stopifnot(is.list(cube_list))
+  stopifnot(length(cube_list) > 1)
+
+  for (i in 1:ncubes) {
+    stopifnot(is.cube(cube_list[[i]]))
+  }
+
+  if (is.null(cube_names)) {
+    names = character()
+    for (i in 1:ncubes) {
+      names = c(names, names(cube_list[i])) 
     }
-    if (is.name(substitute(Y))) {
-      prefix_Y = as.character(substitute(Y))
+    if (anyDuplicated(names) > 0) {
+      cube_names = paste0("X", 1:ncubes)
+    }
+    else {
+      cube_names = character()
     }
   }
+  else {
+    if (is.list(cube_names)) {
+      cube_names = as.character(unlist(cube_names))
+    }
+    stopifnot(length(cube_names) == ncubes)
+    stopifnot(is.vector(cube_names))
+    stopifnot(is.character(cube_names))
+  }
   
-  x = libgdalcubes_create_join_bands_cube(X, Y, prefix_X, prefix_Y)
+  
+  
+  x = libgdalcubes_create_join_bands_cube(cube_list, cube_names)
   class(x) <- c("join_bands_cube", "cube", "xptr")
   return(x)
 }

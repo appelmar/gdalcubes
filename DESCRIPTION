@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
-Version: 0.2.5
-Date: 2020-05-17
+Version: 0.3.0
+Date: 2020-08-03
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -20,9 +20,6 @@ Authors@R: c(
            role = "cph"),
     person(given = "Ole Christian",
            family = "Eidheim",
-           role = "cph"),
-    person(given = "Niels",
-           family = "Lohmann",
            role = "cph"),
     person(given = "Howard",
            family = "Hinnant",
@@ -58,10 +55,10 @@ LinkingTo: Rcpp, RcppProgress
 Suggests: 
     knitr,
     magrittr,
-    processx,
     rmarkdown,
     stars,
-    magick
+    magick,
+    sf
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

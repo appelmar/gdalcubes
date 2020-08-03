@@ -10,6 +10,7 @@
 #' @param debug logical;  print debug messages
 #' @param cache logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes
 #' @param ncdf_write_bounds logical; write dimension bounds as additional variables in netCDF files
+#' @param use_overview_images logical; if FALSE, all images are read on original resolution and existing overviews will be ignored
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -24,7 +25,7 @@
 #' gdalcubes_options(threads=4) # set the number of threads
 #' gdalcubes_options() # print current options
 #' @export
-gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds) {
+gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, use_overview_images) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -49,6 +50,13 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     stopifnot(is.logical(ncdf_write_bounds))
     .pkgenv$ncdf_write_bounds = ncdf_write_bounds
   }
+  if (!missing(use_overview_images)) {
+    stopifnot(is.logical(use_overview_images))
+    .pkgenv$use_overview_images = use_overview_images
+    libgdalcubes_set_use_overviews(use_overview_images)
+  }
+
+  
   # if (!missing(swarm)) {
   #   stopifnot(is.character(swarm))
   #   # check whether all endpoints are accessible
@@ -62,7 +70,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
       ncdf_compression_level = .pkgenv$compression_level,
       debug = .pkgenv$debug,
       cache = .pkgenv$use_cube_cache,
-      ncdf_write_bounds = .pkgenv$ncdf_write_bounds
+      ncdf_write_bounds = .pkgenv$ncdf_write_bounds,
+      use_overview_images = .pkgenv$use_overview_images
     ))
   }
 }

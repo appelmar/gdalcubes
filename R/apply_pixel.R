@@ -24,6 +24,8 @@
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' apply_pixel(raster_cube(L8.col, v), "(B05-B04)/(B05+B04)", "NDVI") 
 #' 
+#' 
+#' 
 #' d <- c(4,16,128,128)
 #' x <- array(rnorm(prod(d)), d)
 #' y <- apply_pixel(x, function(v) {
@@ -78,12 +80,20 @@ apply_pixel <- function(x, ...) {
 #' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 #' L8.ndvi
 #' 
+#' \donttest{
+#' plot(L8.ndvi)
+#' }
+#' 
 #' # 2. Apply a user defined R function
 #' L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy", 
 #'    FUN=function(x) {
 #'        rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
 #'    })
 #' L8.ndvi.noisy
+#' 
+#' \donttest{
+#' plot(L8.ndvi.noisy)
+#' }
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export

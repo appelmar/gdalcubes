@@ -13,6 +13,9 @@
 #'                          bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
 #'              srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' L8.cube = raster_cube_dummy(v, 1, 2.345)
+#' \donttest{
+#' plot(L8.cube, zlim=c(0,4))
+#' }
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 raster_cube_dummy <- function(view, nbands=1, fill=1, chunking=c(16, 256, 256)) {

@@ -25,13 +25,10 @@ Modifications (c) 2019 Marius Appel:
 
 ==============================================================
 
-File: src/gdalcubes/src/external/json.hpp
-Copyright (c) 2013-2018 Niels Lohmann
+File: src/gdalcubes/src/external/json11/*
+Copyright (c) 2013 Dropbox, Inc.
 License: MIT
-Origin: https://github.com/nlohmann/json
-Modifications (c) 2019 Marius Appel: 
-- commented out diagnostic pragmas to pass R CMD check
-- see https://github.com/appelmar/gdalcubes/commit/9e936155489a97c5bb211e13e757236762ee1d96
+Origin: https://github.com/dropbox/json11
 
 ==============================================================
 

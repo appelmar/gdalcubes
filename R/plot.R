@@ -15,6 +15,7 @@
 #' @param axes logical, if TRUE, plots include axes
 #' @param ncol number of columns for arranging plots with  \code{layout()}, see Details 
 #' @param nrow number of rows for arranging plots with  \code{layout()}, see Details
+#' @param na.color color used to plot NA pixels
 #' @param ... further arguments passed to \code{image.default}
 #' @note If caching is enabled for the package (see \code{\link{gdalcubes_use_cache}}), repeated calls of plot
 #' for the same data cube will not reevaluate the cube. Instead, the temporary result file will be reused, if possible.
@@ -62,7 +63,8 @@ plot.cube  <-
            join.timeseries = FALSE,
            axes = TRUE,
            ncol = NULL,
-           nrow = NULL) {
+           nrow = NULL,
+           na.color = "#AAAAAA") {
     stopifnot(is.cube(x))
     size = c(nbands(x), size(x))
     
@@ -271,9 +273,6 @@ plot.cube  <-
             stopifnot(min(bands) >= 1 && max(bands) <= size[1])
           }
         }
-        #x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
-        #bands = 1:length(bands)
-        #size[1] = length(bands)
       }
       else {
         bands <- 1:size[1]
@@ -293,14 +292,10 @@ plot.cube  <-
           }
         }
         bands <- rgb
-        #x = select_bands(x, as.character(bands(x)$name[bands])) # optimization to only store needed bands
-        #rgb = 1:3
-        #bands = 1:3
-        #size[1] <- 3
       }
       dtvalues = libgdalcubes_datetime_values(x)
       if (periods.in.title)
-        dtvalues = paste(dtvalues, cube_view(x)$time$dt)
+        dtvalues = paste(dtvalues, dimensions(x)$t$pixel_size)
       if (!is.null(t)) {
         if (is.numeric(t)) {
           stopifnot(all(is.wholenumber(t)))
@@ -395,11 +390,7 @@ plot.cube  <-
         libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
       }
       
-     
-      
-      
-      
-      
+  
       
       # read nc and plot individual slices as table, x = band, y = t
       def.par <-
@@ -595,8 +586,7 @@ plot.cube  <-
       
       dimsx = seq(dims$x$low, dims$x$high, length.out = size[4])
       dimsy = seq(dims$y$low, dims$y$high, length.out = size[3])
-      asp = ((dims$y$high - dims$y$low) / dims$y$count) / ((dims$x$high - dims$x$low) /
-                                                               dims$x$count)
+      asp = ((dims$y$high - dims$y$low) / dims$y$count) / ((dims$x$high - dims$x$low) / dims$x$count)
       ylim = c(dims$y$low, dims$y$high)
       xlim = c(dims$x$low, dims$x$high)
       
@@ -629,20 +619,22 @@ plot.cube  <-
                                                        length.out = min(10000 %/% size[1], prod(size[2:4])))])
               }
             }
-            breaks = seq(min(dat, na.rm = TRUE),
-                         max(dat, na.rm = TRUE),
-                         length.out = nbreaks)
+            zlim[1] = min(dat, na.rm = TRUE)
+            zlim[2] = max(dat, na.rm = TRUE)
+            breaks = seq(zlim[1], zlim[2], length.out = nbreaks)
           }
           else {
             breaks = seq(zlim[1], zlim[2], length.out = nbreaks)
           }
-          #breaks = quantile(dat, seq(0,1,length.out=nbreaks+2)[2:(nbreaks+1)], na.rm=TRUE)
         }
         stopifnot(length(breaks) ==  nbreaks) # TODO: clean up graphics state
         
         if (is.function(col)) {
           col = col(n = nbreaks - 1, ...)
         }
+        col = c(col, na.color)
+        nbreaks = nbreaks + 1
+        breaks=c(breaks, breaks[length(breaks)] + diff(range(breaks))/length(breaks))
         stopifnot(length(col) == nbreaks - 1)
       }
       
@@ -669,9 +661,9 @@ plot.cube  <-
         dat_G <- (dat_G - offset) / scale
         dat_B <- (dat_B - offset) / scale
         
-        dat_R[which(is.na(dat_R) , arr.ind = T)] <- 1
-        dat_G[which(is.na(dat_G) , arr.ind = T)] <- 1
-        dat_B[which(is.na(dat_B) , arr.ind = T)] <- 1
+        dat_R[which(is.na(dat_R) , arr.ind = T)] <- col2rgb(na.color)[1] / 255
+        dat_G[which(is.na(dat_G) , arr.ind = T)] <- col2rgb(na.color)[2] / 255
+        dat_B[which(is.na(dat_B) , arr.ind = T)] <- col2rgb(na.color)[3] / 255
         
         
         dat_R[which(dat_R < 0 , arr.ind = T)] <- 0
@@ -747,6 +739,9 @@ plot.cube  <-
           #ncdf4::ncvar_get(f, b, start=c(t,1,1), count = c(1, f$dim[[2]]$len,f$dim[[3]]$len))
           dat <- ncdf4::ncvar_get(f, b, raw_datavals = TRUE)
           
+          dat[which(dat < breaks[1] | dat > breaks[length(breaks)-1], arr.ind = TRUE)] <- breaks[1] - 1 # do not plot values outside breaks / zlim
+          dat[which(is.na(dat),arr.ind = TRUE)] <- breaks[length(breaks)] # plot NA with special color
+          
           xaxt = "s"
           yaxt = "s"
           if (!axes) {
@@ -810,7 +805,7 @@ plot.cube  <-
             0,
             t = "n",
             ylim = c(0, 1),
-            xlim = range(breaks),
+            xlim = range(breaks[1:(length(breaks)-1)]),
             axes = FALSE,
             xlab = "",
             ylab = "",
@@ -829,7 +824,7 @@ plot.cube  <-
             0,
             range(breaks)[1],
             t = "n",
-            ylim = range(breaks),
+            ylim = range(breaks[1:(length(breaks)-1)]),
             xlim = c(0, 1),
             axes = FALSE,
             xlab = "",
@@ -846,35 +841,35 @@ plot.cube  <-
           switch(
             key.pos,
             rect(
-              xleft = breaks[1:(length(breaks) - 1)],
+              xleft = breaks[1:(length(breaks) - 2)],
               ybottom = 0 ,
-              xright = breaks[2:(length(breaks))],
+              xright = breaks[2:(length(breaks) - 1)],
               ytop = 1,
-              col = col,
+              col = col[1:(length(col)-1)],
               border = NA
             ),
             rect(
-              ybottom = breaks[1:(length(breaks) - 1)],
+              ybottom = breaks[1:(length(breaks) - 2)],
               xleft = 0 ,
-              ytop = breaks[2:(length(breaks))],
+              ytop = breaks[2:(length(breaks) - 1)],
               xright = 1,
-              col = col,
+              col = col[1:(length(col)-1)],
               border = NA
             ),
             rect(
-              xleft = breaks[1:(length(breaks) - 1)],
+              xleft = breaks[1:(length(breaks) - 2)],
               ybottom = 0 ,
-              xright = breaks[2:(length(breaks))],
+              xright = breaks[2:(length(breaks) - 1)],
               ytop = 1,
-              col = col,
+              col = col[1:(length(col)-1)],
               border = NA
             ),
             rect(
-              ybottom = breaks[1:(length(breaks) - 1)],
+              ybottom = breaks[1:(length(breaks) - 2)],
               xleft = 0 ,
-              ytop = breaks[2:(length(breaks))],
+              ytop = breaks[2:(length(breaks) - 1)],
               xright = 1,
-              col = col,
+              col = col[1:(length(col)-1)],
               border = NA
             )
           )

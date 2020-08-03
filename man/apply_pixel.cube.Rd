@@ -56,11 +56,19 @@ L8.cube = select_bands(L8.cube, c("B04", "B05"))
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
 L8.ndvi
 
+\donttest{
+plot(L8.ndvi)
+}
+
 # 2. Apply a user defined R function
 L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy", 
    FUN=function(x) {
        rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
    })
 L8.ndvi.noisy
+
+\donttest{
+plot(L8.ndvi.noisy)
+}
  
 }

@@ -57,10 +57,12 @@ read_chunk_as_array <-function(with.dimnames=TRUE) {
     return(NULL)
   }
   bandnames <- character(s[1])
+ 
   for (i in 1:s[1]) {
     nchars= readBin(f, integer(), n=1)
     bandnames[i] = readChar(f, nchars = nchars)
   }
+  
   dims <- readBin(f, double(), n=sum(s[2:4]))
   proj.length = readBin(f, integer(), n=1)
   proj = readChar(f, nchars = proj.length)
@@ -144,7 +146,7 @@ write_chunk_from_array <- function(v) {
 
 
 
-#' Apply a function over time and bands in a four-dimensional (band, time, y, x) array
+#' Apply a function over time and bands in a four-dimensional (band, time, y, x) array and reduce time dimension
 #' 
 #' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
 #' @param FUN function which receives one time series in a two-dimensional array with dimensions bands, time as input
@@ -202,7 +204,8 @@ apply_pixel.array <- function(x, FUN, ...) {
 }
 
 
-#' Apply a function over space and bands in a four-dimensional (band, time, y, x) array
+#' Apply a function over space and bands in a four-dimensional (band, time, y, x) array and reduce
+#' spatial dimensions
 #' 
 #' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
 #' @param FUN function which receives one spatial slice in a three-dimensional array with dimensions bands, y, x as input
@@ -233,6 +236,51 @@ reduce_space.array <- function(x, FUN, ...) {
   }
   return(res)
 }
+
+
+
+
+
+
+
+
+
+#' Apply a function over pixel time series in a four-dimensional (band, time, y, x) array
+#' 
+#' @param x four-dimensional input array with dimensions band, time, y, x (in this order)
+#' @param FUN function that receives a vector of band values in a one-dimensional array
+#' @param ... further arguments passed to FUN
+#' @details 
+#' FUN is expected to produce a matrix (or vector if result has only one band) where rows are interpreted as new bands and columns represent time.
+#' @examples
+#' d <- c(4,16,32,32)
+#' x <- array(rnorm(prod(d)), d)
+#' z <- apply_time(x, function(v) {
+#'   y = matrix(NA, ncol=ncol(v), nrow=2)
+#'   y[1,] = (v[1,] + v[2,]) / 2
+#'   y[2,] = (v[3,] + v[4,]) / 2
+#'   y
+#' })
+#' dim(z)
+#' @note This is a helper function that uses the same dimension ordering as gdalcubes. It can be used to simplify 
+#' the application of R functions e.g. over time series in a data cube.
+#' @export
+apply_time.array <- function(x, FUN, ...) {
+  stopifnot(is.array(x))
+  stopifnot(length(dim(x))==4)
+  res <- apply(x, c(3,4), FUN = FUN, ...)
+  dim(res) <- c(dim(res)[1] / dim(x)[2], dim(x)[2], dim(x)[3], dim(x)[4])
+  return(res)
+}
+
+
+
+
+
+
+
+
+
 
 
 

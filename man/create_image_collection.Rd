@@ -6,8 +6,11 @@
 \usage{
 create_image_collection(
   files,
-  format,
+  format = NULL,
   out_file = tempfile(fileext = ".sqlite"),
+  date_time = NULL,
+  band_names = NULL,
+  use_subdatasets = FALSE,
   unroll_archives = TRUE,
   quiet = FALSE
 )
@@ -18,6 +21,12 @@ create_image_collection(
 \item{format}{collection format, can be either a name to use predefined formats (as output from \code{\link{collection_formats}}) or a path to a custom JSON format description file}
 
 \item{out_file}{optional name of the output SQLite database file, defaults to a temporary file}
+
+\item{date_time}{vector with date/ time for files; can be of class character, Date, or POSIXct (argument is only applicable for image collections without collection format)}
+
+\item{band_names}{character vector with band names, length must match the number of bands in provided files (argument is only applicable for image collections without collection format)}
+
+\item{use_subdatasets}{logical; use GDAL subdatasets of provided files (argument is only applicable for image collections without collection format)}
 
 \item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files}
 
@@ -32,6 +41,11 @@ collection format.
 }
 \details{
 An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
+
+Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, and metadata are automatically
+extracted from provided files / GDAL datasets. Second, image collections can be created without collection format by manually specifying date/time of images 
+(argument \code{date_time}) and (optional) names of bands. In this case, however, all provided images must contain the same bands. If this is not 
+possible for a dataset, a collection format must be used.
 }
 \examples{
 # create image collection from example Landsat data only 

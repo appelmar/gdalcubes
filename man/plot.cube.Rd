@@ -20,7 +20,8 @@
   join.timeseries = FALSE,
   axes = TRUE,
   ncol = NULL,
-  nrow = NULL
+  nrow = NULL,
+  na.color = "#AAAAAA"
 )
 }
 \arguments{
@@ -55,6 +56,8 @@
 \item{ncol}{number of columns for arranging plots with  \code{layout()}, see Details}
 
 \item{nrow}{number of rows for arranging plots with  \code{layout()}, see Details}
+
+\item{na.color}{color used to plot NA pixels}
 }
 \description{
 Plot a gdalcubes data cube
