@@ -20,6 +20,7 @@
 * new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
 * new collection formats for ESA CCI soil moisture products
 * new collection format for daily precipitation observations from GPM / IMERG
+* add `na.color` argument in `plot.cube()`
 
 ## Bug fixes
 
