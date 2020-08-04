@@ -7,7 +7,7 @@
 #' @param collection path to an existing image collection file
 #' @param target_dir directory where the output will be stored, will be created if necessary
 #' @param overwrite logical; if TRUE existing files will be overwritten
-#' @param creation_options further settings of the GDAL COG driver; see \link{https://gdal.org/drivers/raster/cog.html}
+#' @param creation_options further settings of the GDAL COG driver; see \url{https://gdal.org/drivers/raster/cog.html}
 #' @return path to the new image collection file for use as argument to \code{\link{image_collection}} 
 #' @examples 
 #' # create image collection from example Landsat data only 

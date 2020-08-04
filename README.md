@@ -111,11 +111,7 @@ to print a list of available formats).
 
 ``` r
 library(gdalcubes)
-```
 
-    ## Using gdalcubes library version 0.2.9999
-
-``` r
 gdalcubes_options(threads=8)
 
 files = list.files("L8_Amazon", recursive = TRUE, 
@@ -146,8 +142,7 @@ resampling and aggregation methods are used to spatially reproject,
 crop, and rescale individual images and combine pixel values from many
 images within one year respectively. The `raster_cube()` function
 returns a *proxy* object, i.e., it returns immediately without doing any
-expensive
-computations.
+expensive computations.
 
 ``` r
 v.overview = cube_view(extent=L8.col, dt="P1Y", dx=1000, dy=1000, srs="EPSG:3857", 
@@ -159,7 +154,7 @@ raster_cube(L8.col, v.overview)
     ## 
     ## Dimensions:
     ##                 low              high count pixel_size chunk_size
-    ## t              2013              2019     7        P1Y         16
+    ## t              2013              2019     7        P1Y          1
     ## y -764014.387686915 -205014.387686915   559       1000        256
     ## x -6582280.06164712 -5799280.06164712   783       1000        256
     ## 
@@ -219,7 +214,7 @@ library(RColorBrewer)
 ![](.img/cubes-2.png)<!-- -->
 
 Calling data cube operations always returns *proxy* objects,
-computations are started lazily when users call e.g. `plot()`.
+computations are started lazily when users call e.g. `plot()`.
 
 ## Animations
 
@@ -267,7 +262,7 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +no_defs 
-    ## names      : cube_5f7aecc5f032013, cube_5f7aecc5f032014, cube_5f7aecc5f032015, cube_5f7aecc5f032016, cube_5f7aecc5f032017, cube_5f7aecc5f032018, cube_5f7aecc5f032019
+    ## names      : cube_22054ca59f3b2013, cube_22054ca59f3b2014, cube_22054ca59f3b2015, cube_22054ca59f3b2016, cube_22054ca59f3b2017, cube_22054ca59f3b2018, cube_22054ca59f3b2019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
@@ -356,17 +351,17 @@ raster_cube(L8.col, v.overview) %>%
   query_points(x,y,t, v.overview$space$srs)
 ```
 
-    ##          B04      B05
-    ## 1   258.9018 3049.573
-    ## 2        NaN      NaN
-    ## 3   230.3475 3329.359
-    ## 4        NaN      NaN
-    ## 5   334.1618 2269.766
-    ## 6   209.3888 2907.231
-    ## 7   256.0719 3300.665
-    ## 8        NaN      NaN
-    ## 9  7711.9037 7772.228
-    ## 10  366.2021 3046.725
+    ##         B04      B05
+    ## 1  285.1461 3340.956
+    ## 2       NaN      NaN
+    ## 3  555.7998 3584.006
+    ## 4       NaN      NaN
+    ## 5       NaN      NaN
+    ## 6  636.7866 2886.451
+    ## 7       NaN      NaN
+    ## 8  432.9606 2984.170
+    ## 9  594.7715 3538.645
+    ## 10      NaN      NaN
 
 ``` r
 raster_cube(L8.col, v.overview) %>%
@@ -375,30 +370,30 @@ raster_cube(L8.col, v.overview) %>%
 ```
 
     ## $B04
-    ##         2013     2014     2015      2016     2017     2018      2019
-    ## 1   396.5433 259.6805 208.1757  217.6962 176.3635 258.9018  179.4177
-    ## 2   248.1954 177.3339 320.5452  228.9156 393.0006      NaN       NaN
-    ## 3   325.6795 230.3475 185.0954  204.6250 246.0916 190.0207  182.8453
-    ## 4        NaN      NaN      NaN       NaN      NaN      NaN       NaN
-    ## 5        NaN 374.8409 447.1408  329.9995 334.1618 392.9118       NaN
-    ## 6        NaN 209.3888      NaN 7094.2514 151.5665 339.1125  175.3885
-    ## 7  1100.5899 256.0719 277.2271  371.1198 260.9517 332.0111  625.5913
-    ## 8        NaN      NaN      NaN       NaN      NaN      NaN       NaN
-    ## 9   264.0742 247.9711 259.2477  232.0077 276.2899 250.5457 7711.9037
-    ## 10  366.2021 216.2955 260.9449  185.2800 249.2565 216.7119  591.2057
+    ##        2013     2014     2015      2016     2017     2018     2019
+    ## 1       NaN 285.1461      NaN 3418.5358 305.4599 332.0992 323.7041
+    ## 2       NaN      NaN      NaN       NaN      NaN      NaN      NaN
+    ## 3  461.5016 585.7743 555.8947  555.7998 478.8317 593.2361 458.7815
+    ## 4       NaN 206.4800 231.0744  248.3554 243.5485 190.8519      NaN
+    ## 5       NaN      NaN      NaN       NaN      NaN      NaN      NaN
+    ## 6       NaN 276.2733 319.7856 1789.1146 636.7866 735.5462      NaN
+    ## 7       NaN      NaN      NaN       NaN      NaN      NaN      NaN
+    ## 8       NaN 212.6797 266.0789  282.9415 432.9606 226.9705      NaN
+    ## 9  181.8807 207.3071 594.7715  483.4942 214.6374 212.3614 191.6095
+    ## 10      NaN      NaN      NaN       NaN      NaN      NaN      NaN
     ## 
     ## $B05
     ##        2013     2014     2015     2016     2017     2018     2019
-    ## 1  2892.671 3244.639 3145.802 3010.066 3086.547 3049.573 3020.965
-    ## 2  1696.388 1417.797 1799.151 1906.917 2014.631      NaN      NaN
-    ## 3  2919.731 3329.359 3109.554 3033.240 3249.752 3134.065 3064.439
-    ## 4       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 5       NaN 2134.138 2906.735 2023.735 2269.766 3120.462      NaN
-    ## 6       NaN 2907.231      NaN 7602.566 2832.440 2856.486 2816.193
-    ## 7  2598.048 3300.665 3076.471 3040.468 3252.881 3469.783 3268.905
-    ## 8       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 9  3189.172 3181.051 3095.615 2922.048 3204.925 2840.464 7772.228
-    ## 10 3046.725 3177.317 3091.082 3058.439 3090.122 3062.155 3390.703
+    ## 1       NaN 3340.956      NaN 4983.803 3249.180 3223.194 3143.337
+    ## 2       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 3  3180.279 3469.603 3431.100 3584.006 3366.193 3782.534 3470.040
+    ## 4       NaN 3139.709 3095.002 3085.015 3212.694 3051.408      NaN
+    ## 5       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 6       NaN 2936.051 3494.276 3758.901 2886.451 4072.139      NaN
+    ## 7       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 8       NaN 3240.558 3421.281 3254.259 2984.170 3477.211      NaN
+    ## 9  2894.058 3145.320 3538.645 3200.499 3331.730 2929.747 3009.248
+    ## 10      NaN      NaN      NaN      NaN      NaN      NaN      NaN
 
 To compute time series of summary statistics over spatial polygons, we
 need to specify polygon geometries (e.g., as an `sf` object) and specify
@@ -460,8 +455,7 @@ user-defined R functions independently over all chunks, by using the
   - Images must be orthorectified / regularly gridded, Sentinel-1 or
     Sentinel-5P products require additional preprocessing.
   - Using gdalcubes in distributed computing cloud infrastructures is
-    still work in
-    progress.
+    still work in progress.
 
 # Further reading
 

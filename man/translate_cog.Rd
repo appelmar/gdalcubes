@@ -19,7 +19,7 @@ translate_cog(
 
 \item{overwrite}{logical; if TRUE existing files will be overwritten}
 
-\item{creation_options}{further settings of the GDAL COG driver; see \link{https://gdal.org/drivers/raster/cog.html}}
+\item{creation_options}{further settings of the GDAL COG driver; see \url{https://gdal.org/drivers/raster/cog.html}}
 }
 \value{
 path to the new image collection file for use as argument to \code{\link{image_collection}}
