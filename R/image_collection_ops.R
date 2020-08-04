@@ -7,7 +7,7 @@
 #' @param collection path to an existing image collection file
 #' @param target_dir directory where the output will be stored, will be created if necessary
 #' @param overwrite logical; if TRUE existing files will be overwritten
-#' @param creation_options further settings of the GDAL COG driver; see \url{https://gdal.org/drivers/raster/cog.html}
+#' @param creation_options further settings of the GDAL COG driver; see \link{https://gdal.org/drivers/raster/cog.html}
 #' @return path to the new image collection file for use as argument to \code{\link{image_collection}} 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -20,17 +20,15 @@
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
 #' L8.col
-#' 
 #' \donttest{
-#' L8.cog.col = translate_cog(L8.col)
-#' L8.cog.col
+#' if ("COG" %in% gdalcubes_gdalformats()) {
+#'   L8.cog.col = translate_cog(L8.col)
+#'   L8.cog.col
+#' }
 #' }
 #' @note This function requires the GDAL COG driver, which was added in GDAL version 3.1.
-#' @details 
-#' The functions \code{\link{translate_gtiff}} and \code{\link{translate_cog}} have the same purpose to convert imagery to optimized GeoTIFF files. The latter uses the recent COG GDAL driver,
-#' whereas the former uses the normal GTiff driver. Depending on additional creation options and the input images, files creted with \code{\link{translate_gtiff}} may or may not contain overview images.
 #' @export
-translate_cog <- function(collection, target_dir = tempfile(pattern = "image_collection_"), overwrite = TRUE, creation_options = c("BLOCKSIZE=256","COMPRESS=DEFLATE","LEVEL=1","RESAMPLING=CUBIC")) {
+translate_cog <- function(collection, target_dir = tempfile(pattern = "image_collection_"), overwrite = TRUE, creation_options = c("BLOCKSIZE=256","COMPRESS=DEFLTE","LEVEL=1","RESAMPLING=CUBIC")) {
   stopifnot(is.image_collection(collection))
   out = libgdalcubes_translate_cog(collection, target_dir, .pkgenv$threads, overwrite, creation_options)
   return(out)

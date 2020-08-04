@@ -8,7 +8,7 @@ translate_cog(
   collection,
   target_dir = tempfile(pattern = "image_collection_"),
   overwrite = TRUE,
-  creation_options = c("BLOCKSIZE=256", "COMPRESS=DEFLATE", "LEVEL=1",
+  creation_options = c("BLOCKSIZE=256", "COMPRESS=DEFLTE", "LEVEL=1",
     "RESAMPLING=CUBIC")
 )
 }
@@ -19,7 +19,7 @@ translate_cog(
 
 \item{overwrite}{logical; if TRUE existing files will be overwritten}
 
-\item{creation_options}{further settings of the GDAL COG driver; see \url{https://gdal.org/drivers/raster/cog.html}}
+\item{creation_options}{further settings of the GDAL COG driver; see \link{https://gdal.org/drivers/raster/cog.html}}
 }
 \value{
 path to the new image collection file for use as argument to \code{\link{image_collection}}
@@ -28,10 +28,6 @@ path to the new image collection file for use as argument to \code{\link{image_c
 This function translates all images of a gdalcubes image collection to cloud-optimized GeoTIFF files.
 The output contains converted imagery as an additional copy (original files are not deleted) and
 a new image collection file.
-}
-\details{
-The functions \code{\link{translate_gtiff}} and \code{\link{translate_cog}} have the same purpose to convert imagery to optimized GeoTIFF files. The latter uses the recent COG GDAL driver,
-whereas the former uses the normal GTiff driver. Depending on additional creation options and the input images, files creted with \code{\link{translate_gtiff}} may or may not contain overview images.
 }
 \note{
 This function requires the GDAL COG driver, which was added in GDAL version 3.1.
@@ -47,9 +43,10 @@ if (!file.exists(file.path(tempdir(), "L8.db"))) {
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
 L8.col
-
 \donttest{
-L8.cog.col = translate_cog(L8.col)
-L8.cog.col
+if ("COG" \%in\% gdalcubes_gdalformats()) {
+  L8.cog.col = translate_cog(L8.col)
+  L8.cog.col
+}
 }
 }

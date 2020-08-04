@@ -4,7 +4,7 @@
 
 * Compute summary statistics of data cubes over polygons with `zonal_statistics()` 
 * Extracts time series at irregular spatial points with `query_timeseries()` 
-* Time dimension may be irregular / labeled after selecting slices with the new `select_time()` function
+* Time dimension may ow be irregular / labeled after selecting slices with the new `select_time()` function
 * Filter pixels of a data cube by a spatial polygon with `filter_geom()`
 * Apply an R function on time series without reduction using `apply_time()`
 * Batch format conversion of images in a collection with `translate_cog()` and `translate_gtiff()`
@@ -20,6 +20,7 @@
 * new collection format for daily 0.25° AVHRR Optimum Interpolation Sea Surface Temperature
 * new collection formats for ESA CCI soil moisture products
 * new collection format for daily precipitation observations from GPM / IMERG
+* new collection format for MODIS MOD09GA (aqua and terra)
 * add `na.color` argument in `plot.cube()`
 
 ## Bug fixes

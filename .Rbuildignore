@@ -71,3 +71,5 @@
 ^.*Dockerfile$
 ^\.dockerignore$
 ^.github$
+^.pkgdown.R$
+^.test$

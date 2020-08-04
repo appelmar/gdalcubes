@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(gdalcubes, 0.2.4, marius.appel@uni-muenster.de)
+AC_INIT(gdalcubes, 0.3.0, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
