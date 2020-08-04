@@ -1,0 +1,49 @@
+{
+  "description" : "Collection format for selected bands from the MODIS MxD09GA (Aqua and Terra) product",
+  "tags" : ["MODIS", "surface reflectance"],
+  "pattern" : ".*\\.hdf.*",
+  "subdatasets" : true,
+  "images" : {
+    "pattern" : "HDF4_EOS:EOS_GRID:\"(.+)\\.hdf.*"
+  },
+  "datetime" : {
+    "pattern" : ".*M[OY]D09GA\\.A(.{7})[^/]*",
+    "format" : "%Y%j"
+  },
+  "bands" : {
+    "sur_refl_b01" : {
+      "pattern" : ".+sur_refl_b01_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b02" : {
+      "pattern" : ".+sur_refl_b02_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b03" : {
+      "pattern" : ".+sur_refl_b03_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b04" : {
+      "pattern" : ".+sur_refl_b04_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b05" : {
+      "pattern" : ".+sur_refl_b05_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b06" : {
+      "pattern" : ".+sur_refl_b06_1.*",
+      "nodata" : -28672
+    },
+    "sur_refl_b07" : {
+      "pattern" : ".+sur_refl_b07_1.*",
+      "nodata" : -28672
+    },
+    "QC_500m": {
+      "pattern" : ".+QC_500m_1.*"
+    },
+    "state_1km" : {
+      "pattern" : ".+state_1km_1.*"
+    }
+  }
+}
