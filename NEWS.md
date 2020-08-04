@@ -1,4 +1,4 @@
-# gdalcubes 0.3.0
+# gdalcubes 0.3.0 (2020-08-04)
 
 ## New Features
 
