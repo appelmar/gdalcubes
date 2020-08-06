@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
 Version: 0.3.0
-Date: 2020-08-04
+Date: 2020-08-05
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -35,6 +35,8 @@ Authors@R: c(
            role = "cph"),
     person(given = "Tomasz",
            family = "Kamiński",
+           role = "cph"),
+    person(given = "Dropbox, Inc.",
            role = "cph"))
 Description: Processing collections of Earth observation images as on-demand multispectral, multitemporal raster data cubes. Users
     define cubes by spatiotemporal extent, resolution, and spatial reference system and let 'gdalcubes' automatically apply cropping, reprojection, and 
