@@ -1,3 +1,10 @@
+
+# gdalcubes 0.3.1 (2020-08-25)
+
+* make GEOS dependency optional
+* remove CURL dependency from configure
+
+
 # gdalcubes 0.3.0 (2020-08-05)
 
 ## New Features

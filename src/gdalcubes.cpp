@@ -257,6 +257,12 @@ std::string libgdalcubes_gdalversion() {
 }
 
 // [[Rcpp::export]]
+bool libgdalcubes_gdal_has_geos() {
+  return config::instance()->gdal_has_geos();
+}
+
+
+// [[Rcpp::export]]
 void libgdalcubes_add_format_dir(std::string dir) {
   config::instance()->add_collection_format_preset_dir(dir);
 }

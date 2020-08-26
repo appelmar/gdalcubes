@@ -30,6 +30,8 @@
 #' 
 #' @note Currently, the spatial reference systems of the data cube and the features must be identical.
 #' 
+#' @note This function requires GDAL with built-in GEOS support, which can checked with \code{\link{gdalcubes_gdal_has_geos}})
+#' 
 #' 
 #' @examples 
 #' # if not already done in other examples
@@ -50,9 +52,11 @@
 #' L8.ndvi
 #' 
 #' # toy example: overlay NDVI data with NYC districts
-#' x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
-#'                      expr = "median(NDVI)")
-#' x
+#' if (gdalcubes_gdal_has_geos()) {
+#'   x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
+#'                        expr = "median(NDVI)")
+#'   x
+#' }
 #' 
 #' @export
 zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL, as_stars = FALSE) {

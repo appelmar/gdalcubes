@@ -141,6 +141,15 @@ gdalcubes_gdalformats <- function() {
   return(libgdalcubes_gdalformats())
 }
 
+#' Check if GDAL was built with GEOS
+#' @examples 
+#' gdalcubes_gdal_has_geos()
+#' @export
+gdalcubes_gdal_has_geos <- function() {
+  return(libgdalcubes_gdal_has_geos())
+}
+
+
 #' Get the GDAL version used by gdalcubes
 #' @examples 
 #' gdalcubes_gdalversion()

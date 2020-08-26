@@ -52,6 +52,8 @@ Available summary statistics currently include "min", "max", "mean", "median", "
 }
 \note{
 Currently, the spatial reference systems of the data cube and the features must be identical.
+
+This function requires GDAL with built-in GEOS support, which can checked with \code{\link{gdalcubes_gdal_has_geos}})
 }
 \examples{
 # if not already done in other examples
@@ -72,8 +74,10 @@ L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
 L8.ndvi
 
 # toy example: overlay NDVI data with NYC districts
-x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
-                     expr = "median(NDVI)")
-x
+if (gdalcubes_gdal_has_geos()) {
+  x = zonal_statistics(L8.ndvi, system.file("nycd.gpkg", package = "gdalcubes"),
+                       expr = "median(NDVI)")
+  x
+}
 
 }

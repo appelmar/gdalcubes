@@ -17,6 +17,10 @@ libgdalcubes_gdalversion <- function() {
     .Call('_gdalcubes_libgdalcubes_gdalversion', PACKAGE = 'gdalcubes')
 }
 
+libgdalcubes_gdal_has_geos <- function() {
+    .Call('_gdalcubes_libgdalcubes_gdal_has_geos', PACKAGE = 'gdalcubes')
+}
+
 libgdalcubes_add_format_dir <- function(dir) {
     invisible(.Call('_gdalcubes_libgdalcubes_add_format_dir', PACKAGE = 'gdalcubes', dir))
 }
