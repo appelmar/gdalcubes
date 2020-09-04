@@ -27,9 +27,6 @@
 #' 
 #' Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", "prod", "var", and "sd". 
 #' 
-#' 
-#' @note Currently, the spatial reference systems of the data cube and the features must be identical.
-#' 
 #' @note This function requires GDAL with built-in GEOS support, which can checked with \code{\link{gdalcubes_gdal_has_geos}})
 #' 
 #' 
@@ -148,7 +145,6 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
     attr(out,"dimensions") <- dims
 
     class(out) = "stars"
-    # TODO: make time intervals as in st_as_stars
     return(out)
   }
  

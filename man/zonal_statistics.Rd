@@ -51,8 +51,6 @@ You will most-likely want to use the spatial view layers directly e.g. with the 
 Available summary statistics currently include "min", "max", "mean", "median", "count", "sum", "prod", "var", and "sd".
 }
 \note{
-Currently, the spatial reference systems of the data cube and the features must be identical.
-
 This function requires GDAL with built-in GEOS support, which can checked with \code{\link{gdalcubes_gdal_has_geos}})
 }
 \examples{
