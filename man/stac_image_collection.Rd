@@ -15,6 +15,8 @@ stac_image_collection(
 \arguments{
 \item{s}{STAC feature collection}
 
+\item{out_file}{optional name of the output SQLite database file, defaults to a temporary file}
+
 \item{asset_names}{character vector with names of assets (e.g., bands) to be used, other assets will be ignored. By default (NULL), all asset names with "eo:bands" attributes will be used}
 
 \item{asset_regex}{length 1 character defining a regular expression asset names must match to be considered}
@@ -22,8 +24,12 @@ stac_image_collection(
 \item{url_fun}{optional function to modify URLs of assets, e.g, to add /vsicurl/ to URLS (the default)}
 }
 \description{
-This function is experimental.
+This function creates an image collection from a STAC API collection response. It does not
+need to read any image data. Additionally, bands can be filtered and asset links can be transformed to make them
+readable for GDAL.
 }
 \note{
 Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
+
+This function is experimental
 }
