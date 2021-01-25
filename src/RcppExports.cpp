@@ -646,6 +646,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_stac_collection
+void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_stac_collection(SEXP bandsSEXP, SEXP imagesSEXP, SEXP gdalrefsSEXP, SEXP outfileSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type bands(bandsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type images(imagesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type gdalrefs(gdalrefsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
+    libgdalcubes_create_stac_collection(bands, images, gdalrefs, outfile);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_is_null", (DL_FUNC) &_gdalcubes_libgdalcubes_is_null, 1},
@@ -700,6 +713,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_translate_gtiff", (DL_FUNC) &_gdalcubes_libgdalcubes_translate_gtiff, 5},
     {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
+    {"_gdalcubes_libgdalcubes_create_stac_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stac_collection, 4},
     {NULL, NULL, 0}
 };
 

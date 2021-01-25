@@ -641,6 +641,10 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
     std::shared_ptr<image_collection> ic = *aa;
     
+    if ((*aa)->is_empty()) {
+      return Rcpp::List::create();
+    }
+    
     std::vector<image_collection::images_row> img = ic->get_images();
     
     Rcpp::CharacterVector images_name(img.size());
@@ -1625,6 +1629,52 @@ void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
 // [[Rcpp::export]]
 std::string libgdalcubes_simple_hash(std::string instr) {
   return utils::hash(instr);
+}
+
+// [[Rcpp::export]]
+void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile) {
+  
+  try {
+    //std::shared_ptr<image_collection>* x = new std::shared_ptr<image_collection>();
+    std::shared_ptr<image_collection> x = image_collection::create();
+    
+    x->transaction_start();
+    
+    Rcpp::CharacterVector band_name =  bands["name"];
+    Rcpp::IntegerVector band_id = bands["id"];
+    for (uint32_t i=0; i<bands.nrows(); ++i) {
+      x->insert_band(band_id[i], Rcpp::as<std::string>(band_name[i])); // TODO add further data if available
+    }
+
+    Rcpp::IntegerVector image_id = images["id"];
+    Rcpp::CharacterVector image_name = images["name"];
+    Rcpp::NumericVector image_left =images["left"];
+    Rcpp::NumericVector image_top =images["top"];
+    Rcpp::NumericVector image_bottom =images["bottom"];
+    Rcpp::NumericVector image_right =images["right"];
+    Rcpp::CharacterVector image_datetime = images["datetime"];
+    Rcpp::CharacterVector image_proj = images["proj"];
+    for (uint32_t i=0; i<images.nrows(); ++i) {
+      x->insert_image(image_id[i], Rcpp::as<std::string>(image_name[i]), image_left[i], image_top[i],
+                         image_bottom[i], image_right[i], Rcpp::as<std::string>(image_datetime[i]), Rcpp::as<std::string>(image_proj[i]));
+    }
+
+    Rcpp::IntegerVector gdalrefs_image_id = gdalrefs["image_id"];
+    Rcpp::IntegerVector gdalrefs_band_id = gdalrefs["band_id"];
+    Rcpp::CharacterVector gdalrefs_descriptor = gdalrefs["descriptor"];
+    Rcpp::IntegerVector gdalrefs_band_num = gdalrefs["band_num"];
+    for (uint32_t i=0; i<gdalrefs.nrows(); ++i) {
+      x->insert_dataset(gdalrefs_image_id[i],gdalrefs_band_id[i], Rcpp::as<std::string>(gdalrefs_descriptor[i]), gdalrefs_band_num[i]);
+    }
+    
+    // TODO: add collection, image, and band metadata
+    x->transaction_end();
+    
+    x->write(outfile);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
 }
 
 

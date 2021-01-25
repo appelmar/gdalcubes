@@ -86,17 +86,22 @@ extent <- function(x, srs="EPSG:4326") {
 print.image_collection <- function(x, ..., n=6) {
   stopifnot(is.image_collection(x))
   info <- libgdalcubes_image_collection_info(x)
-  cat(paste("A GDAL image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), " bands\n"))
-  cat("Images:\n")
-  print(head(info$images, n))
-  if (n < nrow(info$images)) {
-    cat("[ omitted", nrow(info$images) - n , "images ]", "\n")
+  if (length(info) == 0) {
+    cat(paste("Empty image collection object\n"))
   }
-  cat("\n")
-  cat("Bands:\n")
-  
-  print(info$bands)
-  cat("\n")
+  else {
+    cat(paste("Image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), " bands\n"))
+    cat("Images:\n")
+    print(head(info$images, n))
+    if (n < nrow(info$images)) {
+      cat("[ omitted", nrow(info$images) - n , "images ]", "\n")
+    }
+    cat("\n")
+    cat("Bands:\n")
+    
+    print(info$bands)
+    cat("\n")
+  }
 }
 
 
