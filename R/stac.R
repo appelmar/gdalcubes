@@ -17,24 +17,34 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                                   url_fun = function(x) {paste0("/vsicurl/", x)}) {
   SUBBAND_SPLIT_CHAR = ":"
   
+  if (!is.list(s)) {
+    stop ("Input must be a list")
+  }
+  
   if (file.exists(out_file)) {
     stop ("output file already exists")
   }
   
   # TODO: add band metadata if available
   bands = NULL
+  asset_names_exist = rep(FALSE, length(asset_names))
   for (i in 1:length(s)) {
     for (j in 1:length(s[[i]]$assets)) {
       asset_name = names(s[[i]]$assets)[j]
       
       if (!is.null(asset_names)) { 
-        if (!asset_name %in% asset_names) next
+        if (asset_name %in% asset_names) {
+          asset_names_exist[which(asset_names == asset_name)] = TRUE
+        }
+        else {
+          next
+        }
       }
       if (!is.null(asset_regex)) {
         if (!grepl(pattern = asset_regex, asset_name)) next
       }
       
-      # assumption: use only assets with "eo:bands" metadata
+      # assumption: use only assets with "eo:bands" metadata, unless its is part of asset_names
       if ("eo:bands" %in% names(s[[i]]$assets[[j]])) {
         nb = length(s[[i]]$assets[[j]][["eo:bands"]])
         if (nb == 1) {
@@ -48,6 +58,24 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       }
     }
   }
+  
+  # compare asset_names to found assets
+  if (!is.null(asset_names)) { 
+    a = which(!(asset_names %in% bands))
+    if (length(a) > 0) {
+      for (i in 1:length(a)) {
+        if (asset_names_exist[a[i]]) {
+          bands = union(bands, asset_names[a[i]])
+          warning(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not include eo:bands metadata and will be considered as a single band source"))
+        }
+        else {
+          warning(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not exist and will be ignored"))
+        }    
+      }
+    }
+  }
+  
+  
   bands_df = data.frame(id = 1:length(bands),
                         name = bands,
                         type = "",
