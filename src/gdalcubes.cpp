@@ -1632,7 +1632,7 @@ std::string libgdalcubes_simple_hash(std::string instr) {
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile) {
+void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile, Rcpp::DataFrame image_md) {
   
   try {
     //std::shared_ptr<image_collection>* x = new std::shared_ptr<image_collection>();
@@ -1667,6 +1667,17 @@ void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame 
       x->insert_dataset(gdalrefs_image_id[i],gdalrefs_band_id[i], Rcpp::as<std::string>(gdalrefs_descriptor[i]), gdalrefs_band_num[i]);
     }
     
+    
+    if (image_md.nrows() > 0) {
+      for (uint32_t i=0; i<image_md.nrows(); ++i) {
+        Rcpp::IntegerVector image_md_image_id = image_md["image_id"];
+        Rcpp::CharacterVector image_md_key = image_md["key"];
+        Rcpp::CharacterVector image_md_value = image_md["value"];
+        
+        x->insert_image_md(image_md_image_id[i], Rcpp::as<std::string>(image_md_key[i]), Rcpp::as<std::string>(image_md_value[i]));
+      }
+    }
+    
     // TODO: add collection, image, and band metadata
     x->transaction_end();
     
@@ -1676,6 +1687,4 @@ void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame 
     Rcpp::stop(s);
   }
 }
-
-
 

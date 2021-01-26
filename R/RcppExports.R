@@ -209,7 +209,7 @@ libgdalcubes_simple_hash <- function(instr) {
     .Call('_gdalcubes_libgdalcubes_simple_hash', PACKAGE = 'gdalcubes', instr)
 }
 
-libgdalcubes_create_stac_collection <- function(bands, images, gdalrefs, outfile) {
-    invisible(.Call('_gdalcubes_libgdalcubes_create_stac_collection', PACKAGE = 'gdalcubes', bands, images, gdalrefs, outfile))
+libgdalcubes_create_stac_collection <- function(bands, images, gdalrefs, outfile, image_md) {
+    invisible(.Call('_gdalcubes_libgdalcubes_create_stac_collection', PACKAGE = 'gdalcubes', bands, images, gdalrefs, outfile, image_md))
 }
 

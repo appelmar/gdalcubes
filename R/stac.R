@@ -9,14 +9,24 @@
 #' @param asset_regex length 1 character defining a regular expression asset names must match to be considered
 #' @param url_fun  optional function to modify URLs of assets, e.g, to add /vsicurl/ to URLS (the default)
 #' @param out_file optional name of the output SQLite database file, defaults to a temporary file
+#' @param property_filter optional function to filter STAC items (images) by their properties; see Details
+#' @param skip_image_metadata logical, if TRUE per-image metadata (STAC item properties) will not be added to the image collection
 #' @note Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
-#' @note This function is experimental
+#' @note This function is experimental.
+#' @details 
+#' 
+#' The property_filter argument can be used to filter images by metadata such as cloud coverage. 
+#' The functions receives all properties of a STAC item (image) as input list and is expected to produce a single logical value,
+#' where an image will be ignored if the function returns FALSE.
+#' 
+#' 
 #' @export
 stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"), 
-                                  asset_names = NULL, asset_regex = NULL,
-                                  url_fun = function(x) {paste0("/vsicurl/", x)}) {
+                                  asset_names = NULL, asset_regex = NULL, 
+                                  url_fun = function(x) {paste0("/vsicurl/", x)},
+                                  property_filter = NULL, skip_image_metadata = FALSE) {
   SUBBAND_SPLIT_CHAR = ":"
-  
+  # TODO: e.g. property_filter = function(x) {x[["eo:cloud_cover""]] < 30}
   if (!is.list(s)) {
     stop ("Input must be a list")
   }
@@ -101,7 +111,19 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   images_right = NULL
   images_datetime = NULL
   images_proj = NULL
+  
+  image_md_image_id = NULL
+  image_md_key = NULL
+  image_md_value = NULL
+  
   for (i in 1:length(s)) {
+    
+    if (!is.null(property_filter)) {
+      if (!property_filter(s[[i]]$properties)) {
+        next
+      }
+    }
+    
     
     # bands
     img_has_bands = FALSE
@@ -145,6 +167,14 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       images_top = c(images_top, bbox[4])
       images_bottom = c(images_bottom, bbox[2])
       # TODO: check indexes
+      
+      # image metadata
+      if (!skip_image_metadata) {
+        image_md_image_id = c(image_md_image_id, rep(i, length(s[[i]]$properties)))
+        image_md_key = c(image_md_key, names(s[[i]]$properties))
+        image_md_value = c(image_md_value, as.character(s[[i]]$properties))
+      }
+      
     }
     
   }
@@ -170,7 +200,18 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   )
   gdalrefs_df
   
-  libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file))
+  if (skip_image_metadata) {
+    libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), data.frame())
+  }
+  else {
+    image_md_df = data.frame(
+      image_id = image_md_image_id,
+      key = image_md_key,
+      value = image_md_value,
+      stringsAsFactors = FALSE
+    )
+    libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), image_md_df)
+  }
   return(image_collection(out_file))
 }
 
