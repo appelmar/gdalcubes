@@ -18,9 +18,11 @@
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#'               
-#' ncfile = write_ncdf(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04"))
+#' 
+#' \donttest{
+#' ncfile = write_ncdf(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04")))
 #' ncdf_cube(ncfile)
+#' }                           
 #' 
 #' @param path path to an existing netCDF file
 #' @param chunking custom chunk sizes to read form the netCDF file; defaults to using chunk sizes from the netCDF file
