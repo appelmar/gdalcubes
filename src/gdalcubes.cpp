@@ -1040,7 +1040,21 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
   
 }
 
-
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack) {
+  
+  try {
+    std::shared_ptr<ncdf_cube>* x  = new std::shared_ptr<ncdf_cube>( ncdf_cube::create(path, auto_unpack));
+    if (chunk_sizes.size() == 3) {
+      (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    }
+    Rcpp::XPtr< std::shared_ptr<ncdf_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 
@@ -1310,6 +1324,9 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
     Rcpp::stop(s);
   }
 }
+
+
+
 
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {

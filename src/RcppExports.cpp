@@ -251,6 +251,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_ncdf_cube
+SEXP libgdalcubes_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_ncdf_cube(SEXP pathSEXP, SEXP chunk_sizesSEXP, SEXP auto_unpackSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chunk_sizes(chunk_sizesSEXP);
+    Rcpp::traits::input_parameter< bool >::type auto_unpack(auto_unpackSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_ncdf_cube(path, chunk_sizes, auto_unpack));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_dummy_cube
 SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::IntegerVector chunk_sizes);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_dummy_cube(SEXP vSEXP, SEXP nbandsSEXP, SEXP fillSEXP, SEXP chunk_sizesSEXP) {
@@ -684,6 +697,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_list_collection_formats", (DL_FUNC) &_gdalcubes_libgdalcubes_list_collection_formats, 0},
     {"_gdalcubes_libgdalcubes_create_view", (DL_FUNC) &_gdalcubes_libgdalcubes_create_view, 1},
     {"_gdalcubes_libgdalcubes_create_image_collection_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_ncdf_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_ncdf_cube, 3},
     {"_gdalcubes_libgdalcubes_create_dummy_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_dummy_cube, 4},
     {"_gdalcubes_libgdalcubes_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_time_cube, 3},
     {"_gdalcubes_libgdalcubes_create_stream_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_time_cube, 4},

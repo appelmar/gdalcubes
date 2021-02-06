@@ -89,6 +89,10 @@ libgdalcubes_create_image_collection_cube <- function(pin, chunk_sizes, mask, v 
     .Call('_gdalcubes_libgdalcubes_create_image_collection_cube', PACKAGE = 'gdalcubes', pin, chunk_sizes, mask, v)
 }
 
+libgdalcubes_create_ncdf_cube <- function(path, chunk_sizes, auto_unpack) {
+    .Call('_gdalcubes_libgdalcubes_create_ncdf_cube', PACKAGE = 'gdalcubes', path, chunk_sizes, auto_unpack)
+}
+
 libgdalcubes_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_libgdalcubes_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }

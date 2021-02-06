@@ -9,7 +9,9 @@ stac_image_collection(
   out_file = tempfile(fileext = ".sqlite"),
   asset_names = NULL,
   asset_regex = NULL,
-  url_fun = function(x) {     paste0("/vsicurl/", x) }
+  url_fun = function(x) {     paste0("/vsicurl/", x) },
+  property_filter = NULL,
+  skip_image_metadata = FALSE
 )
 }
 \arguments{
@@ -22,14 +24,23 @@ stac_image_collection(
 \item{asset_regex}{length 1 character defining a regular expression asset names must match to be considered}
 
 \item{url_fun}{optional function to modify URLs of assets, e.g, to add /vsicurl/ to URLS (the default)}
+
+\item{property_filter}{optional function to filter STAC items (images) by their properties; see Details}
+
+\item{skip_image_metadata}{logical, if TRUE per-image metadata (STAC item properties) will not be added to the image collection}
 }
 \description{
 This function creates an image collection from a STAC API collection response. It does not
 need to read any image data. Additionally, bands can be filtered and asset links can be transformed to make them
 readable for GDAL.
 }
+\details{
+The property_filter argument can be used to filter images by metadata such as cloud coverage. 
+The functions receives all properties of a STAC item (image) as input list and is expected to produce a single logical value,
+where an image will be ignored if the function returns FALSE.
+}
 \note{
 Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
 
-This function is experimental
+This function is experimental.
 }
