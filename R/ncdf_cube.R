@@ -1,13 +1,26 @@
 
 #' Read a data cube from an existing netCDF file
 #' 
-#' Create a proxy data cube, which reads a data cube from a netCDF file that has been created using \code{\link{write_ncdf}}.
+#' Create a proxy data cube from a netCDF file that has been created using \code{\link{write_ncdf}}.
 #' This function does not read cubes from arbitrary netCDF files and can be used e.g., to load intermediate results and/or 
 #' plotting existing netCDF cubes on disk without doing the data cube creation from image collections.
 #' 
 #' @examples 
-#' TODO
-#'
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#'               
+#' ncfile = write_ncdf(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04"))
+#' ncdf_cube(ncfile)
 #' 
 #' @param path path to an existing netCDF file
 #' @param chunking custom chunk sizes to read form the netCDF file; defaults to using chunk sizes from the netCDF file
