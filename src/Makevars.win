@@ -43,14 +43,13 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes.o \
 			RcppExports.o
 
-PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal \
-               -I$(RWINLIB_NETCDF)/include \
-               -I$(RWINLIB_CURL)/include \
+PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
+               -I$(RWINLIB_GDAL)/include/netcdf-4.7.3 \
                -I$(RWINLIB_SQLITE) \
                -DR_PACKAGE
  
 
-PKG_LIBS = -L$(RWINLIB_NETCDF)/lib$(R_ARCH) -L$(RWINLIB_GDAL)/lib$(R_ARCH)  \
+PKG_LIBS = -L$(RWINLIB_GDAL)/lib$(R_ARCH)  \
 	-lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
 	-ljson-c -lnetcdf -lmariadbclient -lpq -lpgport -lpgcommon \
 	-lwebp -lcurl -lssh2 -lssl \
