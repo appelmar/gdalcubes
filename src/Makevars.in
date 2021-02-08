@@ -20,7 +20,8 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/select_bands.o \
 			gdalcubes/src/filter_pixel.o \
 			gdalcubes/src/filter_geom.o \
-			gdalcubes/src/fill_time.o\
+			gdalcubes/src/fill_time.o \
+			gdalcubes/src/rename_bands.o \
 			gdalcubes/src/stream.o \
 			gdalcubes/src/stream_reduce_time.o \
 			gdalcubes/src/stream_reduce_space.o \
