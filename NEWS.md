@@ -2,7 +2,8 @@
 # gdalcubes 0.3.2 (under development)
 
 * new operator `ncdf_cube()` to read data cubes from (intermediate) results
-
+* new operator `rename_bands()` to change band names
+* image collection creation from STAC API queries with `stac_image_collection()`
 
 
 

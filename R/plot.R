@@ -82,8 +82,7 @@ plot.cube  <-
       dtvalues = libgdalcubes_datetime_values(x)
       #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
       
-      
-      
+      # TODO: avoid calling write_ncdf() if x is ncdf_cube
       if (.pkgenv$use_cube_cache) {
         j = as_json(x)
         if (!is.null(.pkgenv$cube_cache[[j]])
@@ -92,13 +91,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
+          write_ncdf(x, fn)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
+        write_ncdf(x, fn)
       }
       
       
@@ -372,7 +371,7 @@ plot.cube  <-
         }
       }
   
-      
+      # TODO: avoid calling write_ncdf() if x is ncdf_cube
       if (.pkgenv$use_cube_cache) {
         j = as_json(x)
         if (!is.null(.pkgenv$cube_cache[[j]])
@@ -381,13 +380,13 @@ plot.cube  <-
         }
         else {
           fn = tempfile(fileext = ".nc")
-          libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
+          write_ncdf(x, fn)
           .pkgenv$cube_cache[[j]] = fn
         }
       }
       else {
         fn = tempfile(fileext = ".nc")
-        libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
+        write_ncdf(x, fn)
       }
       
   
