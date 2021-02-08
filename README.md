@@ -1,6 +1,7 @@
 
 # gdalcubes <img src=".img/logo.svg" align="right" alt="" width="120" />
 
+![R-CMD-check](https://github.com/appelmar/gdalcubes_R/workflows/R-CMD-check/badge.svg)
 [![Build
 Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
 [![AppVeyor build
