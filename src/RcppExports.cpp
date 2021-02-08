@@ -278,6 +278,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_rename_bands_cube
+SEXP libgdalcubes_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, std::vector<std::string> names_new);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_rename_bands_cube(SEXP pinSEXP, SEXP names_oldSEXP, SEXP names_newSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type names_old(names_oldSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type names_new(names_newSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_rename_bands_cube(pin, names_old, names_new));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_reduce_time_cube
 SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_reduce_time_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
@@ -699,6 +712,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_image_collection_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_image_collection_cube, 4},
     {"_gdalcubes_libgdalcubes_create_ncdf_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_ncdf_cube, 3},
     {"_gdalcubes_libgdalcubes_create_dummy_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_dummy_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_rename_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_rename_bands_cube, 3},
     {"_gdalcubes_libgdalcubes_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_time_cube, 3},
     {"_gdalcubes_libgdalcubes_create_stream_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_time_cube, 4},
     {"_gdalcubes_libgdalcubes_create_stream_reduce_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_space_cube, 4},

@@ -1,4 +1,11 @@
 
+# gdalcubes 0.3.2 (under development)
+
+* new operator `ncdf_cube()` to read data cubes from (intermediate) results
+
+
+
+
 # gdalcubes 0.3.1 (2020-08-25)
 
 * make GEOS dependency optional

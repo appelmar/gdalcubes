@@ -1040,6 +1040,7 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
   
 }
 
+
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack) {
   
@@ -1144,7 +1145,26 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
 
 
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, std::vector<std::string> names_new) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::map<std::string, std::string> bandnames;
+    for (uint16_t i=0; i<names_old.size(); ++i) {
+      bandnames[names_old[i]] = names_new[i];
+    }
 
+    std::shared_ptr<rename_bands_cube>* x = new std::shared_ptr<rename_bands_cube>(rename_bands_cube::create(*aa, bandnames));
+    Rcpp::XPtr< std::shared_ptr<rename_bands_cube> > p(x, true) ;
+    
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+  
 
 
 // [[Rcpp::export]]
