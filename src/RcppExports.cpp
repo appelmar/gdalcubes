@@ -651,16 +651,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// libgdalcubes_set_swarm
-void libgdalcubes_set_swarm(std::vector<std::string> swarm);
-RcppExport SEXP _gdalcubes_libgdalcubes_set_swarm(SEXP swarmSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type swarm(swarmSEXP);
-    libgdalcubes_set_swarm(swarm);
-    return R_NilValue;
-END_RCPP
-}
 // libgdalcubes_simple_hash
 std::string libgdalcubes_simple_hash(std::string instr);
 RcppExport SEXP _gdalcubes_libgdalcubes_simple_hash(SEXP instrSEXP) {
@@ -740,7 +730,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_set_use_overviews", (DL_FUNC) &_gdalcubes_libgdalcubes_set_use_overviews, 1},
     {"_gdalcubes_libgdalcubes_translate_cog", (DL_FUNC) &_gdalcubes_libgdalcubes_translate_cog, 5},
     {"_gdalcubes_libgdalcubes_translate_gtiff", (DL_FUNC) &_gdalcubes_libgdalcubes_translate_gtiff, 5},
-    {"_gdalcubes_libgdalcubes_set_swarm", (DL_FUNC) &_gdalcubes_libgdalcubes_set_swarm, 1},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
     {"_gdalcubes_libgdalcubes_create_stac_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stac_collection, 5},
     {NULL, NULL, 0}

@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(gdalcubes, 0.3.1, marius.appel@uni-muenster.de)
+AC_INIT(gdalcubes, 0.3.2, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -737,7 +737,7 @@ AC_LANG_POP([C])
 # Bringing everything together #################################################################################
 
 
-AC_SUBST([PKG_CPPFLAGS], ["${INPKG_CPPFLAGS} ${PROJ_CPPFLAGS} ${GDAL_CPPFLAGS} ${NETCDF_CPPFLAGS} -DR_PACKAGE"])
+AC_SUBST([PKG_CPPFLAGS], ["${INPKG_CPPFLAGS} ${PROJ_CPPFLAGS} ${GDAL_CPPFLAGS} ${NETCDF_CPPFLAGS} -DR_PACKAGE -DGDALCUBES_NO_SWARM"])
 
 AC_SUBST([PKG_LIBS], ["${INPKG_LIBS} ${GDAL_LIBS} ${PROJ_LIBS}  ${NETCDF_LDFLAGS}"])
 if test "${NEED_DEPS}" = yes; then

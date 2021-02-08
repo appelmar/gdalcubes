@@ -1656,14 +1656,6 @@ std::string libgdalcubes_translate_gtiff(SEXP collection, std::string out_dir, u
 
 
 // [[Rcpp::export]]
-void libgdalcubes_set_swarm(std::vector<std::string> swarm) {
-  auto p = gdalcubes_swarm::from_urls(swarm);
-  //p->set_threads(nthreads);
-  config::instance()->set_default_chunk_processor(p);
-  // TODO: how to make swarm interruptible
-}
-
-// [[Rcpp::export]]
 std::string libgdalcubes_simple_hash(std::string instr) {
   return utils::hash(instr);
 }
