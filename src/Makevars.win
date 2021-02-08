@@ -46,7 +46,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
                -I$(RWINLIB_GDAL)/include/netcdf-4.7.3 \
                -I$(RWINLIB_SQLITE) \
-               -DR_PACKAGE
+               -DR_PACKAGE -DWITHOUT_CURL
  
 
 PKG_LIBS = -L$(RWINLIB_GDAL)/lib$(R_ARCH)  \
