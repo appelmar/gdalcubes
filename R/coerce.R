@@ -28,8 +28,15 @@ st_as_stars.cube <- function(.x, ...) {
   
   outnc = tempfile(fileext = ".nc")
   #subdatasets = paste0("NETCDF:\"", outnc, "\":", names(from), sep="", collapse = NULL)
-  
-  write_ncdf(.x, outnc)
+  if ("ncdf_cube" %in% class(.x)) {
+    outnc = jsonlite::parse_json(as_json(.x))$file
+    if (is.null(outnc)) {
+      stop("Invalid ncdf cube; missing file reference")
+    }
+  }
+  else {
+    write_ncdf(.x, outnc)
+  }
   sds = paste0("NETCDF:\"", outnc, "\":", names(.x))
   out = stars::read_stars(sds)
   #  
@@ -93,10 +100,16 @@ as_array <- function(x) {
   stopifnot(is.cube(x))
   size = c(nbands(x), size(x))
   
-  
-  fn = tempfile(fileext = ".nc")
-  libgdalcubes_eval_cube(x, fn, .pkgenv$compression_level)
-  
+  if ("ncdf_cube" %in% class(x)) {
+    fn = jsonlite::parse_json(as_json(x))$file
+    if (is.null(fn)) {
+      stop("Invalid ncdf cube; missing file reference")
+    }
+  }
+  else {
+    fn = tempfile(fileext = ".nc")
+    write_ncdf(x, fn)
+  }
   
   f <- ncdf4::nc_open(fn)
   # derive name of variables but ignore non three-dimensional variables (e.g. crs)

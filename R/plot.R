@@ -82,8 +82,13 @@ plot.cube  <-
       dtvalues = libgdalcubes_datetime_values(x)
       #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
       
-      # TODO: avoid calling write_ncdf() if x is ncdf_cube
-      if (.pkgenv$use_cube_cache) {
+      if ("ncdf_cube" %in% class(x)) {
+        fn = jsonlite::parse_json(as_json(x))$file
+        if (is.null(fn)) {
+          stop("Invalid ncdf cube; missing file reference")
+        }
+      }
+      else if (.pkgenv$use_cube_cache) {
         j = as_json(x)
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
@@ -371,8 +376,13 @@ plot.cube  <-
         }
       }
   
-      # TODO: avoid calling write_ncdf() if x is ncdf_cube
-      if (.pkgenv$use_cube_cache) {
+      if ("ncdf_cube" %in% class(x)) {
+        fn = jsonlite::parse_json(as_json(x))$file
+        if (is.null(fn)) {
+          stop("Invalid ncdf cube; missing file reference")
+        }
+      }
+      else if (.pkgenv$use_cube_cache) {
         j = as_json(x)
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
