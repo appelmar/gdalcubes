@@ -18,7 +18,7 @@ RUN gdebi -n rstudio-server-1.4.1103-amd64.deb
 RUN useradd -m -d /home/rstudio rstudio && echo "rstudio:rstudio" | chpasswd
 
 COPY $PWD /opt/gdalcubes_R
-RUN cd /opt/gdalcubes_R && git submodule init && git submodule update && R CMD INSTALL .
+RUN cd /opt/gdalcubes_R && R CMD INSTALL .
 
 
 RUN echo "[supervisord]\nnodaemon=true\nlogfile=/opt/supervisord.log\n[program:rstudio-server]\ncommand=rstudio-server start" > /opt/supervisord.conf
