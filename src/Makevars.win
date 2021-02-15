@@ -47,8 +47,11 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
                -I$(RWINLIB_SQLITE) \
                -DR_PACKAGE -DGDALCUBES_NO_SWARM
  
+TARGET = lib$(subst gcc,,$(COMPILED_BY))$(R_ARCH)
 
-PKG_LIBS = -L$(RWINLIB_GDAL)/lib$(R_ARCH)  \
+PKG_LIBS = \
+	-L$(RWINLIB_GDAL)/$(TARGET) \
+	-L$(RWINLIB_GDAL)/lib$(R_ARCH) \
 	-lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
 	-ljson-c -lnetcdf -lmariadbclient -lpq -lpgport -lpgcommon \
 	-lwebp -lcurl -lssh2 -lssl \
