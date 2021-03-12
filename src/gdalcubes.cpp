@@ -3,11 +3,13 @@
 
 // [[Rcpp::plugins("cpp11")]]
 // [[Rcpp::depends(RcppProgress)]]
+// [[Rcpp::depends(RcppThread)]]
 #include <Rcpp.h>
+#include <RcppThread.h>
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <memory>
-#include <thread>
+//#include <thread>
 #include <algorithm>
 
 
@@ -53,17 +55,13 @@ private:
 void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
                                         std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   std::mutex mutex;
-  bool interrupted = false;
-  std::vector<std::thread> workers;
-  std::vector<bool> finished(_nthreads, false);
+  std::vector<RcppThread::Thread> workers;
   for (uint16_t it = 0; it < _nthreads; ++it) {
-    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted](void) {
+    workers.push_back(RcppThread::Thread([this, &c, f, it, &mutex](void) {
       for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
         try {
-          if (!interrupted) {
-            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
-            f(i, dat, mutex);
-          }
+          std::shared_ptr<chunk_data> dat = c->read_chunk(i);
+          f(i, dat, mutex);
         } catch (std::string s) {
           GCBS_ERROR(s);
           continue;
@@ -71,34 +69,13 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
           GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
           continue;
         }
+        RcppThread::checkUserInterrupt();
       }
-      finished[it] = true;
     }));
-  }
-  
-  bool done = false;
-  int i=0;
-  while (!done) {
-    done = true;
-    for (uint16_t it = 0; it < _nthreads; ++it) {
-      done = done && finished[it];
-    }
-    if (!done) {
-      if (Progress::check_abort()) {
-        interrupted = true; // still need to wait for threads to finish current chunk
-      }
-      uint32_t cur_ms = std::min(750, 100 + i*50);
-      std::this_thread::sleep_for(std::chrono::milliseconds(cur_ms));
-    }
-    ++i;
   }
   for (uint16_t it = 0; it < _nthreads; ++it) {
     workers[it].join();
   }
-  if (interrupted) {
-    throw std::string("computations have been interrupted by the user");
-  }
-
 }
 
 
@@ -123,7 +100,8 @@ struct error_handling_r {
   static void do_output() {
     _m_errhandl.lock();
     _defer = false;
-    Rcpp::Rcerr << _err_stream.str() << std::endl;
+    //Rcpp::Rcerr << _err_stream.str() << std::endl;
+    RcppThread::Rcout << _err_stream.str() << std::endl;
     _err_stream.str(""); 
     _m_errhandl.unlock();
   }
@@ -142,7 +120,8 @@ struct error_handling_r {
       _err_stream << "Debug message: "  << msg << where_str << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str() ;
+      //Rcpp::Rcerr << _err_stream.str() ;
+      RcppThread::Rcout << _err_stream.str();
       _err_stream.str(""); 
     }
     _m_errhandl.unlock();
@@ -159,7 +138,8 @@ struct error_handling_r {
       _err_stream << "## " << msg << std::endl;
     }
     if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str();
+      //Rcpp::Rcerr << _err_stream.str();
+      RcppThread::Rcout << _err_stream.str();
       _err_stream.str(""); 
     }
     
