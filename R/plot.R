@@ -17,7 +17,7 @@
 #' @param nrow number of rows for arranging plots with  \code{layout()}, see Details
 #' @param na.color color used to plot NA pixels
 #' @param ... further arguments passed to \code{image.default}
-#' @note If caching is enabled for the package (see \code{\link{gdalcubes_use_cache}}), repeated calls of plot
+#' @note If caching is enabled for the package (see \code{\link{gdalcubes_options}}), repeated calls of plot
 #' for the same data cube will not reevaluate the cube. Instead, the temporary result file will be reused, if possible.
 #' @note Some parts of the function have been copied from the stars package (c) Edzer Pebesma
 #' @details 

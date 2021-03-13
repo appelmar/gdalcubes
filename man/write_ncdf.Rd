@@ -72,7 +72,7 @@ write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile
 \seealso{
 \url{https://www.unidata.ucar.edu/software/netcdf/docs/}
 
-\code{\link{gdalcubes_set_ncdf_compression}}
+\code{\link{gdalcubes_options}}
 
 \code{\link{pack_minmax}}
 }

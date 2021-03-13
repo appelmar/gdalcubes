@@ -651,7 +651,7 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 #' file(s) uses the enhanced netCDF-4 format, supporting chunking and compression.
 #' 
 #' @seealso \url{https://www.unidata.ucar.edu/software/netcdf/docs/}
-#' @seealso \code{\link{gdalcubes_set_ncdf_compression}} 
+#' @seealso \code{\link{gdalcubes_options}} 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
 #' @param overwrite logical; overwrite output file if it already exists
