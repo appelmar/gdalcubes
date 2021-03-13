@@ -8,7 +8,7 @@
     libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
   }
   
-  .pkgenv$compression_level = 0
+  .pkgenv$compression_level = 1
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
   .pkgenv$threads = 1
@@ -16,7 +16,7 @@
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
   if (interactive()) {
-    .pkgenv$show_progress = TRUE
+    .pkgenv$show_progress = FALSE
   }
   else {
     .pkgenv$show_progress = FALSE
