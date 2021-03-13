@@ -197,6 +197,10 @@ libgdalcubes_set_threads <- function(n) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_threads', PACKAGE = 'gdalcubes', n))
 }
 
+libgdalcubes_set_progress <- function(show_progress) {
+    invisible(.Call('_gdalcubes_libgdalcubes_set_progress', PACKAGE = 'gdalcubes', show_progress))
+}
+
 libgdalcubes_set_use_overviews <- function(use_overviews) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
 }

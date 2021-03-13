@@ -15,6 +15,13 @@
   .pkgenv$debug = FALSE
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
+  if (interactive()) {
+    .pkgenv$show_progress = TRUE
+  }
+  else {
+    .pkgenv$show_progress = FALSE
+  }
+  libgdalcubes_set_progress(.pkgenv$show_progress)
 
   #.pkgenv$swarm = NULL
   register_s3_method("stars","st_as_stars", "cube")

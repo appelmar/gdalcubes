@@ -4,6 +4,14 @@
 * new operator `ncdf_cube()` to read data cubes from (intermediate) results
 * new operator `rename_bands()` to change band names
 * image collection creation from STAC API queries with `stac_image_collection()`
+* progress bar can now be disabled with `gdalcubes_options()`
+* new progress bar
+* removed `RcppProgress` package dependency
+* C++ multithreading now uses `RcppThread` 
+* removed `gdalcubes_set_threads()` in favor of `gdalcubes_options()` 
+* removed `gdalcubes_debug_output()` in favor of `gdalcubes_options()` 
+* removed `gdalcubes_set_ncdf_compression()` in favor of `gdalcubes_options()` 
+* removed `gdalcubes_use_cache()` in favor of `gdalcubes_options()` 
 
 
 

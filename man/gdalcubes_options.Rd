@@ -11,7 +11,8 @@ gdalcubes_options(
   debug,
   cache,
   ncdf_write_bounds,
-  use_overview_images
+  use_overview_images,
+  show_progress
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ gdalcubes_options(
 \item{ncdf_write_bounds}{logical; write dimension bounds as additional variables in netCDF files}
 
 \item{use_overview_images}{logical; if FALSE, all images are read on original resolution and existing overviews will be ignored}
+
+\item{show_progress}{logical; if TRUE, a progress bar will be shown for actual computations}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether

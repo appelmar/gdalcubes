@@ -2,14 +2,10 @@
 #include "gdalcubes/src/gdalcubes.h"
 
 // [[Rcpp::plugins("cpp11")]]
-// [[Rcpp::depends(RcppProgress)]]
 // [[Rcpp::depends(RcppThread)]]
 #include <Rcpp.h>
 #include <RcppThread.h>
-#include <progress.hpp>
-#include <progress_bar.hpp>
 #include <memory>
-//#include <thread>
 #include <algorithm>
 
 
@@ -77,12 +73,6 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
     workers[it].join();
   }
 }
-
-
-
-
-
-
 
 
 
@@ -168,43 +158,52 @@ struct progress_simple_R : public progress {
   }
   virtual void finalize() override {
     _m.lock();
-    _rp->update(100);
+    RcppThread::Rcout << std::endl;
     error_handling_r::do_output();
     _m.unlock();
   }
 
+  progress_simple_R() : _p(0) {}
 
-  progress_simple_R() : _p(0), _rp(nullptr) {}
-
-  ~progress_simple_R(){
-    if (_rp) {
-      delete _rp;
-    }
-  }
-  
- 
-  
-  
+  ~progress_simple_R(){}
 
 private:
   
   std::mutex _m;
   double _p;
-  Progress *_rp;
   
   void _set(double p) { // call this function only with a lock on _m
-    //Rcpp::checkUserInterrupt();
-    // if (Progress::check_abort()) {
-    //   throw std::string("Operation has been interrupted by user");
-    // }
-    if (!_rp) {
-      error_handling_r::defer_output();
-      _rp = new Progress(100,true);
-    }
+    
+    //RcppThread::checkUserInterrupt();
+    error_handling_r::defer_output();
     _p = p;
-    _rp->update((int)(_p*100));
+    RcppThread::Rcout << "[";
+    int pp = 50 * p;
+    int i = 0;
+    while (i < pp) {
+      if (i < pp) RcppThread::Rcout << "=";
+      ++i;
+    }
+    RcppThread::Rcout << ">";
+    ++i;
+    while (i < 50) {
+      RcppThread::Rcout << " ";
+      ++i;
+    }
+    RcppThread::Rcout << "] " << int(p * 100.0) << " %\r" << std::flush;
   }
 };
+
+
+struct progress_none_R : public progress {
+  std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
+  void set(double p) override {};
+  void increment(double dp) override {}
+  virtual void finalize() override {}
+  progress_none_R() {}
+};
+
+
 
 // see https://stackoverflow.com/questions/26666614/how-do-i-check-if-an-externalptr-is-null-from-within-r
 // [[Rcpp::export]]
@@ -1598,6 +1597,16 @@ void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vecto
 // [[Rcpp::export]]
 void libgdalcubes_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
+}
+
+// [[Rcpp::export]]
+void libgdalcubes_set_progress(bool show_progress) {
+  if (show_progress) {
+    config::instance()->set_default_progress_bar(std::make_shared<progress_simple_R>());
+  }
+  else {
+    config::instance()->set_default_progress_bar(std::make_shared<progress_none_R>());
+  }
 }
 
 
