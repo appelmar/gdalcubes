@@ -129,7 +129,7 @@ sum(file.size(files)) / 1024^2 # MiB
     ## [1] 1919.118
 
 ``` r
-L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
+L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8_Amazon/L8.db")
 ```
 
 ## Creating data cubes
