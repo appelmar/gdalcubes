@@ -1,7 +1,6 @@
 
 # gdalcubes <img src=".img/logo.svg" align="right" alt="" width="120" />
 
-![R-CMD-check](https://github.com/appelmar/gdalcubes_R/workflows/R-CMD-check/badge.svg)
 [![Build
 Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
 [![AppVeyor build
@@ -19,13 +18,13 @@ and irregular temporal sampling.
 
 # Features
 
-  - Read and process multitemporal, multispectral Earth observation
+-   Read and process multitemporal, multispectral Earth observation
     image collections as *regular raster data cubes* by applying
     on-the-fly reprojection, rescaling, cropping, and resampling.
-  - Work with existing Earth observation imagery on local disks or cloud
+-   Work with existing Earth observation imagery on local disks or cloud
     storage without the need to maintain a 2nd copy of the data.
-  - Apply user-defined R functions on data cubes.
-  - Execute data cube operation chains using parallel processing and
+-   Apply user-defined R functions on data cubes.
+-   Execute data cube operation chains using parallel processing and
     lazy evaluation.
 
 Among others, the package has been successfully used to process data
@@ -70,8 +69,8 @@ libraries are automatically downloaded from
 
 Please install the system libraries e.g. with the package manager of
 your Linux distribution. Also make sure that you are using a recent
-version of GDAL (\>2.3.0). On Ubuntu, the following commands install all
-libraries.
+version of GDAL (&gt;2.3.0). On Ubuntu, the following commands install
+all libraries.
 
     sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
     sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev libudunits2-dev
@@ -188,7 +187,7 @@ x
     ## 
     ## Dimensions:
     ##                 low              high count pixel_size chunk_size
-    ## t              2013              2013     1        P7Y          1
+    ## t              2013              2019     1        P7Y          1
     ## y -764014.387686915 -205014.387686915   559       1000        256
     ## x -6582280.06164712 -5799280.06164712   783       1000        256
     ## 
@@ -262,8 +261,8 @@ x
     ## dimensions : 559, 783, 437697, 7  (nrow, ncol, ncell, nlayers)
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
-    ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +no_defs 
-    ## names      : cube_22054ca59f3b2013, cube_22054ca59f3b2014, cube_22054ca59f3b2015, cube_22054ca59f3b2016, cube_22054ca59f3b2017, cube_22054ca59f3b2018, cube_22054ca59f3b2019
+    ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs 
+    ## names      : cube_4a86d5076049c2013, cube_4a86d5076049c2014, cube_4a86d5076049c2015, cube_4a86d5076049c2016, cube_4a86d5076049c2017, cube_4a86d5076049c2018, cube_4a86d5076049c2019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
@@ -289,7 +288,7 @@ y
     ## x       1 783 -6582280  1000 WGS 84 / Pseudo-Mercator    NA
     ## y       1 559  -205014 -1000 WGS 84 / Pseudo-Mercator    NA
     ## time    1   7       NA    NA                  POSIXct FALSE
-    ##                                                   values    
+    ##                                                   values x/y
     ## x                                                   NULL [x]
     ## y                                                   NULL [y]
     ## time [2013-01-01,2014-01-01),...,[2019-01-01,2020-01-01)
@@ -352,17 +351,17 @@ raster_cube(L8.col, v.overview) %>%
   query_points(x,y,t, v.overview$space$srs)
 ```
 
-    ##         B04      B05
-    ## 1  285.1461 3340.956
-    ## 2       NaN      NaN
-    ## 3  555.7998 3584.006
-    ## 4       NaN      NaN
-    ## 5       NaN      NaN
-    ## 6  636.7866 2886.451
-    ## 7       NaN      NaN
-    ## 8  432.9606 2984.170
-    ## 9  594.7715 3538.645
-    ## 10      NaN      NaN
+    ##         B04       B05
+    ## 1  431.5464  455.1081
+    ## 2  205.4124 2851.5982
+    ## 3  258.9569 2527.4188
+    ## 4  249.7894 3129.4676
+    ## 5  259.1570 3277.0765
+    ## 6       NaN       NaN
+    ## 7       NaN       NaN
+    ## 8  167.8571 2888.4166
+    ## 9       NaN       NaN
+    ## 10      NaN       NaN
 
 ``` r
 raster_cube(L8.col, v.overview) %>%
@@ -372,29 +371,29 @@ raster_cube(L8.col, v.overview) %>%
 
     ## $B04
     ##        2013     2014     2015      2016     2017     2018     2019
-    ## 1       NaN 285.1461      NaN 3418.5358 305.4599 332.0992 323.7041
-    ## 2       NaN      NaN      NaN       NaN      NaN      NaN      NaN
-    ## 3  461.5016 585.7743 555.8947  555.7998 478.8317 593.2361 458.7815
-    ## 4       NaN 206.4800 231.0744  248.3554 243.5485 190.8519      NaN
-    ## 5       NaN      NaN      NaN       NaN      NaN      NaN      NaN
-    ## 6       NaN 276.2733 319.7856 1789.1146 636.7866 735.5462      NaN
+    ## 1  221.9795 431.5464 315.9992  388.2862 490.8458      NaN 188.7578
+    ## 2  214.8850 192.7086 262.5035  205.4124 231.8854 232.1024 918.7678
+    ## 3  282.3089 230.5423 264.7602  263.5589 225.6577 258.9569 196.1888
+    ## 4       NaN 247.1129 287.4146  249.7894 423.3914 257.3268      NaN
+    ## 5       NaN 259.1570      NaN 4162.9515 188.5636 293.4895 216.6074
+    ## 6       NaN      NaN      NaN       NaN      NaN      NaN      NaN
     ## 7       NaN      NaN      NaN       NaN      NaN      NaN      NaN
-    ## 8       NaN 212.6797 266.0789  282.9415 432.9606 226.9705      NaN
-    ## 9  181.8807 207.3071 594.7715  483.4942 214.6374 212.3614 191.6095
+    ## 8  168.4943 203.5209 249.7479  674.5761 169.0721 227.1009 167.8571
+    ## 9       NaN      NaN      NaN       NaN      NaN      NaN      NaN
     ## 10      NaN      NaN      NaN       NaN      NaN      NaN      NaN
     ## 
     ## $B05
-    ##        2013     2014     2015     2016     2017     2018     2019
-    ## 1       NaN 3340.956      NaN 4983.803 3249.180 3223.194 3143.337
-    ## 2       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 3  3180.279 3469.603 3431.100 3584.006 3366.193 3782.534 3470.040
-    ## 4       NaN 3139.709 3095.002 3085.015 3212.694 3051.408      NaN
-    ## 5       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 6       NaN 2936.051 3494.276 3758.901 2886.451 4072.139      NaN
-    ## 7       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 8       NaN 3240.558 3421.281 3254.259 2984.170 3477.211      NaN
-    ## 9  2894.058 3145.320 3538.645 3200.499 3331.730 2929.747 3009.248
-    ## 10      NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ##         2013      2014      2015      2016      2017     2018      2019
+    ## 1   181.1607  455.1081  355.2088  404.1128  385.7219      NaN  126.5602
+    ## 2  2971.5674 2993.9556 3041.8152 2851.5982 3162.7466 3070.888 3082.5338
+    ## 3  2842.5738 2752.5699 2840.5063 2970.3880 2998.9544 2527.419 2808.5265
+    ## 4        NaN 3155.3942 3341.5062 3129.4676 3349.6015 3404.804       NaN
+    ## 5        NaN 3277.0765       NaN 5617.8526 3158.9640 3422.652 3237.7933
+    ## 6        NaN       NaN       NaN       NaN       NaN      NaN       NaN
+    ## 7        NaN       NaN       NaN       NaN       NaN      NaN       NaN
+    ## 8  2841.4007 2891.8610 2888.1330 3083.6199 2823.1811 2904.574 2888.4166
+    ## 9        NaN       NaN       NaN       NaN       NaN      NaN       NaN
+    ## 10       NaN       NaN       NaN       NaN       NaN      NaN       NaN
 
 To compute time series of summary statistics over spatial polygons, we
 need to specify polygon geometries (e.g., as an `sf` object) and specify
@@ -445,26 +444,26 @@ user-defined R functions independently over all chunks, by using the
 
 # Limitations
 
-  - There is no support for vector data cubes
+-   There is no support for vector data cubes
     ([stars](https://cran.r-project.org/package=stars) has vector data
     cubes).
-  - Data cubes are limited to four dimensions
+-   Data cubes are limited to four dimensions
     ([stars](https://cran.r-project.org/package=stars) has cubes with
     any number of dimensions).
-  - Some operations such as `window_time()` do not support user-defined
+-   Some operations such as `window_time()` do not support user-defined
     functions at the moment.
-  - Images must be orthorectified / regularly gridded, Sentinel-1 or
+-   Images must be orthorectified / regularly gridded, Sentinel-1 or
     Sentinel-5P products require additional preprocessing.
-  - Using gdalcubes in distributed computing cloud infrastructures is
+-   Using gdalcubes in distributed computing cloud infrastructures is
     still work in progress.
 
 # Further reading
 
-  - [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
+-   [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
     presented at OpenGeoHub Summer School 2019
-  - [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
+-   [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
     on r-spatial.org
-  - [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the
+-   [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the
     special issue on Earth observation data cubes of the data journal
-  - Some [introductory
+-   Some [introductory
     slides](https://github.com/appelmar/gdalcubes_docs/blob/master/gdalcubes_overview_slides.pdf)

@@ -11,7 +11,8 @@ zonal_statistics(
   out_path = tempfile(fileext = ".gpkg"),
   overwrite = FALSE,
   ogr_layer = NULL,
-  as_stars = FALSE
+  as_stars = FALSE,
+  stars_use_intervals = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ zonal_statistics(
 \item{ogr_layer}{If the input OGR dataset has multiple layers, a layer can be chosen by name}
 
 \item{as_stars}{logical; if TRUE, the created gpkg file will be loaded as a stars vector data cube}
+
+\item{stars_use_intervals}{logical; if TRUE, time dimension of a resulting stars object includes time intervals, otherwise the start date/time of pixels is used as time labels}
 }
 \value{
 character length-one vector containing the path to the resulting GeoPackage file (see Details) or a stars object (if as_stars is TRUE)

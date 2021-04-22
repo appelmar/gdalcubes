@@ -164,7 +164,7 @@ raster_cube(L8.col, v.subarea.yearly) %>%
 
 Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
 
-```{r}
+```{r, warning=FALSE}
 suppressPackageStartupMessages(library(raster))
 raster_cube(L8.col, v.overview) %>%
   select_bands(c("B04","B05")) %>%

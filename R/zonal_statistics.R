@@ -11,6 +11,7 @@
 #' @param overwrite logical; overwrite \code{out_path} if file already exists, defaults to FALSE
 #' @param ogr_layer If the input OGR dataset has multiple layers, a layer can be chosen by name
 #' @param as_stars logical; if TRUE, the created gpkg file will be loaded as a stars vector data cube
+#' @param stars_use_intervals logical; if TRUE, time dimension of a resulting stars object includes time intervals, otherwise the start date/time of pixels is used as time labels 
 #' @return character length-one vector containing the path to the resulting GeoPackage file (see Details) or a stars object (if as_stars is TRUE)
 #' @details 
 #' 
@@ -56,7 +57,7 @@
 #' }
 #' 
 #' @export
-zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL, as_stars = FALSE) {
+zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL, as_stars = FALSE, stars_use_intervals = FALSE) {
 
   
   stopifnot(is.cube(x))
@@ -113,13 +114,23 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
     pst = dimensions(x)$t$pixel_size
     if (endsWith(pst, "Y") || endsWith(pst, "M") || endsWith(pst, "D")) {
       tt = dimension_bounds(x, "d")$t
-      datetime_values = list(start = as.Date(tt$start), end = as.Date(tt$end))
-      class(datetime_values) <- "intervals"
+      if (stars_use_intervals) {
+        datetime_values = list(start = as.Date(tt$start), end = as.Date(tt$end))
+        class(datetime_values) <- "intervals"
+      }
+      else {
+        datetime_values = as.Date(tt$start)
+      }
     }
     else {
       tt = dimension_bounds(x, "S")$t
-      datetime_values = list(start = as.Date(tt$start), end = as.Date(tt$end))
-      class(datetime_values) <- "intervals"
+      if (stars_use_intervals) {
+        datetime_values = list(start = as.POSIXct(tt$start), end = as.POSIXct(tt$end))
+        class(datetime_values) <- "intervals"
+      }
+      else {
+        datetime_values = as.POSIXct(tt$start)
+      }
     }
     
     out = list()
