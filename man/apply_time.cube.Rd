@@ -4,7 +4,7 @@
 \alias{apply_time.cube}
 \title{Apply a user-defined R function over (multi-band) pixel time series}
 \usage{
-\method{apply_time}{cube}(x, names = NULL, keep_bands = FALSE, FUN, ...)
+\method{apply_time}{cube}(x, names = NULL, keep_bands = FALSE, FUN, args = NULL, ...)
 }
 \arguments{
 \item{x}{source data cube}
@@ -15,13 +15,15 @@
 
 \item{FUN}{user-defined R function that is applied on all pixel time series (see Details)}
 
+\item{args}{optional additional arguments to FUN}
+
 \item{...}{not used}
 }
 \value{
 a proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies a user-defined R function over all pixel time series of a data cube. 
+Create a proxy data cube, which applies a user-defined R function over all pixel time series of a data cube.
 In contrast to \code{\link{reduce_time}}, the time dimension is not reduced, i.e., resulting time series
 must have identical length as the input data cube but may contain a different number of bands / variables.
 Example uses of this function may include time series decompositions, cumulative sums / products, smoothing, sophisticated
@@ -29,31 +31,31 @@ NA filling, or similar.
 }
 \details{
 FUN receives a single (multi-band) pixel time series as a matrix with rows corresponding to bands and columns corresponding to time.
-In general, the function must return a matrix with the same number of columns. If re result contains only a single band, it may alternatively return a vector 
+In general, the function must return a matrix with the same number of columns. If re result contains only a single band, it may alternatively return a vector
 with length identical to the length of the input time series (number of columns of the input).
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
-# create image collection from example Landsat data only 
+# create image collection from example Landsat data only
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 }
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
-v = cube_view(extent=list(left=388941.2, right=766552.4, 
+v = cube_view(extent=list(left=388941.2, right=766552.4,
               bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-L8.cube = raster_cube(L8.col, v) 
-L8.cube = select_bands(L8.cube, c("B04", "B05")) 
+L8.cube = raster_cube(L8.col, v)
+L8.cube = select_bands(L8.cube, c("B04", "B05"))
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
 
 # Apply a user defined R function
-L8.ndvi.resid = apply_time(L8.ndvi, names="NDVI_residuals", 
+L8.ndvi.resid = apply_time(L8.ndvi, names="NDVI_residuals",
    FUN=function(x) {
       y = x["NDVI",]
       if (sum(is.finite(y)) < 3) {
@@ -67,5 +69,5 @@ L8.ndvi.resid
 \donttest{
 plot(L8.ndvi.resid)
 }
- 
+
 }

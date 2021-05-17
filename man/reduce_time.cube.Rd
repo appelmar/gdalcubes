@@ -4,7 +4,7 @@
 \alias{reduce_time.cube}
 \title{Reduce a data cube over the time dimension}
 \usage{
-\method{reduce_time}{cube}(x, expr, ..., FUN, names = NULL)
+\method{reduce_time}{cube}(x, expr, ..., FUN, args = NULL, names = NULL)
 }
 \arguments{
 \item{x}{source data cube}
@@ -14,6 +14,8 @@
 \item{...}{optional additional expressions (if \code{expr} is not a vector)}
 
 \item{FUN}{a user-defined R function applied over pixel time series (see Details)}
+
+\item{args}{optional additional arguments to FUN}
 
 \item{names}{character vector; if FUN is provided, names can be used to define the number and name of output bands}
 }
@@ -29,7 +31,7 @@ The function can either apply a built-in reducer if expr is given, or apply a cu
 In the former case, notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 more complex functions or arguments. Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
 
-User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For 
+User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For
 example, one row is the time series of a specific band. FUN should always return a numeric vector with the same number of elements, which will be interpreted
 as bands in the result cube. Notice that it is recommended to specify the names of the output bands as a character vector. If names are missing,
 the number and names of output bands is tried to be derived automatically, which may fail in some cases.
@@ -40,21 +42,21 @@ Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
-# create image collection from example Landsat data only 
+# create image collection from example Landsat data only
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 }
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
-v = cube_view(extent=list(left=388941.2, right=766552.4, 
+v = cube_view(extent=list(left=388941.2, right=766552.4,
               bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-L8.cube = raster_cube(L8.col, v) 
+L8.cube = raster_cube(L8.col, v)
 L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
-L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")  
+L8.rgb.median = reduce_time(L8.rgb, "median(B02)", "median(B03)", "median(B04)")
 L8.rgb.median
 
 \donttest{

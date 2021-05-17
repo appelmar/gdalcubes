@@ -4,7 +4,7 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE, ..., FUN)
+\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE, ..., FUN, args = NULL)
 }
 \arguments{
 \item{x}{source data cube}
@@ -18,6 +18,8 @@
 \item{...}{not used}
 
 \item{FUN}{user-defined R function that is applied on all pixels (see Details)}
+
+\item{args}{optional additional arguments to FUN}
 }
 \value{
 a proxy data cube object
@@ -38,22 +40,22 @@ result vectors will be interpreted as bands in the result data cube.
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
-# create image collection from example Landsat data only 
+# create image collection from example Landsat data only
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 }
 
 # 1. Apply a C expression
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
-v = cube_view(extent=list(left=388941.2, right=766552.4, 
+v = cube_view(extent=list(left=388941.2, right=766552.4,
               bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-L8.cube = raster_cube(L8.col, v) 
-L8.cube = select_bands(L8.cube, c("B04", "B05")) 
-L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
+L8.cube = raster_cube(L8.col, v)
+L8.cube = select_bands(L8.cube, c("B04", "B05"))
+L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
 L8.ndvi
 
 \donttest{
@@ -61,7 +63,7 @@ plot(L8.ndvi)
 }
 
 # 2. Apply a user defined R function
-L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy", 
+L8.ndvi.noisy = apply_pixel(L8.cube, names="NDVI_noisy",
    FUN=function(x) {
        rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
    })
@@ -70,5 +72,5 @@ L8.ndvi.noisy
 \donttest{
 plot(L8.ndvi.noisy)
 }
- 
+
 }
