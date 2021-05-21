@@ -1,4 +1,3 @@
-
 serialize_function <- function(f, args) {
   stopifnot(is.function(f))
   #src <- attr(f,"srcref", exact = TRUE)
@@ -14,11 +13,17 @@ serialize_function <- function(f, args) {
       stop('Please do not use "=" in your function assignment. Use args to supply arguments insted')
     }
     for(arg in names(args)){
-      f[1] = gsub(arg, paste0(arg,"=", args[arg]), f[1])
+      if(is.character(args[[arg]])){
+        val = paste0('\"', args[arg], '\"')
+        f[1] = gsub(arg, paste0(arg,"=", val), f[1])
+      } else {
+        f[1] = gsub(arg, paste0(arg,"=", args[[arg]]), f[1])
+      }
     }
     return(paste(f, collapse = "\n"))
   }
 }
+
 
 #' Apply an R function on chunks of a data cube
 #'
