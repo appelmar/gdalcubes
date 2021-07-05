@@ -1660,7 +1660,7 @@ void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame 
     
     Rcpp::CharacterVector band_name =  bands["name"];
     Rcpp::IntegerVector band_id = bands["id"];
-    for (uint32_t i=0; i<bands.nrows(); ++i) {
+    for (int32_t i=0; i<bands.nrows(); ++i) {
       x->insert_band(band_id[i], Rcpp::as<std::string>(band_name[i])); // TODO add further data if available
     }
 
@@ -1672,7 +1672,7 @@ void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame 
     Rcpp::NumericVector image_right =images["right"];
     Rcpp::CharacterVector image_datetime = images["datetime"];
     Rcpp::CharacterVector image_proj = images["proj"];
-    for (uint32_t i=0; i<images.nrows(); ++i) {
+    for (int32_t i=0; i<images.nrows(); ++i) {
       x->insert_image(image_id[i], Rcpp::as<std::string>(image_name[i]), image_left[i], image_top[i],
                          image_bottom[i], image_right[i], Rcpp::as<std::string>(image_datetime[i]), Rcpp::as<std::string>(image_proj[i]));
     }
@@ -1681,13 +1681,13 @@ void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame 
     Rcpp::IntegerVector gdalrefs_band_id = gdalrefs["band_id"];
     Rcpp::CharacterVector gdalrefs_descriptor = gdalrefs["descriptor"];
     Rcpp::IntegerVector gdalrefs_band_num = gdalrefs["band_num"];
-    for (uint32_t i=0; i<gdalrefs.nrows(); ++i) {
+    for (int32_t i=0; i<gdalrefs.nrows(); ++i) {
       x->insert_dataset(gdalrefs_image_id[i],gdalrefs_band_id[i], Rcpp::as<std::string>(gdalrefs_descriptor[i]), gdalrefs_band_num[i]);
     }
     
     
     if (image_md.nrows() > 0) {
-      for (uint32_t i=0; i<image_md.nrows(); ++i) {
+      for (int32_t i=0; i<image_md.nrows(); ++i) {
         Rcpp::IntegerVector image_md_image_id = image_md["image_id"];
         Rcpp::CharacterVector image_md_key = image_md["key"];
         Rcpp::CharacterVector image_md_value = image_md["value"];
