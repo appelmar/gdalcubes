@@ -51,7 +51,6 @@ License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.1.1
 LinkingTo: Rcpp, RcppThread
 Suggests: 
