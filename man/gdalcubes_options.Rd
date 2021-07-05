@@ -50,4 +50,5 @@ Passing no arguments will return the current options as a list.
 \examples{
 gdalcubes_options(threads=4) # set the number of threads
 gdalcubes_options() # print current options
+gdalcubes_options(threads=1) # reset
 }

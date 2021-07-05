@@ -25,6 +25,7 @@
 #' @examples 
 #' gdalcubes_options(threads=4) # set the number of threads
 #' gdalcubes_options() # print current options
+#' gdalcubes_options(threads=1) # reset
 #' @export
 gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
                               use_overview_images, show_progress) {
