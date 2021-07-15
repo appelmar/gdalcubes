@@ -16,7 +16,7 @@
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
   if (interactive()) {
-    .pkgenv$show_progress = FALSE
+    .pkgenv$show_progress = TRUE
   }
   else {
     .pkgenv$show_progress = FALSE

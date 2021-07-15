@@ -9,6 +9,7 @@
 ^src/gdalcubes/\.clang-format$
 ^src/gdalcubes/\.dockerignore$
 ^src/gdalcubes/\.travis.yml$
+^src/gdalcubes/\.github$
 ^src/gdalcubes/\.git$
 ^vignettes/MOD11A2$
 ^vignettes/MOD11A2\.db$
@@ -70,6 +71,7 @@
 ^Dockerfile$
 ^.*Dockerfile$
 ^\.dockerignore$
-^.github$
-^.pkgdown.R$
-^.test$
+^\.docker$
+^\.github$
+^\.pkgdown.R$
+^\.test.*$

@@ -2,10 +2,12 @@
 #include "gdalcubes/src/gdalcubes.h"
 
 // [[Rcpp::plugins("cpp11")]]
-// [[Rcpp::depends(RcppThread)]]
+// [[Rcpp::depends(RcppProgress)]]
 #include <Rcpp.h>
-#include <RcppThread.h>
+#include <progress.hpp>
+#include <progress_bar.hpp>
 #include <memory>
+#include <thread>
 #include <algorithm>
 
 
@@ -51,13 +53,17 @@ private:
 void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
                                         std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   std::mutex mutex;
-  std::vector<RcppThread::Thread> workers;
+  bool interrupted = false;
+  std::vector<std::thread> workers;
+  std::vector<bool> finished(_nthreads, false);
   for (uint16_t it = 0; it < _nthreads; ++it) {
-    workers.push_back(RcppThread::Thread([this, &c, f, it, &mutex](void) {
+    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted](void) {
       for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
         try {
-          std::shared_ptr<chunk_data> dat = c->read_chunk(i);
-          f(i, dat, mutex);
+          if (!interrupted) {
+            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
+            f(i, dat, mutex);
+          }
         } catch (std::string s) {
           GCBS_ERROR(s);
           continue;
@@ -65,12 +71,32 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
           GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
           continue;
         }
-        RcppThread::checkUserInterrupt();
       }
+      finished[it] = true;
     }));
+  }
+  
+  bool done = false;
+  int i=0;
+  while (!done) {
+    done = true;
+    for (uint16_t it = 0; it < _nthreads; ++it) {
+      done = done && finished[it];
+    }
+    if (!done) {
+      if (Progress::check_abort()) {
+        interrupted = true; // still need to wait for threads to finish current chunk
+      }
+      uint32_t cur_ms = std::min(500, 50 + i*50);
+      std::this_thread::sleep_for(std::chrono::milliseconds(cur_ms));
+    }
+    ++i;
   }
   for (uint16_t it = 0; it < _nthreads; ++it) {
     workers[it].join();
+  }
+  if (interrupted) {
+    throw std::string("computations have been interrupted by the user");
   }
 }
 
@@ -90,8 +116,7 @@ struct error_handling_r {
   static void do_output() {
     _m_errhandl.lock();
     _defer = false;
-    //Rcpp::Rcerr << _err_stream.str() << std::endl;
-    RcppThread::Rcout << _err_stream.str() << std::endl;
+    Rcpp::Rcerr << _err_stream.str() << std::endl;
     _err_stream.str(""); 
     _m_errhandl.unlock();
   }
@@ -110,8 +135,7 @@ struct error_handling_r {
       _err_stream << "Debug message: "  << msg << where_str << std::endl;
     }
     if (!_defer) {
-      //Rcpp::Rcerr << _err_stream.str() ;
-      RcppThread::Rcout << _err_stream.str();
+      Rcpp::Rcerr << _err_stream.str() ;
       _err_stream.str(""); 
     }
     _m_errhandl.unlock();
@@ -128,8 +152,7 @@ struct error_handling_r {
       _err_stream << "## " << msg << std::endl;
     }
     if (!_defer) {
-      //Rcpp::Rcerr << _err_stream.str();
-      RcppThread::Rcout << _err_stream.str();
+      Rcpp::Rcerr << _err_stream.str();
       _err_stream.str(""); 
     }
     
@@ -158,50 +181,72 @@ struct progress_simple_R : public progress {
   }
   virtual void finalize() override {
     _m.lock();
-    RcppThread::Rcout << std::endl;
+    _rp->update(100);
     error_handling_r::do_output();
     _m.unlock();
   }
 
-  progress_simple_R() : _p(0) {}
-
-  ~progress_simple_R(){}
+  progress_simple_R() : _p(0), _rp(nullptr) {}
+  
+  ~progress_simple_R(){
+    if (_rp) {
+      delete _rp;
+    }
+  }
 
 private:
   
   std::mutex _m;
   double _p;
+  Progress *_rp;
   
   void _set(double p) { // call this function only with a lock on _m
     
-    //RcppThread::checkUserInterrupt();
-    error_handling_r::defer_output();
+    //Rcpp::checkUserInterrupt();
+    // if (Progress::check_abort()) {
+    //   throw std::string("Operation has been interrupted by user");
+    // }
+    if (!_rp) {
+      error_handling_r::defer_output();
+      _rp = new Progress(100,true);
+    }
+    
     _p = p;
-    RcppThread::Rcout << "[";
-    int pp = 50 * p;
-    int i = 0;
-    while (i < pp) {
-      if (i < pp) RcppThread::Rcout << "=";
-      ++i;
-    }
-    RcppThread::Rcout << ">";
-    ++i;
-    while (i < 50) {
-      RcppThread::Rcout << " ";
-      ++i;
-    }
-    RcppThread::Rcout << "] " << int(p * 100.0) << " %\r" << std::flush;
+    _rp->update((int)(_p*100));
   }
 };
 
 
 struct progress_none_R : public progress {
   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
-  void set(double p) override {};
+  
+  void set(double p) override {}
+  
   void increment(double dp) override {}
-  virtual void finalize() override {}
-  progress_none_R() {}
+  virtual void finalize() override {
+    _rp->update(100);
+  }
+  progress_none_R() :  _rp(nullptr) {
+    // instance is needed for Progress::check_abort()
+    _rp = new Progress(100,false);
+  }
+  ~progress_none_R(){
+    if (_rp) {
+      delete _rp;
+    }
+  }
+  
+private:
+  Progress *_rp;
 };
+// 
+// struct progress_none_R : public progress {
+//   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
+//   void set(double p) override {};
+//   void increment(double dp) override {}
+//   virtual void finalize() override {}
+//   progress_none_R() {}
+// };
 
 
 

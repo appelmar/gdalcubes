@@ -17,7 +17,7 @@
 #' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title legend lines
 #' @importFrom stats quantile rnorm
 #' @importFrom utils head download.file
-#' @import jsonlite ncdf4 
+#' @import RcppProgress jsonlite ncdf4 
 #' 
 #' 
 #' 
