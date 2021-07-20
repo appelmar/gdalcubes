@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(gdalcubes, 0.4.0, marius.appel@uni-muenster.de)
+AC_INIT(gdalcubes, 0.4.1, marius.appel@uni-muenster.de)
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -379,8 +379,7 @@ if test [ -n "$proj_lib_path" ] ; then
     AC_SUBST([PROJ_LIBS], ["-L${proj_lib_path} ${INPKG_LIBS} -lproj"])
 else
   if test "${proj_config_ok}" = yes; then
-    PROJ_LIB_PATH=`${PROJ_CONFIG} --libs`
-    if [ `uname` = "Darwin" ]; then
+    if test `uname` = "Darwin"; then
       PROJ_LIB_PATH=`${PROJ_CONFIG} --libs --static`
     else
       PROJ_LIB_PATH=`${PROJ_CONFIG} --libs`

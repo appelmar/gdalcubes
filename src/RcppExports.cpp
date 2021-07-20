@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // libgdalcubes_is_null
 Rcpp::LogicalVector libgdalcubes_is_null(SEXP pointer);
 RcppExport SEXP _gdalcubes_libgdalcubes_is_null(SEXP pointerSEXP) {

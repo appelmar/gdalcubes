@@ -1,3 +1,7 @@
+# gdalcubes 0.4.1 (2021-07-20)
+
+* fix build issues on MacOS
+
 
 # gdalcubes 0.4.0 (2021-07-08)
 
