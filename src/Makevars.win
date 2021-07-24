@@ -3,7 +3,9 @@ RWINLIB_GDAL = ../windows/gdal3-3.2.1
 RWINLIB_NETCDF = ../windows/netcdf-4.4.1.1-dap
 RWINLIB_SQLITE = ../windows/sqlite-amalgamation-3260000
 
-OBJECTS =   gdalcubes/src/apply_pixel.o \
+STATLIB = gdalcubes/libgdalcubes.a
+
+LIBGDALCUBES =   gdalcubes/src/apply_pixel.o \
             gdalcubes/src/config.o \
             gdalcubes/src/collection_format.o \
             gdalcubes/src/datetime.o \
@@ -38,9 +40,7 @@ OBJECTS =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/external/tinyexpr/tinyexpr.o \
 			gdalcubes/src/external/tiny-process-library/process.o \
 			gdalcubes/src/external/tiny-process-library/process_win.o \
-			gdalcubes/src/external/json11/json11.o \
-			gdalcubes.o \
-			RcppExports.o
+			gdalcubes/src/external/json11/json11.o
 
 PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
                -I$(RWINLIB_GDAL)/include/netcdf-4.7.3 \
@@ -50,8 +50,9 @@ PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
 TARGET = lib$(subst gcc,,$(COMPILED_BY))$(R_ARCH)
 
 PKG_LIBS = \
+	-Lgdalcubes -lgdalcubes \
 	-L$(RWINLIB_GDAL)/$(TARGET) \
-	-L$(RWINLIB_GDAL)/lib$(R_ARCH) \
+	-L$(RWINLIB_GDAL)/lib$(R_ARCH)$(CRT) \
 	-lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
 	-ljson-c -lnetcdf -lmariadbclient -lpq -lpgport -lpgcommon \
 	-lwebp -lcurl -lssh2 -lssl \
@@ -61,9 +62,13 @@ PKG_LIBS = \
 	-lodbc32 -lodbccp32 -liconv -lpsapi -lwldap32 -lsecur32 -lgdi32 -lnormaliz \
 	-lcrypto -lcrypt32 -lws2_32 -lshlwapi
 	
-
-
 all: clean winlibs
+	
+$(SHLIB): $(STATLIB)
+
+$(STATLIB): $(LIBGDALCUBES)
+
+$(LIBGDALCUBES): winlibs
 
 CXX_STD=CXX11
 
@@ -74,9 +79,6 @@ winlibs:
 	cp -r $(RWINLIB_GDAL)/share/proj ../inst/
 
 clean:
-	rm -f $(SHLIB) $(OBJECTS)
+	rm -f $(SHLIB) $(STATLIB) $(OBJECTS) $(LIBGDALCUBES)
 	
 .PHONY: all winlibs clean
-	
-	
-	

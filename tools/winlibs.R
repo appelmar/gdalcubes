@@ -4,9 +4,8 @@ if(getRversion() < "3.3.0") {
 
 # For details see: https://github.com/rwinlib/gdal2
 # For details see: https://github.com/rwinlib/netcdf
-if(getRversion() < "3.3.0") setInternet2()
 
-if(!file.exists("../windows/gdal2-2.2.3/include/gdal/gdal.h")){
+if(!file.exists("../windows/gdal3-3.2.1/include/gdal-3.2.1/gdal.h")){
   download.file("https://github.com/rwinlib/gdal3/archive/v3.2.1.zip", "lib.zip", quiet = TRUE)
   dir.create("../windows", showWarnings = FALSE)
   unzip("lib.zip", exdir = "../windows")
