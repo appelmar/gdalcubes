@@ -51,19 +51,7 @@ jobs:
           brew install curl
           brew install libgit2
           brew install imagemagick@6
-          brew install gdal
-          cat <<EOT >> .Renviron
-          PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
-          PROJ_LIB=/usr/local/opt/proj/share/proj/
-          # for installing XML package from source
-          XML_CONFIG=/usr/local/opt/libxml2/bin/xml2-config
-          EOT
-          cat <<EOT >> .Rprofile
-          config_args <- c("gdalcubes" = "--with-proj-lib=/usr/local/lib/", "sf" = "--with-proj-lib=/usr/local/lib/")
-          r <- getOption("repos")
-          r["CRAN"] <- "https://cran.rstudio.com"
-          options(configure.args = config_args, repos = r)
-          EOT
+          brew install gdal proj geos
       - name: Query dependencies
         run: |
           install.packages('remotes')
