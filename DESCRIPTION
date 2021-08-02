@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
 Version: 0.4.1
-Date: 2021-07-22
+Date: 2021-07-29
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -15,6 +15,10 @@ Authors@R: c(
     person(given = "Roger",
            family = "Bivand",
            role = "ctb"),
+    person(given = "Jeroen",
+           family = "Ooms",
+           role = "ctb",
+           comment = c(ORCID = "0000-0002-4035-0289")),        
     person(given = "Lewis",
            family = "Van Winkle",
            role = "cph"),
