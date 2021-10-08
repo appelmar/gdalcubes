@@ -9,7 +9,7 @@ aggregate_time(cube, dt, method = "mean")
 \arguments{
 \item{cube}{source data cube}
 
-\item{method}{aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod"}
+\item{method}{aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod", "var", and "sd"}
 }
 \description{
 Create a proxy data cube, which applies an aggregation function over pixel time series to lower temporal resolution.
@@ -38,7 +38,7 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
               srs="EPSG:32618", nx = 497, ny=526, dt="P3M", aggregation = "median")
 L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
 L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
-L8.two_monthly = aggregate_time(L8.rgb, "P2M", "min")
+L8.two_monthly = aggregate_time(L8.rgb, "P6M", "min")
 L8.two_monthly
 
 \donttest{
