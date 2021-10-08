@@ -31,6 +31,7 @@
 #' 
 #' 
 #' @param cube source data cube
+#' @param dt character; new temporal resolution, datetime period string, e.g. "P1M" 
 #' @param method aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod", "var", and "sd"
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

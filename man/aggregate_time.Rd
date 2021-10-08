@@ -9,6 +9,8 @@ aggregate_time(cube, dt, method = "mean")
 \arguments{
 \item{cube}{source data cube}
 
+\item{dt}{character; new temporal resolution, datetime period string, e.g. "P1M"}
+
 \item{method}{aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod", "var", and "sd"}
 }
 \description{

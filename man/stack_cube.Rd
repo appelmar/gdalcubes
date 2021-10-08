@@ -63,13 +63,17 @@ This function returns a proxy object, i.e., it will not start any computations b
 }
 \examples{
 # toy example, repeating the same image as a daily time series
-L8_file_nir <- system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B5.TIF", package = "gdalcubes")
+L8_file_nir <- 
+system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B5.TIF",
+            package = "gdalcubes")
 files = rep(L8_file_nir, 10)
 datetime = as.Date("2018-11-22") + 1:10
 stack_cube(files, datetime, band_names = "B05") 
 
 # using a second band from different files
-L8_file_red <- system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B4.TIF", package = "gdalcubes")
+L8_file_red <- 
+system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B4.TIF",
+            package = "gdalcubes")
 files = rep(c(L8_file_nir, L8_file_red), each = 10)
 datetime = rep(as.Date("2018-11-22") + 1:10, 2)
 bands = rep(c("B5","B4"), each = 10)
