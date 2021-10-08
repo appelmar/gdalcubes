@@ -59,6 +59,98 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=c(1, 256, 25
 }
 
 
+
+#' Create a data cube from a set of images with the same spatial extent and spatial reference system
+#'  
+#' Create a spatiotemporal data cube directly from images with identical spatial extent and spatial reference system, similar
+#' to \link[raster]{stack} with an additional dimension supporting both, time and multiple bands / variables.
+#'  
+#' @details 
+#' This function creates a four-dimensional (space, time, bands / variables) raster data cube from a 
+#' set of provided files without the need to create an image collection before. This is  possible if all images
+#' have the same spatial extent and spatial reference system and can be used for two different file organizations:
+#' 
+#' 1. If all image files share the same bands / variables, the \code{bands} argument can be ignored (default NULL) can 
+#' names of the bands can be specified using the \code{band_names} argument.
+#' 
+#' 2. If image files represent different band / variable  (e.g. individual files for red, green, and blue channels), the \code{bands}
+#' argument must be used to define the corresponding band / variable. Notice that in this case all files are expected to 
+#' represent exactly one variable / band at one point in datetime. It is not possible to combine files with different
+#' numbers of variables / bands. If image files for different bands have different pixel sizes, the smallest size is used
+#' by default.
+#' 
+#' Notice that to avoid opening all image files in advance,no automatic check whether all images share the 
+#' spatial extent and spatial reference system is performed.
+#' 
+#' @param x character vector where items point to image files
+#' @param datetime_values vector of type character, Date, or POSIXct with recording date of images
+#' @param bands optional character vector defining the band or spectral band of each item in x, if files relate to different spectral bands or variables
+#' @param band_names name of bands, only used if bands is NULL, i.e., if all files contain the same spectral band(s) / variable(s)
+#' @param chunking vector of length 3 defining the size of data cube chunks in the order time, y, x.
+#' @param dx optional target pixel size in x direction, by default (NULL) the original or highest resolution of images is used 
+#' @param dy optional target pixel size in y direction, by default (NULL) the original or highest resolution of images is used 
+#' @return A proxy data cube object
+#' @examples 
+#' # toy example, repeating the same image as a daily time series
+#' L8_file_nir <- system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B5.TIF", package = "gdalcubes")
+#' files = rep(L8_file_nir, 10)
+#' datetime = as.Date("2018-11-22") + 1:10
+#' stack_cube(files, datetime, band_names = "B05") 
+#' 
+#' # using a second band from different files
+#' L8_file_red <- system.file("L8NY18/LC08_L1TP_014032_20181122_20181129_01_T1/LC08_L1TP_014032_20181122_B4.TIF", package = "gdalcubes")
+#' files = rep(c(L8_file_nir, L8_file_red), each = 10)
+#' datetime = rep(as.Date("2018-11-22") + 1:10, 2)
+#' bands = rep(c("B5","B4"), each = 10)
+#' stack_cube(files, datetime, bands = bands)         
+#'
+#' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.                     
+#' @export
+stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chunking = c(1, 256, 256), dx=NULL, dy=NULL) {
+  
+  
+  if (length(datetime_values) != length(x)) {
+    stop("x and datetime_values have different length")
+  }
+  
+  if (!is.null(bands)) {
+    if (length(bands) != length(x)) {
+      stop("x and bands have different length")
+    }
+  }
+  stopifnot(length(chunking) == 3)
+  
+  if (!is.character(datetime_values)) {
+    datetime_values = as.character(datetime_values)
+  }
+  
+  if (!is.null(bands) & !is.null(band_names)) {
+    warning("Ignoring band_names because bands have been defined per file")
+  }
+  
+  
+  
+  if (is.null(bands)) {
+    bands = character(0)
+  }
+  if (is.null(band_names)) {
+    band_names = character(0)
+  }
+  if (is.null(dx)) {
+    dx = -1.0
+  }
+  if (is.null(dy)) {
+    dy = -1.0
+  }
+ 
+  x = libgdalcubes_create_simple_cube(files, datetime_values, bands, band_names, dx, dy, as.integer(chunking))
+  class(x) <- c("simple_cube", "cube", "xptr")
+  return(x)
+}
+
+
+
+
 #' Create a mask for images in a raster data cube 
 #'
 #' Create an image mask based on a band and provided values to filter pixels of images 

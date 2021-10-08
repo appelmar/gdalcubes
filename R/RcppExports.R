@@ -177,8 +177,16 @@ libgdalcubes_create_stream_cube <- function(pin, cmd) {
     .Call('_gdalcubes_libgdalcubes_create_stream_cube', PACKAGE = 'gdalcubes', pin, cmd)
 }
 
+libgdalcubes_create_simple_cube <- function(files, datetime_values, bands, band_names, dx, dy, chunk_sizes) {
+    .Call('_gdalcubes_libgdalcubes_create_simple_cube', PACKAGE = 'gdalcubes', files, datetime_values, bands, band_names, dx, dy, chunk_sizes)
+}
+
 libgdalcubes_create_fill_time_cube <- function(pin, method) {
     .Call('_gdalcubes_libgdalcubes_create_fill_time_cube', PACKAGE = 'gdalcubes', pin, method)
+}
+
+libgdalcubes_create_aggregate_time_cube <- function(pin, dt, method) {
+    .Call('_gdalcubes_libgdalcubes_create_aggregate_time_cube', PACKAGE = 'gdalcubes', pin, dt, method)
 }
 
 libgdalcubes_query_points <- function(pin, px, py, pt, srs) {

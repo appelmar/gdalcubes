@@ -472,8 +472,8 @@ Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string 
   if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
     cv.dt(duration::from_string(tmp));
-    cv.t0().unit() = cv.dt().dt_unit; 
-    cv.t1().unit() = cv.dt().dt_unit; 
+    cv.t0().unit(cv.dt().dt_unit); 
+    cv.t1().unit(cv.dt().dt_unit); 
   }
   
   if (view["aggregation"] != R_NilValue) {
@@ -920,8 +920,8 @@ SEXP libgdalcubes_create_view(SEXP v) {
   if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
     cv.dt(duration::from_string(tmp));
-    cv.t0().unit() = cv.dt().dt_unit; 
-    cv.t1().unit() = cv.dt().dt_unit; 
+    cv.t0().unit(cv.dt().dt_unit); 
+    cv.t1().unit(cv.dt().dt_unit); 
   }
   
   if (view["aggregation"] != R_NilValue) {
@@ -1139,8 +1139,8 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
       if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
         std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
         cv.dt(duration::from_string(tmp));
-        cv.t0().unit() = cv.dt().dt_unit; 
-        cv.t1().unit() = cv.dt().dt_unit; 
+        cv.t0().unit(cv.dt().dt_unit); 
+        cv.t1().unit(cv.dt().dt_unit); 
       }
       
       if (view["aggregation"] != R_NilValue) {
@@ -1571,6 +1571,27 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
   }
 }
 
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_simple_cube(std::vector<std::string> files,std::vector<std::string> datetime_values, 
+                                     std::vector<std::string> bands,  std::vector<std::string> band_names, 
+                                     double dx, double dy,  Rcpp::IntegerVector chunk_sizes) {
+  try {
+    std::shared_ptr<simple_cube>* x = new std::shared_ptr<simple_cube>( simple_cube::create(files, datetime_values,
+                                                                                            bands, band_names,
+                                                                                            dx, dy));
+    (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    Rcpp::XPtr< std::shared_ptr<simple_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+
 // [[Rcpp::export]]
 SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
   try {
@@ -1584,6 +1605,19 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
   }
 }
 
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::shared_ptr<aggregate_time_cube>* x = new std::shared_ptr<aggregate_time_cube>( aggregate_time_cube::create(*aa, dt, method));
+    Rcpp::XPtr< std::shared_ptr<aggregate_time_cube> > p(x, true) ;
+    return p;
+  } 
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 // [[Rcpp::export]]

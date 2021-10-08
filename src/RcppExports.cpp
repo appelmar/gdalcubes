@@ -549,6 +549,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_simple_cube
+SEXP libgdalcubes_create_simple_cube(std::vector<std::string> files, std::vector<std::string> datetime_values, std::vector<std::string> bands, std::vector<std::string> band_names, double dx, double dy, Rcpp::IntegerVector chunk_sizes);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_simple_cube(SEXP filesSEXP, SEXP datetime_valuesSEXP, SEXP bandsSEXP, SEXP band_namesSEXP, SEXP dxSEXP, SEXP dySEXP, SEXP chunk_sizesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type files(filesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type datetime_values(datetime_valuesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type bands(bandsSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type band_names(band_namesSEXP);
+    Rcpp::traits::input_parameter< double >::type dx(dxSEXP);
+    Rcpp::traits::input_parameter< double >::type dy(dySEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chunk_sizes(chunk_sizesSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_simple_cube(files, datetime_values, bands, band_names, dx, dy, chunk_sizes));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_fill_time_cube
 SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_fill_time_cube(SEXP pinSEXP, SEXP methodSEXP) {
@@ -558,6 +575,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
     rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_fill_time_cube(pin, method));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_create_aggregate_time_cube
+SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_aggregate_time_cube(SEXP pinSEXP, SEXP dtSEXP, SEXP methodSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dt(dtSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_aggregate_time_cube(pin, dt, method));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -737,7 +767,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_libgdalcubes_write_chunks_ncdf, 4},
     {"_gdalcubes_libgdalcubes_write_tif", (DL_FUNC) &_gdalcubes_libgdalcubes_write_tif, 8},
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
+    {"_gdalcubes_libgdalcubes_create_simple_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_simple_cube, 7},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
+    {"_gdalcubes_libgdalcubes_create_aggregate_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_aggregate_time_cube, 3},
     {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
     {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},

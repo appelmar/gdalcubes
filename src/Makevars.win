@@ -5,12 +5,13 @@ RWINLIB_SQLITE = ../windows/sqlite-amalgamation-3260000
 
 STATLIB = gdalcubes/libgdalcubes.a
 
-LIBGDALCUBES =   gdalcubes/src/apply_pixel.o \
-            gdalcubes/src/config.o \
-            gdalcubes/src/collection_format.o \
-            gdalcubes/src/datetime.o \
-            gdalcubes/src/filesystem.o \
-            gdalcubes/src/utils.o \
+LIBGDALCUBES = gdalcubes/src/aggregate_time.o \
+			gdalcubes/src/apply_pixel.o \
+      gdalcubes/src/config.o \
+      gdalcubes/src/collection_format.o \
+      gdalcubes/src/datetime.o \
+      gdalcubes/src/filesystem.o \
+      gdalcubes/src/utils.o \
 			gdalcubes/src/cube.o \
 			gdalcubes/src/cube_factory.o \
 			gdalcubes/src/error.o \
@@ -28,6 +29,7 @@ LIBGDALCUBES =   gdalcubes/src/apply_pixel.o \
 			gdalcubes/src/filter_geom.o \
 			gdalcubes/src/fill_time.o \
 			gdalcubes/src/rename_bands.o \
+			gdalcubes/src/simple_cube.o \
 			gdalcubes/src/stream.o \
 			gdalcubes/src/stream_reduce_time.o \
 			gdalcubes/src/stream_reduce_space.o \
