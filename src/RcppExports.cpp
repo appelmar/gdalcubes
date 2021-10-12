@@ -579,15 +579,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // libgdalcubes_create_aggregate_time_cube
-SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method);
-RcppExport SEXP _gdalcubes_libgdalcubes_create_aggregate_time_cube(SEXP pinSEXP, SEXP dtSEXP, SEXP methodSEXP) {
+SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method, uint32_t fact);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_aggregate_time_cube(SEXP pinSEXP, SEXP dtSEXP, SEXP methodSEXP, SEXP factSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::string >::type dt(dtSEXP);
     Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_aggregate_time_cube(pin, dt, method));
+    Rcpp::traits::input_parameter< uint32_t >::type fact(factSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_aggregate_time_cube(pin, dt, method, fact));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -769,7 +770,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_stream_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_cube, 2},
     {"_gdalcubes_libgdalcubes_create_simple_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_simple_cube, 7},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
-    {"_gdalcubes_libgdalcubes_create_aggregate_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_aggregate_time_cube, 3},
+    {"_gdalcubes_libgdalcubes_create_aggregate_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_aggregate_time_cube, 4},
     {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
     {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},

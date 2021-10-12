@@ -4,7 +4,7 @@
 \alias{aggregate_time}
 \title{Aggregate data cube time series to lower temporal resolution}
 \usage{
-aggregate_time(cube, dt, method = "mean")
+aggregate_time(cube, dt, method = "mean", fact = NULL)
 }
 \arguments{
 \item{cube}{source data cube}
@@ -12,6 +12,8 @@ aggregate_time(cube, dt, method = "mean")
 \item{dt}{character; new temporal resolution, datetime period string, e.g. "P1M"}
 
 \item{method}{aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod", "var", and "sd"}
+
+\item{fact}{simple integer factor defining how many cells become aggregated to a single new cell, can be used instead of dt}
 }
 \description{
 Create a proxy data cube, which applies an aggregation function over pixel time series to lower temporal resolution.
@@ -23,8 +25,6 @@ The size of the cube may be expanded automatically if the original temporal exte
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-
-This function is experimental and only supports method = "mean" as a proof of concept.
 }
 \examples{
 # create image collection from example Landsat data only 

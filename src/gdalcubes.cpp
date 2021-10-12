@@ -1607,10 +1607,17 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method) {
+SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method, uint32_t fact=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    std::shared_ptr<aggregate_time_cube>* x = new std::shared_ptr<aggregate_time_cube>( aggregate_time_cube::create(*aa, dt, method));
+    
+    std::shared_ptr<aggregate_time_cube>* x;
+    if (fact >= 1) {
+      x = new std::shared_ptr<aggregate_time_cube>(aggregate_time_cube::create(*aa, fact, method));
+    }
+    else {
+      x = new std::shared_ptr<aggregate_time_cube>(aggregate_time_cube::create(*aa, dt, method));
+    }
     Rcpp::XPtr< std::shared_ptr<aggregate_time_cube> > p(x, true) ;
     return p;
   } 

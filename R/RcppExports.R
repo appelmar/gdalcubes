@@ -185,8 +185,8 @@ libgdalcubes_create_fill_time_cube <- function(pin, method) {
     .Call('_gdalcubes_libgdalcubes_create_fill_time_cube', PACKAGE = 'gdalcubes', pin, method)
 }
 
-libgdalcubes_create_aggregate_time_cube <- function(pin, dt, method) {
-    .Call('_gdalcubes_libgdalcubes_create_aggregate_time_cube', PACKAGE = 'gdalcubes', pin, dt, method)
+libgdalcubes_create_aggregate_time_cube <- function(pin, dt, method, fact = 0L) {
+    .Call('_gdalcubes_libgdalcubes_create_aggregate_time_cube', PACKAGE = 'gdalcubes', pin, dt, method, fact)
 }
 
 libgdalcubes_query_points <- function(pin, px, py, pt, srs) {

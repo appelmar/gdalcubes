@@ -33,15 +33,36 @@
 #' @param cube source data cube
 #' @param dt character; new temporal resolution, datetime period string, e.g. "P1M" 
 #' @param method aggregation method, one of "mean", "min", "max", "median", "count", "sum", "prod", "var", and "sd"
+#' @param fact simple integer factor defining how many cells become aggregated to a single new cell, can be used instead of dt
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' 
-#' @note This function is experimental and only supports method = "mean" as a proof of concept.
 #' @export
-aggregate_time <- function(cube, dt, method="mean") {
+aggregate_time <- function(cube, dt, method="mean", fact=NULL) {
   stopifnot(is.cube(cube))
+  if (is.null(fact) && missing(dt)) {
+    stop("Missing required argument: either dt or fact must be provided")
+  }
+  if (!is.null(fact) && !missing(dt)) {
+    warning("Argument fact will be ignored because dt has been provided")
+    fact = NULL
+  }
   
-  x = libgdalcubes_create_aggregate_time_cube(cube, dt, method)
+  if (!is.null(fact)) {
+    if (fact %% 1 != 0) {
+      stop("Invalid argument: fact must be an integer number > 1")
+    }
+    if (fact <= 1) {
+      stop("Invalid argument: fact must be an integer number > 1")
+    }
+    x = libgdalcubes_create_aggregate_time_cube(cube, "", method, as.integer(fact))
+  }
+  else {
+    if (!is.character(dt)) {
+      stop("Invalid argument: dt must be of type character")
+    }
+    x = libgdalcubes_create_aggregate_time_cube(cube, dt, method, 0)
+  }
   class(x) <- c("aggregate_time_cube", "cube", "xptr")
   return(x)
 }
