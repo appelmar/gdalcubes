@@ -1,3 +1,11 @@
+# gdalcubes 0.4.9999 (under development)
+
+* new operation `aggregate_time()` to reduce temporal resolution of data cubes
+* new `stack_cube()` type to build data cubes from aligned images without image collection creation
+
+
+
+
 # gdalcubes 0.4.1 (2021-07-29)
 
 * fix build issues on MacOS
