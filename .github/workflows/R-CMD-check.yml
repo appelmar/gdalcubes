@@ -22,8 +22,8 @@ jobs:
           # - {os: windows-latest, r: '3.6'}
           - {os: macOS-latest, r: '3.6', args: '--install-args=\"--configure-args=--with-proj-lib=/usr/local/lib/\"", "--ignore-vignettes', build_args: "--no-build-vignettes"}
           - {os: macOS-latest, r: 'devel', args: '--install-args=\"--configure-args=--with-proj-lib=/usr/local/lib/\"", "--ignore-vignettes', build_args: "--no-build-vignettes"}
-          - {os: ubuntu-20.04, r: 'devel', cran: "https://demo.rstudiopm.com/all/__linux__/focal/latest"}
-          - {os: ubuntu-20.04, r: 'release', cran: "https://demo.rstudiopm.com/all/__linux__/focal/latest"}
+          - {os: ubuntu-18.04, r: 'devel', cran: "https://demo.rstudiopm.com/all/__linux__/bionic/latest"}
+          - {os: ubuntu-18.04, r: 'release', cran: "https://demo.rstudiopm.com/all/__linux__/bionic/latest"}
 #         - {os: ubuntu-latest, r: 'release'}
 
     env:
