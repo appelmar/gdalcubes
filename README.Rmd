@@ -125,9 +125,8 @@ raster_cube(L8.col, v.overview)
 We can apply (and chain) operations on data cubes: 
 
 ```{r cubes}
-suppressPackageStartupMessages(library(magrittr)) # for %>%
-x = raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B02","B03","B04")) %>%
+x = raster_cube(L8.col, v.overview) |>
+  select_bands(c("B02","B03","B04")) |>
   reduce_time(c("median(B02)","median(B03)","median(B04)"))
 x
 
@@ -135,9 +134,9 @@ plot(x, rgb=3:1, zlim=c(0,1200))
 
 
 library(RColorBrewer)
- raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+ raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   plot(zlim=c(0,1),  nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
@@ -154,8 +153,8 @@ v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-
                              t0="2014-01-01", t1="2018-12-31"), dt="P1Y", dx=50, dy=50,
                              srs="EPSG:3857", aggregation = "median", resampling = "bilinear")
 
-raster_cube(L8.col, v.subarea.yearly) %>%
-  select_bands(c("B02","B03","B04")) %>%
+raster_cube(L8.col, v.subarea.yearly) |>
+  select_bands(c("B02","B03","B04")) |>
   animate(rgb=3:1, zlim=c(100,1000))
 ```
 
@@ -166,17 +165,17 @@ Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a c
 
 ```{r, warning=FALSE}
 suppressPackageStartupMessages(library(raster))
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  write_tif() %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
+  write_tif() |>
   stack() -> x
 x
 
 suppressPackageStartupMessages(library(stars))
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   st_as_stars() -> y
 y
 ```
@@ -186,10 +185,10 @@ To reduce the size of exported data cubes, compression and packing (conversion o
 If only specific time slices of a data cube are needed, `select_time()` can be called before plotting / exporting.
 
 ```{r select_time}
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  select_time(c("2015", "2018")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
+  select_time(c("2015", "2018")) |>
   plot(zlim=c(0,1), nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
@@ -201,13 +200,13 @@ Users can pass custom R functions to `reduce_time()` and `apply_pixel()`. Below,
 ```{r greenest_pixel_composite}
 v.subarea.monthly = cube_view(view = v.subarea.yearly, dt="P1M", dx = 100, dy = 100,
                               extent = list(t0="2015-01", t0="2018-12"))
-raster_cube(L8.col, v.subarea.monthly) %>%
-  select_bands(c("B02","B03","B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) %>%
+raster_cube(L8.col, v.subarea.monthly) |>
+  select_bands(c("B02","B03","B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) |>
   reduce_time(names=c("B02","B03","B04"), FUN=function(x) {
     if (all(is.na(x["NDVI",]))) return(rep(NA,3))
     return (x[c("B02","B03","B04"), which.max(x["NDVI",])])
-  }) %>%
+  }) |>
   plot(rgb=3:1, zlim=c(100,1000))
 ```
 
@@ -223,12 +222,12 @@ Below, we randomly select 10 locations and query values of single data cube cell
 x = runif(10, v.overview$space$left, v.overview$space$right)
 y = runif(10, v.overview$space$bottom, v.overview$space$top)
 t = sample(as.character(2013:2019), 10, replace = TRUE)
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
   query_points(x,y,t, v.overview$space$srs)
 
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
   query_timeseries(x, y, v.overview$space$srs)
 ```
 
@@ -244,11 +243,11 @@ v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
               extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, 
                           t0="2018-01-01", t1="2018-12-31"))
-raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) %>%
-  select_bands(c("B04", "B05")) %>%
-  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") %>%
+raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) |>
+  select_bands(c("B04", "B05")) |>
+  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") |>
   zonal_statistics(system.file("nycd.gpkg", package = "gdalcubes"),
-                  expr = "median(NDVI)", as_stars = TRUE) %>%
+                  expr = "median(NDVI)", as_stars = TRUE) |>
   plot(max.plot = 12)
 ```
 

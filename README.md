@@ -176,9 +176,8 @@ raster_cube(L8.col, v.overview)
 We can apply (and chain) operations on data cubes:
 
 ``` r
-suppressPackageStartupMessages(library(magrittr)) # for %>%
-x = raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B02","B03","B04")) %>%
+x = raster_cube(L8.col, v.overview) |>
+  select_bands(c("B02","B03","B04")) |>
   reduce_time(c("median(B02)","median(B03)","median(B04)"))
 x
 ```
@@ -205,9 +204,9 @@ plot(x, rgb=3:1, zlim=c(0,1200))
 
 ``` r
 library(RColorBrewer)
- raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+ raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   plot(zlim=c(0,1),  nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
@@ -226,8 +225,8 @@ v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-
                              t0="2014-01-01", t1="2018-12-31"), dt="P1Y", dx=50, dy=50,
                              srs="EPSG:3857", aggregation = "median", resampling = "bilinear")
 
-raster_cube(L8.col, v.subarea.yearly) %>%
-  select_bands(c("B02","B03","B04")) %>%
+raster_cube(L8.col, v.subarea.yearly) |>
+  select_bands(c("B02","B03","B04")) |>
   animate(rgb=3:1, zlim=c(100,1000))
 ```
 
@@ -249,10 +248,10 @@ file. Data cubes can also be converted to `raster` or `stars`objects:
 
 ``` r
 suppressPackageStartupMessages(library(raster))
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  write_tif() %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
+  write_tif() |>
   stack() -> x
 x
 ```
@@ -262,27 +261,21 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs 
-    ## names      : cube_2a3ac18d60def2013, cube_2a3ac18d60def2014, cube_2a3ac18d60def2015, cube_2a3ac18d60def2016, cube_2a3ac18d60def2017, cube_2a3ac18d60def2018, cube_2a3ac18d60def2019
+    ## names      : cube_15abef33edb4182013, cube_15abef33edb4182014, cube_15abef33edb4182015, cube_15abef33edb4182016, cube_15abef33edb4182017, cube_15abef33edb4182018, cube_15abef33edb4182019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   st_as_stars() -> y
 y
 ```
 
     ## stars object with 3 dimensions and 1 attribute
     ## attribute(s), summary of first 1e+05 cells:
-    ##      NDVI       
-    ##  Min.   :-0.56  
-    ##  1st Qu.: 0.41  
-    ##  Median : 0.72  
-    ##  Mean   : 0.57  
-    ##  3rd Qu.: 0.85  
-    ##  Max.   : 0.89  
-    ##  NA's   :79500  
+    ##             Min.   1st Qu.    Median      Mean   3rd Qu.      Max.  NA's
+    ## NDVI  -0.5611802 0.4117511 0.7242106 0.5735866 0.8506824 0.8937045 79500
     ## dimension(s):
     ##      from  to   offset delta                   refsys point
     ## x       1 783 -6582280  1000 WGS 84 / Pseudo-Mercator    NA
@@ -300,10 +293,10 @@ If only specific time slices of a data cube are needed, `select_time()`
 can be called before plotting / exporting.
 
 ``` r
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") %>%
-  select_time(c("2015", "2018")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
+  select_time(c("2015", "2018")) |>
   plot(zlim=c(0,1), nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
@@ -319,13 +312,13 @@ time-series.
 ``` r
 v.subarea.monthly = cube_view(view = v.subarea.yearly, dt="P1M", dx = 100, dy = 100,
                               extent = list(t0="2015-01", t0="2018-12"))
-raster_cube(L8.col, v.subarea.monthly) %>%
-  select_bands(c("B02","B03","B04","B05")) %>%
-  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) %>%
+raster_cube(L8.col, v.subarea.monthly) |>
+  select_bands(c("B02","B03","B04","B05")) |>
+  apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) |>
   reduce_time(names=c("B02","B03","B04"), FUN=function(x) {
     if (all(is.na(x["NDVI",]))) return(rep(NA,3))
     return (x[c("B02","B03","B04"), which.max(x["NDVI",])])
-  }) %>%
+  }) |>
   plot(rgb=3:1, zlim=c(100,1000))
 ```
 
@@ -346,54 +339,54 @@ cube cells and complete time series.
 x = runif(10, v.overview$space$left, v.overview$space$right)
 y = runif(10, v.overview$space$bottom, v.overview$space$top)
 t = sample(as.character(2013:2019), 10, replace = TRUE)
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
   query_points(x,y,t, v.overview$space$srs)
 ```
 
-    ##          B04       B05
-    ## 1   176.5942 3032.5324
-    ## 2        NaN       NaN
-    ## 3  3878.2453 4828.9001
-    ## 4   309.5338  221.7426
-    ## 5        NaN       NaN
-    ## 6   213.2422 3180.3651
-    ## 7   725.4656 3244.4685
-    ## 8        NaN       NaN
-    ## 9   731.5507 2186.4171
-    ## 10       NaN       NaN
+    ##          B04      B05
+    ## 1   235.6589 2984.696
+    ## 2   172.2454 2744.205
+    ## 3        NaN      NaN
+    ## 4   180.0536 3095.739
+    ## 5   226.8788 2872.465
+    ## 6   201.6983 3142.109
+    ## 7        NaN      NaN
+    ## 8        NaN      NaN
+    ## 9  1961.6798 4395.522
+    ## 10  281.7466 3662.215
 
 ``` r
-raster_cube(L8.col, v.overview) %>%
-  select_bands(c("B04","B05")) %>%
+raster_cube(L8.col, v.overview) |>
+  select_bands(c("B04","B05")) |>
   query_timeseries(x, y, v.overview$space$srs)
 ```
 
     ## $B04
-    ##        2013      2014     2015     2016     2017      2018      2019
-    ## 1  168.1739  166.4379 199.2356 218.3613 176.5942  164.1710  152.0536
-    ## 2       NaN       NaN      NaN      NaN      NaN       NaN       NaN
-    ## 3  342.9068  198.0663 188.4386 171.4423 234.2039  176.9131 3878.2453
-    ## 4       NaN  309.5338 653.0165 490.7659 334.7592  662.8106       NaN
-    ## 5       NaN       NaN      NaN      NaN      NaN       NaN       NaN
-    ## 6  158.2323  213.2422 288.2853 228.0108 222.6970  175.8526  152.9250
-    ## 7       NaN  233.6421 286.0872 725.4656 234.8174 1012.2984       NaN
-    ## 8       NaN       NaN      NaN      NaN      NaN       NaN       NaN
-    ## 9  570.6068 1094.3404 698.8447 286.1469 731.5507       NaN  193.9442
-    ## 10      NaN  242.1999 295.2309 283.9409 256.7757  270.4900       NaN
+    ##        2013     2014     2015      2016      2017     2018      2019
+    ## 1  160.8274 175.6520 235.6589  218.3792  203.0727 182.8651  156.1551
+    ## 2  151.2886 203.8418 316.1761  216.8624  172.2454 171.5893  148.0354
+    ## 3       NaN      NaN      NaN       NaN       NaN      NaN       NaN
+    ## 4       NaN 202.2575 223.9496  210.2540  226.5912 180.0536       NaN
+    ## 5  246.7390 216.7149 306.2322  217.0830  269.8181 226.8788 7325.4670
+    ## 6       NaN 210.6211 227.4864  201.6983  249.7855 189.7245       NaN
+    ## 7       NaN      NaN      NaN       NaN       NaN      NaN       NaN
+    ## 8       NaN      NaN      NaN       NaN       NaN      NaN       NaN
+    ## 9       NaN 247.1852 301.3082  308.3311 1961.6798 697.5062       NaN
+    ## 10      NaN 511.7520 281.7466 2099.2677  734.7317 234.8724       NaN
     ## 
     ## $B05
-    ##        2013      2014      2015      2016      2017      2018      2019
-    ## 1  2881.747 3006.7054 2988.5880 3004.6927 3032.5324 2856.9048 2918.1521
-    ## 2       NaN       NaN       NaN       NaN       NaN       NaN       NaN
-    ## 3  3117.646 3057.9624 2891.6479 2843.5118 3050.4765 2869.4212 4828.9001
-    ## 4       NaN  221.7426  337.6181  220.5666  227.3253  435.6817       NaN
-    ## 5       NaN       NaN       NaN       NaN       NaN       NaN       NaN
-    ## 6  2991.214 3180.3651 3131.6213 3199.9639 3090.0413 3103.3886 3027.6535
-    ## 7       NaN 2994.1378 3212.3224 3244.4685 2994.0125 2884.8660       NaN
-    ## 8       NaN       NaN       NaN       NaN       NaN       NaN       NaN
-    ## 9   663.193 1116.9384  650.0309  848.6397 2186.4171       NaN  394.6935
-    ## 10      NaN 3167.8636 3493.6315 3106.9801 3229.5042 3434.0334       NaN
+    ##        2013     2014     2015     2016     2017     2018     2019
+    ## 1  2705.562 2909.685 2984.696 2940.986 2901.269 2884.012 2822.350
+    ## 2  2539.719 3069.030 3073.899 3115.801 2744.205 2849.731 2661.840
+    ## 3       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 4       NaN 3118.763 3130.213 2990.434 3314.439 3095.739      NaN
+    ## 5  3142.041 3074.893 2962.259 2837.072 3244.551 2872.465 7472.408
+    ## 6       NaN 3295.172 3141.681 3142.109 3200.920 2760.859      NaN
+    ## 7       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 8       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 9       NaN 3324.676 3851.022 2645.878 4395.522 3839.904      NaN
+    ## 10      NaN 3529.255 3662.215 3661.613 2906.513 3380.449      NaN
 
 To compute time series of summary statistics over spatial polygons, we
 need to specify polygon geometries (e.g., as an `sf` object) and specify
@@ -414,11 +407,11 @@ v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
               extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, 
                           t0="2018-01-01", t1="2018-12-31"))
-raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) %>%
-  select_bands(c("B04", "B05")) %>%
-  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") %>%
+raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) |>
+  select_bands(c("B04", "B05")) |>
+  apply_pixel("(B05-B04)/(B05+B04)", "NDVI") |>
   zonal_statistics(system.file("nycd.gpkg", package = "gdalcubes"),
-                  expr = "median(NDVI)", as_stars = TRUE) %>%
+                  expr = "median(NDVI)", as_stars = TRUE) |>
   plot(max.plot = 12)
 ```
 
