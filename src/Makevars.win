@@ -25,6 +25,8 @@ LIBGDALCUBES = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/reduce_space.o \
 			gdalcubes/src/window_time.o \
 			gdalcubes/src/select_bands.o \
+			gdalcubes/src/slice_time.o \
+			gdalcubes/src/slice_space.o \
 			gdalcubes/src/filter_pixel.o \
 			gdalcubes/src/filter_geom.o \
 			gdalcubes/src/fill_time.o \

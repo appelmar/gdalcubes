@@ -592,6 +592,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_create_slice_time_cube
+SEXP libgdalcubes_create_slice_time_cube(SEXP pin, std::string dt, int32_t it);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_slice_time_cube(SEXP pinSEXP, SEXP dtSEXP, SEXP itSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dt(dtSEXP);
+    Rcpp::traits::input_parameter< int32_t >::type it(itSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_slice_time_cube(pin, dt, it));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_create_slice_space_cube
+SEXP libgdalcubes_create_slice_space_cube(SEXP pin, std::vector<double> loc, std::vector<int32_t> i);
+RcppExport SEXP _gdalcubes_libgdalcubes_create_slice_space_cube(SEXP pinSEXP, SEXP locSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type loc(locSEXP);
+    Rcpp::traits::input_parameter< std::vector<int32_t> >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_create_slice_space_cube(pin, loc, i));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_query_points
 SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs);
 RcppExport SEXP _gdalcubes_libgdalcubes_query_points(SEXP pinSEXP, SEXP pxSEXP, SEXP pySEXP, SEXP ptSEXP, SEXP srsSEXP) {
@@ -771,6 +797,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_simple_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_simple_cube, 7},
     {"_gdalcubes_libgdalcubes_create_fill_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_fill_time_cube, 2},
     {"_gdalcubes_libgdalcubes_create_aggregate_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_aggregate_time_cube, 4},
+    {"_gdalcubes_libgdalcubes_create_slice_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_slice_time_cube, 3},
+    {"_gdalcubes_libgdalcubes_create_slice_space_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_slice_space_cube, 3},
     {"_gdalcubes_libgdalcubes_query_points", (DL_FUNC) &_gdalcubes_libgdalcubes_query_points, 5},
     {"_gdalcubes_libgdalcubes_query_timeseries", (DL_FUNC) &_gdalcubes_libgdalcubes_query_timeseries, 4},
     {"_gdalcubes_libgdalcubes_zonal_statistics", (DL_FUNC) &_gdalcubes_libgdalcubes_zonal_statistics, 7},

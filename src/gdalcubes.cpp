@@ -1628,6 +1628,47 @@ SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::stri
 
 
 // [[Rcpp::export]]
+SEXP libgdalcubes_create_slice_time_cube(SEXP pin, std::string dt, int32_t it=0) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    
+    std::shared_ptr<slice_time_cube>* x;
+    if (dt.empty()) {
+      x = new std::shared_ptr<slice_time_cube>(slice_time_cube::create(*aa, it));
+    }
+    else {
+      x = new std::shared_ptr<slice_time_cube>(slice_time_cube::create(*aa, dt));
+    }
+    Rcpp::XPtr< std::shared_ptr<slice_time_cube> > p(x, true) ;
+    return p;
+  } 
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_slice_space_cube(SEXP pin, std::vector<double> loc, std::vector<int32_t> i) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    
+    std::shared_ptr<slice_space_cube>* x;
+    if (loc.empty()) {
+      x = new std::shared_ptr<slice_space_cube>(slice_space_cube::create(*aa, i[0], i[1]));
+    }
+    else {
+      x = new std::shared_ptr<slice_space_cube>(slice_space_cube::create(*aa, loc[0], loc[1]));
+    }
+    Rcpp::XPtr< std::shared_ptr<slice_space_cube> > p(x, true) ;
+    return p;
+  } 
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
 SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
