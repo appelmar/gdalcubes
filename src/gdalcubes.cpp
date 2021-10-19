@@ -1668,6 +1668,36 @@ SEXP libgdalcubes_create_slice_space_cube(SEXP pin, std::vector<double> loc, std
   }
 }
 
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int32_t> iextent, std::string snap) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::shared_ptr<crop_cube>* x;
+    
+    if (iextent.empty()) {
+      // x = new std::shared_ptr<crop_cube>(crop_cube::create(*aa, Rcpp::as<double>(extent["left"]), 
+      //                                                      Rcpp::as<double>(extent["right"]), Rcpp::as<double>(extent["bottom"]), 
+      //                                                      Rcpp::as<double>(extent["top"]), Rcpp::as<std::string>(extent["t0"]),  
+      //                                                      Rcpp::as<std::string>(extent["t1"]), Rcpp::as<std::string>(snap)));
+      x = new std::shared_ptr<crop_cube>(crop_cube::create(*aa, (extent["left"]), 
+                                                           (extent["right"]), (extent["bottom"]), 
+                                                           (extent["top"]), (extent["t0"]),  
+                                                           (extent["t1"]), (snap)));
+    }
+    else {
+      x = new std::shared_ptr<crop_cube>(crop_cube::create(*aa, iextent[0], iextent[1], iextent[2], iextent[3], iextent[4], iextent[5]));
+    }
+    Rcpp::XPtr< std::shared_ptr<crop_cube> > p(x, true) ;
+    return p;
+  } 
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
 // [[Rcpp::export]]
 SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
   try {

@@ -197,6 +197,10 @@ libgdalcubes_create_slice_space_cube <- function(pin, loc, i) {
     .Call('_gdalcubes_libgdalcubes_create_slice_space_cube', PACKAGE = 'gdalcubes', pin, loc, i)
 }
 
+libgdalcubes_create_crop_cube <- function(pin, extent, iextent, snap) {
+    .Call('_gdalcubes_libgdalcubes_create_crop_cube', PACKAGE = 'gdalcubes', pin, extent, iextent, snap)
+}
+
 libgdalcubes_query_points <- function(pin, px, py, pt, srs) {
     .Call('_gdalcubes_libgdalcubes_query_points', PACKAGE = 'gdalcubes', pin, px, py, pt, srs)
 }

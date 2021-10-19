@@ -1,0 +1,132 @@
+#' Crop data cube extent by space and/or time
+#' 
+#' Create a proxy data cube, which crops a data cube by a spatial and/or temporal extent.
+#' 
+#' @examples 
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P3M", aggregation = "median")
+#' L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
+#' L8.rgb = select_bands(L8.cube, c("B02", "B03", "B04"))
+#' 
+#' # crop by integer indexes
+#' L8.cropped = crop(L8.rgb, iextent = list(x=c(0,400), y=c(0,400), t=c(1,1)))
+#' 
+#' # crop by spatiotemporal coordinates
+#' L8.cropped = crop(L8.rgb, extent = list(left=388941.2, right=766552.4, 
+#'    bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"), snap = "in")
+#' L8.cropped 
+#' 
+#' L8.cropped = crop(L8.rgb, extent = list(left=388941.2, right=766552.4, 
+#'    bottom=4345299, top=4744931, t0="2018-01", t1="2018-06"), snap = "near")
+#' L8.cropped 
+#' 
+#' \donttest{
+#' plot(L8.cropped, rgb = 3:1, zlim=c(5000,10000))
+#' }
+#' 
+#' @details 
+#' The new extent can be specified by spatial coordinates and datetime values (using the \code{extent} argument), or as zero-based integer indexes (using the \code{iextent} argument).
+#' In the former case, \code{extent} expects a list with numeric items left, right, top, bottom, t0, and t1, or a subset thereof. In the latter case,
+#' \code{iextent} is expected as a list with length-two integer vectors x, y, and t as items, defining the lower and upper cell indexes per dimension.
+#' 
+#' Notice that it is possible to crop only selected boundaries (e.g., only the right boundary) as missing boundaries in the \code{extent} or NA / NULL values in the \code{iextent} arguments are considered as "no change".
+#' It is, however, not possible to mix arguments \code{extent} and \code{iextent}.
+#' 
+#' If \code{extent} is given, the \code{snap} argument can be used to define what happens if the new boundary falls within a data cube cell.
+#' 
+#' @param cube source data cube
+#' @param extent list with numeric items left, right, top, bottom, and character items t0 and t1, or a subset thereof, see examples
+#' @param iextent list with length-two integer items named x, y, and t, defining the lower and upper boundaries as integer coordinates, see examples 
+#' @param snap (see \link[raster]{crop} function of the raster package), one of 'near', 'in', or 'out'; ignored if using \code{iextent}
+#' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
+#' 
+#' @export
+crop <- function(cube, extent=NULL, iextent=NULL, snap = "near") {
+  stopifnot(is.cube(cube))
+  if (is.null(extent) && is.null(iextent)) {
+    stop("Missing required argument: either extent or iextent must be provided")
+  }
+  if (!is.null(extent) && !is.null(iextent)) {
+    warning("Argument iextent will be ignored because extent has been provided")
+    iextent = NULL
+  }
+  
+  if (!is.null(iextent)) {
+    if (is.null(iextent$x)) {
+      iextent$x = c(0, dim(cube)[3] - 1)
+    }
+    else {
+      stopifnot(length(iextent$x) == 2)
+    }
+    if (is.null(iextent$y)) {
+      iextent$y = c(0, dim(cube)[2] - 1)
+    }
+    else {
+      stopifnot(length(iextent$y) == 2)
+    }
+    if (is.null(iextent$t)) {
+      iextent$t = c(0, dim(cube)[1] - 1)
+    }
+    else {
+      stopifnot(length(iextent$t) == 2)
+    }
+    if (length(iextent) > 3) {
+      warning("Provided extent has additional items that will be ignored")
+    }
+    x = libgdalcubes_create_crop_cube(cube, list(), as.integer(c(iextent$x[1], iextent$x[2], iextent$y[1], iextent$y[2], iextent$t[1], iextent$t[2])), "")
+  }
+  else {
+    if (is.null(extent$left)) {
+      extent$left = dimensions(cube)$x$low
+    }
+    if (is.null(extent$right)) {
+      extent$right = dimensions(cube)$x$high
+    }
+    if (is.null(extent$top)) {
+      extent$top = dimensions(cube)$y$high
+    }
+    if (is.null(extent$bottom)) {
+      extent$bottom = dimensions(cube)$y$low
+    }
+    if (is.null(extent$t0)) {
+      extent$t0 = dimensions(cube)$t$low
+    }
+    if (is.null(extent$t1)) {
+      extent$t1 = dimensions(cube)$t$high
+    }
+    if (length(extent) > 6) {
+      warning("Provided extent has additional items that will be ignored")
+    }
+    x = libgdalcubes_create_crop_cube(cube, extent, integer(0), snap)
+  }
+  class(x) <- c("crop_cube", "cube", "xptr")
+  return(x)
+}
+
+
+
+is.crop_cube  <- function(obj) {
+  if(!("crop_cube" %in% class(obj))) {
+    return(FALSE)
+  }
+  if (libgdalcubes_is_null(obj)) {
+    warning("GDAL data cube proxy object is invalid")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
+
+
+
+
