@@ -1,9 +1,12 @@
-# gdalcubes 0.4.9999 (under development)
+# gdalcubes 0.5.0 (under development)
 
 * new operation `aggregate_time()` to reduce temporal resolution of data cubes
 * new `stack_cube()` type to build data cubes from aligned images without image collection creation
-
-
+* new operations `slice_time()` and `slice_space()` to extract single time series or slices
+* new `crop()` function can be used to crop a data cube by space and/or time
+* single bands of data cubes can be selected using the `$` operator
+* fix datetime parser to support strings with fractional seconds
+* fix CRAN issues due to obsolete autoconf warnings
 
 
 # gdalcubes 0.4.1 (2021-07-29)
