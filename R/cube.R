@@ -152,6 +152,21 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 }
 
 
+#' Create a data cube proxy object copy
+#' 
+#' Copy a data cube proxy object without copying any data
+#' 
+#' @details 
+#' This internal function copies the complete processing chain / graph of a data cube but does not copy any data
+#' It is used internally to avoid in-place modification for operations with potential side effects on source data cubes.
+.copy_cube <- function(cube) {
+  cc = class(cube)
+  cube = libgdalcubes_copy_cube(cube)
+  class(cube) <- cc
+  return(cube)
+}
+
+
 
 
 #' Create a mask for images in a raster data cube 

@@ -97,6 +97,10 @@ libgdalcubes_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_libgdalcubes_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }
 
+libgdalcubes_copy_cube <- function(pin) {
+    .Call('_gdalcubes_libgdalcubes_copy_cube', PACKAGE = 'gdalcubes', pin)
+}
+
 libgdalcubes_create_rename_bands_cube <- function(pin, names_old, names_new) {
     .Call('_gdalcubes_libgdalcubes_create_rename_bands_cube', PACKAGE = 'gdalcubes', pin, names_old, names_new)
 }

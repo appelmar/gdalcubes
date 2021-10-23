@@ -1,5 +1,6 @@
 
 #include "gdalcubes/src/gdalcubes.h"
+#include "gdalcubes/src/cube_factory.h"
 
 // [[Rcpp::plugins("cpp11")]]
 // [[Rcpp::depends(RcppProgress)]]
@@ -769,6 +770,8 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
 
 
 
+
+
 // [[Rcpp::export]]
 Rcpp::List libgdalcubes_image_collection_extent( SEXP pin, std::string srs) {
   
@@ -1162,6 +1165,22 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
   }
 }
 
+
+
+
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_copy_cube(SEXP pin) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    std::shared_ptr<cube>* x  = new std::shared_ptr<cube>(cube_factory::instance()->create_from_json((*aa)->make_constructible_json()));
+    Rcpp::XPtr< std::shared_ptr<cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 

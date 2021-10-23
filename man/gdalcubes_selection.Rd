@@ -3,19 +3,39 @@
 \name{gdalcubes_selection}
 \alias{gdalcubes_selection}
 \alias{$.cube}
+\alias{[.cube}
 \title{Select a data cube band by name}
 \usage{
 \method{$}{cube}(x, name)
+
+\method{[}{cube}(cube, ib = TRUE, it = TRUE, iy = TRUE, ix = TRUE, ...)
 }
 \arguments{
 \item{x}{source data cube}
 
 \item{name}{character; name of selected band}
+
+\item{cube}{source data cube}
+
+\item{ib}{fourth selector (optional), see \code{ib}}
 }
 \description{
 Select a data cube band by name
+
+Extract a subset of a data cube
+}
+\details{
+The \code{[]} operator allows for flexible subsetting of data cubes by date, datetime,  
+bounding box, spatial points, and band names. Depending on the arguments, it supports slicing (
+selecting one element of a dimension) and cropping (selecting a subinterval of a dimension) and combinations
+thereof (e.g., selecting a spatial window and a temporal slice). Dimension subsets can 
+be specified by integer indexes or coordinates / datetime values. Arguments are matched by type and order.
+For example, if the first argument is a length-two vector of type Date, the function will realize that this 
+is for subsetting the time dimension. If needed, arguments are treated in the order band, time, y, x.
 }
 \note{
+This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
+
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
@@ -36,4 +56,38 @@ L8.red = L8.cube$B04
 \donttest{
 plot(L8.red)
 }
+create image collection from example Landsat data only # if not already done in other examples
+if (!file.exists(file.path(tempdir(), "L8.db"))) {
+  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                         ".TIF", recursive = TRUE, full.names = TRUE)
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
+}
+L8.col = image_collection(file.path(tempdir(), "L8.db"))
+v = cube_view(extent=list(left=388941.2, right=766552.4,
+                          bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-31"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1D", aggregation = "median")
+L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
+
+L8.cube[c("B05","B04")] # select bands
+L8.cube[as.Date(c("2018-01-10", "2018-01-20"))] # crop by time
+L8.cube[as.Date("2018-01-10")] # slice by time
+L8.cube["B05", "2018-01-10"] # select bands and slice by time
+L8.cube["B05", c("2018-01-10","2018-01-17")] # select bands and crop by time
+L8.cube[, c("2018-01-10","2018-01-17")] # crop by time
+
+L8.cube[list(left=388941.2 + 1e5, right=766552.4 - 1e5, bottom=4345299 + 1e5, top=4744931 - 1e5)] # crop by space (coordinates)
+L8.cube[,,c(1,100), c(1,100)] # crop by space (integer indexes)
+
+L8.cube[,c(1,2),,] # crop by time (integer indexes)
+
+
+if (requireNamespace("sf", quietly = TRUE)) {
+  s = st_sfc(st_point(c(500000, 4500000)), crs = "EPSG:32618")
+  L8.cube[s]
+
+  bbox = st_bbox(c(xmin = 388941.2 + 1e5, xmax = 766552.4 - 1e5,
+                   ymax = 4744931 - 1e5, ymin = 4345299 + 1e5), crs = st_crs(32618))
+  L8.cube[bbox]
+}
+
 }
