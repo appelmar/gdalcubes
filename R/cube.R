@@ -156,6 +156,8 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' 
 #' Copy a data cube proxy object without copying any data
 #' 
+#' @param  cube source data cube proxy object
+#' @return copied data proxy object 
 #' @details 
 #' This internal function copies the complete processing chain / graph of a data cube but does not copy any data
 #' It is used internally to avoid in-place modification for operations with potential side effects on source data cubes.

@@ -6,6 +6,12 @@
 \usage{
 .copy_cube(cube)
 }
+\arguments{
+\item{cube}{source data cube proxy object}
+}
+\value{
+copied data proxy object
+}
 \description{
 Copy a data cube proxy object without copying any data
 }

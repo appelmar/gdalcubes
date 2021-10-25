@@ -17,7 +17,15 @@
 
 \item{cube}{source data cube}
 
-\item{ib}{fourth selector (optional), see \code{ib}}
+\item{ib}{first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}), or \link[sf]{st_sfc}), see Details and examples}
+
+\item{it}{second selector (optional), see \code{ib}}
+
+\item{iy}{third selector (optional), see \code{ib}}
+
+\item{ix}{fourth selector (optional), see \code{ib}}
+
+\item{...}{further arguments, not used}
 }
 \description{
 Select a data cube band by name
@@ -56,7 +64,8 @@ L8.red = L8.cube$B04
 \donttest{
 plot(L8.red)
 }
-create image collection from example Landsat data only # if not already done in other examples
+# create image collection from example Landsat data only 
+# if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
@@ -75,18 +84,19 @@ L8.cube["B05", "2018-01-10"] # select bands and slice by time
 L8.cube["B05", c("2018-01-10","2018-01-17")] # select bands and crop by time
 L8.cube[, c("2018-01-10","2018-01-17")] # crop by time
 
-L8.cube[list(left=388941.2 + 1e5, right=766552.4 - 1e5, bottom=4345299 + 1e5, top=4744931 - 1e5)] # crop by space (coordinates)
-L8.cube[,,c(1,100), c(1,100)] # crop by space (integer indexes)
+# crop by space (coordinates and integer indexes respectively)
+L8.cube[list(left=388941.2 + 1e5, right=766552.4 - 1e5, bottom=4345299 + 1e5, top=4744931 - 1e5)]
+L8.cube[,,c(1,100), c(1,100)] 
 
 L8.cube[,c(1,2),,] # crop by time (integer indexes)
 
-
+# select by spatial point or bounding box
 if (requireNamespace("sf", quietly = TRUE)) {
-  s = st_sfc(st_point(c(500000, 4500000)), crs = "EPSG:32618")
+  s = sf::st_sfc(sf::st_point(c(500000, 4500000)), crs = "EPSG:32618")
   L8.cube[s]
 
-  bbox = st_bbox(c(xmin = 388941.2 + 1e5, xmax = 766552.4 - 1e5,
-                   ymax = 4744931 - 1e5, ymin = 4345299 + 1e5), crs = st_crs(32618))
+  bbox =  sf::st_bbox(c(xmin = 388941.2 + 1e5, xmax = 766552.4 - 1e5,
+                   ymax = 4744931 - 1e5, ymin = 4345299 + 1e5), crs = sf::st_crs(32618))
   L8.cube[bbox]
 }
 

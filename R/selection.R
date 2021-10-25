@@ -45,7 +45,8 @@
 #' is for subsetting the time dimension. If needed, arguments are treated in the order band, time, y, x. 
 #' 
 #' @examples 
-#' create image collection from example Landsat data only # if not already done in other examples
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
@@ -64,26 +65,28 @@
 #' L8.cube["B05", c("2018-01-10","2018-01-17")] # select bands and crop by time
 #' L8.cube[, c("2018-01-10","2018-01-17")] # crop by time
 #'
-#' L8.cube[list(left=388941.2 + 1e5, right=766552.4 - 1e5, bottom=4345299 + 1e5, top=4744931 - 1e5)] # crop by space (coordinates)
-#' L8.cube[,,c(1,100), c(1,100)] # crop by space (integer indexes)
+#' # crop by space (coordinates and integer indexes respectively)
+#' L8.cube[list(left=388941.2 + 1e5, right=766552.4 - 1e5, bottom=4345299 + 1e5, top=4744931 - 1e5)]
+#' L8.cube[,,c(1,100), c(1,100)] 
 #' 
 #' L8.cube[,c(1,2),,] # crop by time (integer indexes)
 #' 
-#' 
+#' # select by spatial point or bounding box
 #' if (requireNamespace("sf", quietly = TRUE)) {
-#'   s = st_sfc(st_point(c(500000, 4500000)), crs = "EPSG:32618")
+#'   s = sf::st_sfc(sf::st_point(c(500000, 4500000)), crs = "EPSG:32618")
 #'   L8.cube[s]
 #' 
-#'   bbox = st_bbox(c(xmin = 388941.2 + 1e5, xmax = 766552.4 - 1e5,
-#'                    ymax = 4744931 - 1e5, ymin = 4345299 + 1e5), crs = st_crs(32618))
+#'   bbox =  sf::st_bbox(c(xmin = 388941.2 + 1e5, xmax = 766552.4 - 1e5,
+#'                    ymax = 4744931 - 1e5, ymin = 4345299 + 1e5), crs = sf::st_crs(32618))
 #'   L8.cube[bbox]
 #' }
 #' 
 #' @param cube source data cube
-#' @param ib first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{bbox}), or \link[sf]{sfc}), see Details and examples
-#' @param ib second selector (optional), see \code{ib}
-#' @param ib third selector (optional), see \code{ib}
-#' @param ib fourth selector (optional), see \code{ib}
+#' @param ib first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}), or \link[sf]{st_sfc}), see Details and examples
+#' @param it second selector (optional), see \code{ib}
+#' @param iy third selector (optional), see \code{ib}
+#' @param ix fourth selector (optional), see \code{ib}
+#' @param ... further arguments, not used
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' 
@@ -156,7 +159,10 @@
       stop("Subset of x and/or y dimension has already been specified")
     }
     if (inherits(X, "bbox")) {
-      st_bbox(sf::st_transform(st_as_sfc(X), srs(cube)))
+      if (!requireNamespace("sf", quietly = TRUE)) {
+        stop("package sf required for subsetting by spatial point; please install sf first")
+      }
+      sf::st_bbox(sf::st_transform(sf::st_as_sfc(X), srs(cube)))
       has_x = c( X["xmin"], X["xmax"])
       has_y = c( X["ymin"], X["ymax"])
     }
@@ -165,7 +171,7 @@
         stop("package sf required for subsetting by spatial point; please install sf first")
       }
       if (length(X) == 1) {
-        if (st_is(X, "POINT")) {
+        if (sf::st_is(X, "POINT")) {
           X = sf::st_transform(X, srs(cube))
           has_x = sf::st_coordinates(X)[1]
           has_y = sf::st_coordinates(X)[2]
@@ -380,11 +386,6 @@
     }
   }
   
-  
-  print(t_is_int)
-  print(y_is_int)
-  print(x_is_int)
-  
   # now, derive corresponding gdalcubes operation(s)
   out = cube
   if (!is.null(has_bands)) {
@@ -412,7 +413,7 @@
   if (length(has_time) == 1) {
     # spatial slicing
     if (t_is_int) {
-      out = slice_time(out, t = has_time)
+      out = slice_time(out, it = has_time)
     }
     else {
       out = slice_time(out, datetime = has_time)
