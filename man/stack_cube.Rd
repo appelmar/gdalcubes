@@ -2,10 +2,7 @@
 % Please edit documentation in R/cube.R
 \name{stack_cube}
 \alias{stack_cube}
-\title{Create a data cube from a set of images with the same spatial extent and spatial reference system
- 
-Create a spatiotemporal data cube directly from images with identical spatial extent and spatial reference system, similar
-to \link[raster]{stack} with an additional dimension supporting both, time and multiple bands / variables.}
+\title{Create a data cube from a set of images with the same spatial extent and spatial reference system}
 \usage{
 stack_cube(
   x,
@@ -36,8 +33,6 @@ stack_cube(
 A proxy data cube object
 }
 \description{
-Create a data cube from a set of images with the same spatial extent and spatial reference system
- 
 Create a spatiotemporal data cube directly from images with identical spatial extent and spatial reference system, similar
 to \link[raster]{stack} with an additional dimension supporting both, time and multiple bands / variables.
 }

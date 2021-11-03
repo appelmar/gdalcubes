@@ -61,7 +61,7 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=c(1, 256, 25
 
 
 #' Create a data cube from a set of images with the same spatial extent and spatial reference system
-#'  
+#' 
 #' Create a spatiotemporal data cube directly from images with identical spatial extent and spatial reference system, similar
 #' to \link[raster]{stack} with an additional dimension supporting both, time and multiple bands / variables.
 #'  

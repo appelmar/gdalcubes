@@ -59,7 +59,6 @@ RoxygenNote: 7.1.1
 LinkingTo: Rcpp, RcppProgress
 Suggests: 
     knitr,
-    magrittr,
     rmarkdown,
     stars,
     magick,
