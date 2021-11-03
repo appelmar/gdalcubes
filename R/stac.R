@@ -26,16 +26,18 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                                   url_fun = function(x) {paste0("/vsicurl/", x)},
                                   property_filter = NULL, skip_image_metadata = FALSE) {
   SUBBAND_SPLIT_CHAR = ":"
-  # TODO: e.g. property_filter = function(x) {x[["eo:cloud_cover""]] < 30}
   if (!is.list(s)) {
     stop ("Input must be a list")
+  }
+  if (length(s) == 0) {
+    stop ("Input does not include any STAC items")
   }
   
   if (file.exists(out_file)) {
     stop ("output file already exists")
   }
   
-  # TODO: add band metadata if available
+  # add band metadata if available
   bands = NULL
   asset_names_exist = rep(FALSE, length(asset_names))
   for (i in 1:length(s)) {
@@ -94,9 +96,6 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                         unit = "",
                         nodata = "",
                         stringsAsFactors = FALSE)
-  bands_df
-  
-  
   
   gdalrefs_image_id = NULL
   gdalrefs_band_id = NULL
@@ -166,7 +165,6 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       images_right = c(images_right, bbox[3])
       images_top = c(images_top, bbox[4])
       images_bottom = c(images_bottom, bbox[2])
-      # TODO: check indexes
       
       # image metadata
       if (!skip_image_metadata) {
@@ -189,7 +187,11 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                          right = images_right,
                          datetime = images_datetime,
                          proj = images_proj, stringsAsFactors = FALSE)
-  images_df
+  
+  if (nrow(images_df) == 0) {
+    stop("Collection does not contain any images")
+  }
+  
   
   gdalrefs_df = data.frame(
     image_id = gdalrefs_image_id,
@@ -198,7 +200,6 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
     band_num = gdalrefs_band_num,
     stringsAsFactors = FALSE
   )
-  gdalrefs_df
   
   if (skip_image_metadata) {
     libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), data.frame())
