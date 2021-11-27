@@ -1037,7 +1037,7 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
       std::string band_name = Rcpp::as<Rcpp::List>(mask)["band"]; 
       bool invert = Rcpp::as<Rcpp::List>(mask)["invert"];
       
-      if (Rcpp::as<Rcpp::List>(mask)["values"] != R_NilValue) {
+      if (Rcpp::as<Rcpp::List>(mask).containsElementNamed("values") && Rcpp::as<Rcpp::List>(mask)["values"] != R_NilValue) {
         std::vector<double> values = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(mask)["values"]);
         std::vector<uint8_t> bits;
         if (Rcpp::as<Rcpp::List>(mask)["bits"] != R_NilValue)
