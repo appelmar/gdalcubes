@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-ev = Sys.getenv("USER") == "marius"
+ev = unname(Sys.info()["user"]) == "marius"
 knitr::opts_chunk$set(
   collapse = TRUE,
   eval = ev
