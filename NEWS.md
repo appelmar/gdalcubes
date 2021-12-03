@@ -1,4 +1,4 @@
-# gdalcubes 0.5.1 (2021-01-12)
+# gdalcubes 0.5.1 (2021-02-12)
 
 * fix CRAN vignette issue on Mac due to data download failures
 * fix `image_mask()` function for minimum and maximum values 

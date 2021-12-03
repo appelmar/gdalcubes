@@ -34,7 +34,7 @@ A proxy data cube object
 }
 \description{
 Create a spatiotemporal data cube directly from images with identical spatial extent and spatial reference system, similar
-to \link[raster]{stack} with an additional dimension supporting both, time and multiple bands / variables.
+to a raster stack with an additional dimension supporting both, time and multiple bands / variables.
 }
 \details{
 This function creates a four-dimensional (space, time, bands / variables) raster data cube from a 

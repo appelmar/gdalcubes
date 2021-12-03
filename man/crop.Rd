@@ -13,7 +13,7 @@ crop(cube, extent = NULL, iextent = NULL, snap = "near")
 
 \item{iextent}{list with length-two integer items named x, y, and t, defining the lower and upper boundaries as integer coordinates, see examples}
 
-\item{snap}{(see \link[raster]{crop} function of the raster package), one of 'near', 'in', or 'out'; ignored if using \code{iextent}}
+\item{snap}{one of 'near', 'in', or 'out'; ignored if using \code{iextent}}
 }
 \description{
 Create a proxy data cube, which crops a data cube by a spatial and/or temporal extent.

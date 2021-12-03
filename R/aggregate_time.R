@@ -25,7 +25,7 @@
 #' }
 #' 
 #' @details 
-#' This function can be used to aggregate time series to lower resolution (similar to \link[raster]{aggregate}) or to regularize
+#' This function can be used to aggregate time series to lower resolution or to regularize
 #' a data cube with irregular (labeled) time axis. It is possible to change the unit of the temporal resolution (e.g. to create monthly composites from daily images).
 #' The size of the cube may be expanded automatically if the original temporal extent is not divisible by the new temporal size of pixels.
 #' 

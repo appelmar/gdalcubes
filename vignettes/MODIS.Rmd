@@ -90,7 +90,7 @@ Notice that `raster_cube()` will not run any computations besides deriving the s
 ```{r}
 srs="+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
 MOD11A2.col = image_collection(img_col_file)
-v = cube_view(srs=srs, extent=MOD11A2.col, nx = 400, dt="P1M", aggregation = "mean")
+v = cube_view(srs=srs, extent=MOD11A2.col, nx = 200, dt="P1M", aggregation = "mean")
 v
 MOD11A2.cube = raster_cube(MOD11A2.col, v)
 MOD11A2.cube
@@ -115,8 +115,7 @@ The result is the median day night surface temperature difference for all pixels
 Notice that no data is actually read until we call `plot()`, i.e. all operations again return _proxy_ objects. 
 Replacing the plot function with `write_ncdf(MOD11A2.reduce, "test.nc")` would write the result as a NetCDF file to disk.  
 
-Operations on data cubes are designed such that they can be used with the [pipe operator](https://r4ds.had.co.nz/pipes.html). The following
-code for example derives monthly differences of land surface temperature, from June to September 2018. The `window_time` function here applies the simple time series kernel filter $T_t - T_{t-1}$.
+Operations on data cubes are designed such that they can be used with the native pipe operator `|>` (or `%>%` from the `magrittr` package) The following code for example derives monthly differences of land surface temperature, from June to September 2018. The `window_time` function here applies the simple time series kernel filter $T_t - T_{t-1}$.
 
 
 
@@ -133,7 +132,7 @@ raster_cube(image_collection(img_col_file), v1)  %>%
 
 
 ## Multithreading
-gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_set_threads(n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
+gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_options(threads = n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
 
 
 # Future work

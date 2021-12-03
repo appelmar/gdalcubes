@@ -46,7 +46,7 @@
 #' @param cube source data cube
 #' @param extent list with numeric items left, right, top, bottom, and character items t0 and t1, or a subset thereof, see examples
 #' @param iextent list with length-two integer items named x, y, and t, defining the lower and upper boundaries as integer coordinates, see examples 
-#' @param snap (see \link[raster]{crop} function of the raster package), one of 'near', 'in', or 'out'; ignored if using \code{iextent}
+#' @param snap one of 'near', 'in', or 'out'; ignored if using \code{iextent}
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' 
 #' @export

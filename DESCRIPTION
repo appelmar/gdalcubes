@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
 Version: 0.5.1
-Date: 2021-12-01
+Date: 2021-12-02
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -59,6 +59,7 @@ RoxygenNote: 7.1.2
 LinkingTo: Rcpp, RcppProgress
 Suggests: 
     knitr,
+    magrittr,
     rmarkdown,
     stars,
     magick,
