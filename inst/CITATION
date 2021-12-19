@@ -10,3 +10,14 @@ bibentry(bibtype = "Article",
          other=list("article-number" = 92),
          header="To cite gdalcubes in publications use:",
          url = "https://www.mdpi.com/2306-5729/4/3/92")
+         
+         
+bibentry(bibtype = "Misc",
+         title = "Cloud-based processing of satellite image collections in R using STAC, COGs, and on-demand data cubes",
+         author = c(person("Marius", "Appel"),
+                    person("Edzer", "Pebesma"),
+                    person("Matthias", "Mohr")),
+         year = 2021,
+         note = "Blog post on r-spatial.org",
+         url = "https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html")
+         

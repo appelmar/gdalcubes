@@ -33,14 +33,14 @@ In the following, we will follow a simple workflow by
 
 # Downloading the sample data
 
-We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://modis.gsfc.nasa.gov/data/dataprod/mod11.php), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. 
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://modis.gsfc.nasa.gov/data/dataprod/mod11.php), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive has approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. Since this might sometimes lead to timeouts depending on the the internet connection and availability of the file service, we first increase the global timeout option to at least 30 minutes (though it typically takes only a few minutes or less).
 
 ```{r data_download, echo=TRUE, results='hide'}
+options(timeout = max(1800, getOption("timeout")))
 dest_dir = tempdir()
 download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile=file.path(dest_dir, "MOD11A2.zip"),mode = "wb")
 unzip(file.path(dest_dir, "MOD11A2.zip"), exdir = file.path(dest_dir,"MOD11A2"))
 unlink(file.path(dest_dir, "MOD11A2.zip"))
-
 ```
 
 
@@ -135,7 +135,15 @@ raster_cube(image_collection(img_col_file), v1)  %>%
 gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_options(threads = n)` will tell all following data cube operations to use up to `n` threads. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
 
 
-# Future work
-This vignette presents a very simple example with a small dataset. Future vignettes will focus on (i) how user-defined R functions can be applied on data cubes, (ii)
-how to process larger datasets (Sentinel 2) with overlapping images from different spatial reference systems, and (iii) how to run gdalcubes in the cloud. 
+# Further reading
+
+This vignette presents a very simple example with a small dataset. Further tutorials and publications not available as a vignette inside the package but available online include:
+
+-   [A detailed tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
+    presented at OpenGeoHub Summer School 2019 where larger Landsat and Sentinel-2 datasets with overlapping images from different spatial reference systems are used and user-defined R functions are applied on data cubes.  
+-   [A blog post](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html)
+    on r-spatial.org explains, how `gdalcubes` can be used to analyze large satellite collections in the cloud using STAC. 
+
+
+
 

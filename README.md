@@ -261,7 +261,7 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs 
-    ## names      : cube_15abef33edb4182013, cube_15abef33edb4182014, cube_15abef33edb4182015, cube_15abef33edb4182016, cube_15abef33edb4182017, cube_15abef33edb4182018, cube_15abef33edb4182019
+    ## names      : cube_e71f313266bf62013, cube_e71f313266bf62014, cube_e71f313266bf62015, cube_e71f313266bf62016, cube_e71f313266bf62017, cube_e71f313266bf62018, cube_e71f313266bf62019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
@@ -344,17 +344,17 @@ raster_cube(L8.col, v.overview) |>
   query_points(x,y,t, v.overview$space$srs)
 ```
 
-    ##          B04      B05
-    ## 1   235.6589 2984.696
-    ## 2   172.2454 2744.205
-    ## 3        NaN      NaN
-    ## 4   180.0536 3095.739
-    ## 5   226.8788 2872.465
-    ## 6   201.6983 3142.109
-    ## 7        NaN      NaN
-    ## 8        NaN      NaN
-    ## 9  1961.6798 4395.522
-    ## 10  281.7466 3662.215
+    ##         B04      B05
+    ## 1       NaN      NaN
+    ## 2       NaN      NaN
+    ## 3  235.1634 3248.733
+    ## 4       NaN      NaN
+    ## 5       NaN      NaN
+    ## 6       NaN      NaN
+    ## 7       NaN      NaN
+    ## 8  236.1728 3409.626
+    ## 9       NaN      NaN
+    ## 10      NaN      NaN
 
 ``` r
 raster_cube(L8.col, v.overview) |>
@@ -363,30 +363,30 @@ raster_cube(L8.col, v.overview) |>
 ```
 
     ## $B04
-    ##        2013     2014     2015      2016      2017     2018      2019
-    ## 1  160.8274 175.6520 235.6589  218.3792  203.0727 182.8651  156.1551
-    ## 2  151.2886 203.8418 316.1761  216.8624  172.2454 171.5893  148.0354
-    ## 3       NaN      NaN      NaN       NaN       NaN      NaN       NaN
-    ## 4       NaN 202.2575 223.9496  210.2540  226.5912 180.0536       NaN
-    ## 5  246.7390 216.7149 306.2322  217.0830  269.8181 226.8788 7325.4670
-    ## 6       NaN 210.6211 227.4864  201.6983  249.7855 189.7245       NaN
-    ## 7       NaN      NaN      NaN       NaN       NaN      NaN       NaN
-    ## 8       NaN      NaN      NaN       NaN       NaN      NaN       NaN
-    ## 9       NaN 247.1852 301.3082  308.3311 1961.6798 697.5062       NaN
-    ## 10      NaN 511.7520 281.7466 2099.2677  734.7317 234.8724       NaN
+    ##        2013     2014      2015      2016      2017      2018     2019
+    ## 1       NaN 700.0095 1270.5242 1525.8437  737.9342 1215.0860      NaN
+    ## 2       NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ## 3  211.5819 264.8878 1204.3398  344.6974  235.1634  236.3439 213.4668
+    ## 4       NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ## 5       NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ## 6       NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ## 7       NaN 207.2001  232.3275  206.9891 1090.8719  221.5985      NaN
+    ## 8  236.1728 592.0282  332.1617  311.1650  335.7071       NaN 798.8248
+    ## 9       NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ## 10      NaN      NaN       NaN       NaN       NaN       NaN      NaN
     ## 
     ## $B05
-    ##        2013     2014     2015     2016     2017     2018     2019
-    ## 1  2705.562 2909.685 2984.696 2940.986 2901.269 2884.012 2822.350
-    ## 2  2539.719 3069.030 3073.899 3115.801 2744.205 2849.731 2661.840
-    ## 3       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 4       NaN 3118.763 3130.213 2990.434 3314.439 3095.739      NaN
-    ## 5  3142.041 3074.893 2962.259 2837.072 3244.551 2872.465 7472.408
-    ## 6       NaN 3295.172 3141.681 3142.109 3200.920 2760.859      NaN
-    ## 7       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 8       NaN      NaN      NaN      NaN      NaN      NaN      NaN
-    ## 9       NaN 3324.676 3851.022 2645.878 4395.522 3839.904      NaN
-    ## 10      NaN 3529.255 3662.215 3661.613 2906.513 3380.449      NaN
+    ##        2013      2014      2015     2016      2017     2018     2019
+    ## 1       NaN  357.5399  961.2185 1146.951  394.1609 1002.021      NaN
+    ## 2       NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ## 3  2892.996 2918.1467 3535.2247 3196.897 3248.7328 2857.153 2874.204
+    ## 4       NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ## 5       NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ## 6       NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ## 7       NaN 3030.9393 3421.7411 2791.029 3314.5022 3275.457      NaN
+    ## 8  3409.626 3687.8726 3332.8307 3379.766 3395.1829      NaN 2974.423
+    ## 9       NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ## 10      NaN       NaN       NaN      NaN       NaN      NaN      NaN
 
 To compute time series of summary statistics over spatial polygons, we
 need to specify polygon geometries (e.g., as an `sf` object) and specify
@@ -454,9 +454,10 @@ user-defined R functions independently over all chunks, by using the
 
 -   [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
     presented at OpenGeoHub Summer School 2019
--   [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
-    on r-spatial.org
+-   [1st blog post on
+    r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
+-   [2nd blog post on
+    r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html)
+    describing how to use gdalcubes in cloud-computing environments
 -   [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the
     special issue on Earth observation data cubes of the data journal
--   Some [introductory
-    slides](https://github.com/appelmar/gdalcubes_docs/blob/master/gdalcubes_overview_slides.pdf)

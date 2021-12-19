@@ -279,6 +279,6 @@ Though this is a small toy example only, the implementation works for a large nu
 # Further reading
 
 * [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
-* [Blog post](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) on r-spatial.org
+* [1st blog post on r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) 
+* [2nd blog post on r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html) describing how to use gdalcubes in cloud-computing environments
 * [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal
-* Some [introductory slides](https://github.com/appelmar/gdalcubes_docs/blob/master/gdalcubes_overview_slides.pdf)
