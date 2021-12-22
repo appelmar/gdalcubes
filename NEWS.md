@@ -1,3 +1,10 @@
+# gdalcubes 0.5.9999 (under development)
+
+* use WKT strings or authority codes in image collections instead of proj4 strings
+
+
+
+
 # gdalcubes 0.5.1 (2021-02-12)
 
 * fix CRAN vignette issue on Mac due to data download failures
