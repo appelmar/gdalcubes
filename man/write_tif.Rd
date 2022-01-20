@@ -72,7 +72,7 @@ L8.col = image_collection(file.path(tempdir(), "L8.db"))
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-write_tif(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
+write_tif(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=tempdir())
 }
 \seealso{
 \code{\link{pack_minmax}}

@@ -919,7 +919,7 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' write_tif(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=)
+#' write_tif(select_bands(raster_cube(L8.col, v), c("B04", "B05")), dir=tempdir())
 #' @export
 write_tif <- function(x, dir = tempfile(pattern=""), prefix = basename(tempfile(pattern = "cube_")), overviews = FALSE, 
                       COG = FALSE, rsmpl_overview="nearest", creation_options = NULL , write_json_descr=FALSE, pack = NULL) {
