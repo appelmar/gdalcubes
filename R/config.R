@@ -77,7 +77,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     else {
       stop("Expected a length-three vector or a function for argument default_chunksize")
     }
-    .pkgenv$default_chunksize = default_chunk_size
+    .pkgenv$default_chunksize = default_chunksize
   }
 
   
