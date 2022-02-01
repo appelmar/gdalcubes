@@ -303,6 +303,8 @@ void libgdalcubes_init() {
   // Interruptible chunk processor
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(1)));
   
+  config::instance()->set_gdal_option("GDAL_NUM_THREADS", "ALL_CPUS");
+  
 }
 
 // [[Rcpp::export]]
