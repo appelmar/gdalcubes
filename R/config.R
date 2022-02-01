@@ -12,6 +12,7 @@
 #' @param ncdf_write_bounds logical; write dimension bounds as additional variables in netCDF files
 #' @param use_overview_images logical; if FALSE, all images are read on original resolution and existing overviews will be ignored
 #' @param show_progress logical; if TRUE, a progress bar will be shown for actual computations
+#' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -28,7 +29,7 @@
 #' gdalcubes_options(threads=1) # reset
 #' @export
 gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
-                              use_overview_images, show_progress) {
+                              use_overview_images, show_progress, default_chunksize) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -63,6 +64,21 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     .pkgenv$show_progress = show_progress
     libgdalcubes_set_progress(show_progress)
   }
+  if (!missing(default_chunksize)) {
+    if (is.vector(default_chunksize)) {
+      stopifnot(length(default_chunksize) == 3)
+      stopifnot(all(default_chunksize %% 1 == 0))
+    }
+    else if (is.function(default_chunksize)) {
+      test = default_chunksize(512, 512, 512)
+      stopifnot(length(test) == 3)
+      stopifnot(all(test %% 1 == 0))
+    }
+    else {
+      stop("Expected a length-three vector or a function for argument default_chunksize")
+    }
+    .pkgenv$default_chunksize = .default_chunk_size
+  }
 
   
   # if (!missing(swarm)) {
@@ -80,7 +96,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
       cache = .pkgenv$use_cube_cache,
       ncdf_write_bounds = .pkgenv$ncdf_write_bounds,
       use_overview_images = .pkgenv$use_overview_images,
-      show_progress = .pkgenv$show_progress
+      show_progress = .pkgenv$show_progress,
+      default_chunksize = .pkgenv$default_chunksize
     ))
   }
 }
@@ -118,6 +135,37 @@ gdalcubes_gdal_has_geos <- function() {
 #' @export
 gdalcubes_gdalversion <- function() {
   return(libgdalcubes_gdalversion())
+}
+
+
+#' Calculate a default chunk size based on the cube size and currently used number of threads
+#' @examples 
+#' .default_chunk_size(12, 1000, 1000)
+#' @export
+.default_chunk_size <- function(nt, ny, nx) {
+  
+  nthreads = .pkgenv$threads
+  
+  ct = 1
+  target_pixels_per_chunk = ny * nx * nt / nthreads
+  
+  # multiples of 256
+  cy = max(floor(sqrt(target_pixels_per_chunk) / 256), 1) * 256
+  cx = cy
+  
+  #ar = ny / nx
+  #cy = ceiling(sqrt(target_pixels_per_chunk * ar))
+  #cx = ceiling(sqrt(target_pixels_per_chunk / ar))
+  
+  # apply limits
+  cx = min(cx, 2048)
+  cy = min(cy, 2048)
+  cx = max(cx, 256)
+  cy = max(cy, 256)
+  cx = min(nx, cx)
+  cy = min(ny, cy)
+  
+  return(c(ct, cy, cx))
 }
 
 

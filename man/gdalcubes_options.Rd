@@ -12,7 +12,8 @@ gdalcubes_options(
   cache,
   ncdf_write_bounds,
   use_overview_images,
-  show_progress
+  show_progress,
+  default_chunksize
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ gdalcubes_options(
 \item{use_overview_images}{logical; if FALSE, all images are read on original resolution and existing overviews will be ignored}
 
 \item{show_progress}{logical; if TRUE, a progress bar will be shown for actual computations}
+
+\item{default_chunksize}{length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether

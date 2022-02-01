@@ -89,7 +89,7 @@ plot.cube  <-
         }
       }
       else if (.pkgenv$use_cube_cache) {
-        j = as_json(x)
+        j = libgdalcubes_simple_hash(as_json(x))
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
           fn = .pkgenv$cube_cache[[j]]
@@ -383,7 +383,7 @@ plot.cube  <-
         }
       }
       else if (.pkgenv$use_cube_cache) {
-        j = as_json(x)
+        j = libgdalcubes_simple_hash(as_json(x))
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
           fn = .pkgenv$cube_cache[[j]]

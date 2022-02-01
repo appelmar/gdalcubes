@@ -6,7 +6,7 @@
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
 #' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
-#' @param chunking Vector of length 3 defining the size of data cube chunks in the order time, y, x.
+#' @param chunking Vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
@@ -15,6 +15,8 @@
 #'  2. For all resulting images, apply gdalwarp to reproject, resize, and resample to an in-memory GDAL dataset
 #'  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
 #'  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
+#' 
+#' 
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -36,9 +38,18 @@
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-raster_cube <- function(image_collection, view, mask=NULL, chunking=c(1, 256, 256)) {
+raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$default_chunksize) {
 
   stopifnot(is.image_collection(image_collection))
+  if (is.function(chunking)) {
+    if (missing(view)) {
+      warning("Function to derive chunk sizes is not supprted when data cube is missing, using fixed chunk size (1, 512, 512)")
+      chunking = c(1, 512, 512)
+    }
+    else {
+      chunking = chunking(view$time$nt, view$space$ny, view$space$nx)
+    }
+  }
   stopifnot(length(chunking) == 3)
   chunking = as.integer(chunking)
   stopifnot(chunking[1] > 0 && chunking[2] > 0 && chunking[3] > 0)
@@ -835,7 +846,7 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
   
   if (!chunked) {
     if (.pkgenv$use_cube_cache) {
-      j = as_json(x)
+      j = libgdalcubes_simple_hash(as_json(x))
       if (!is.null(.pkgenv$cube_cache[[j]])
           && file.exists(.pkgenv$cube_cache[[j]])) {
         file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)

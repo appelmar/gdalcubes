@@ -1,7 +1,8 @@
 # gdalcubes 0.5.9999 (under development)
 
 * use WKT strings or authority codes in image collections instead of proj4 strings
-
+* default chunk sizes now consider the number of currently used threads 
+* fix `filter_geom()` issues with larger polygons and polygon contains check 
 
 
 

@@ -22,6 +22,7 @@
     .pkgenv$show_progress = FALSE
   }
   libgdalcubes_set_progress(.pkgenv$show_progress)
+  .pkgenv$default_chunksize = .default_chunk_size
 
   #.pkgenv$swarm = NULL
   register_s3_method("stars","st_as_stars", "cube")

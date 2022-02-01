@@ -4,7 +4,12 @@
 \alias{raster_cube}
 \title{Create a data cube from an image collection}
 \usage{
-raster_cube(image_collection, view, mask = NULL, chunking = c(1, 256, 256))
+raster_cube(
+  image_collection,
+  view,
+  mask = NULL,
+  chunking = .pkgenv$default_chunksize
+)
 }
 \arguments{
 \item{image_collection}{Source image collection as from \code{image_collection} or \code{create_image_collection}}
@@ -13,7 +18,7 @@ raster_cube(image_collection, view, mask = NULL, chunking = c(1, 256, 256))
 
 \item{mask}{mask pixels of images based on band values, see \code{\link{image_mask}}}
 
-\item{chunking}{Vector of length 3 defining the size of data cube chunks in the order time, y, x.}
+\item{chunking}{Vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.}
 }
 \value{
 A proxy data cube object
