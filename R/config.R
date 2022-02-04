@@ -137,6 +137,19 @@ gdalcubes_gdalversion <- function() {
   return(libgdalcubes_gdalversion())
 }
 
+#' Set GDAL config options
+#' 
+#' @details 
+#' Details and a list of possible options can be found at 
+#' \href{https://gdal.org/user/configoptions.html}{https://gdal.org/user/configoptions.html}.
+#' @examples 
+#' gdalcubes_set_gdal_config("GDAL_NUM_THREADS", "ALL_CPUS")
+#' @export
+gdalcubes_set_gdal_config <- function(key, value) {
+  stopifnot(length(key) == 1)
+  stopifnog(length(value) == 1)
+  libgdalcubes_set_gdal_config(as.character(key), as.character(value))
+}
 
 #' Calculate a default chunk size based on the cube size and currently used number of threads
 #' @examples 

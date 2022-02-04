@@ -50,13 +50,13 @@ Description: Processing collections of Earth observation images as on-demand mul
     multithreading. All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries. 
     See Appel and Pebesma (2019) <doi:10.3390/data4030092> for further details.
 Depends: R (>= 3.4)
-Imports: Rcpp, RcppProgress, jsonlite, ncdf4
+Imports: Rcpp, RcppThread, jsonlite, ncdf4
 License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/
 Encoding: UTF-8
 RoxygenNote: 7.1.2
-LinkingTo: Rcpp, RcppProgress
+LinkingTo: Rcpp, RcppThread
 Suggests: 
     knitr,
     magrittr,

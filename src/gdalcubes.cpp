@@ -3,12 +3,11 @@
 #include "gdalcubes/src/cube_factory.h"
 
 // [[Rcpp::plugins("cpp11")]]
-// [[Rcpp::depends(RcppProgress)]]
+// [[Rcpp::depends(RcppThread)]]
 #include <Rcpp.h>
-#include <progress.hpp>
-#include <progress_bar.hpp>
+#include <RcppThread.h>
 #include <memory>
-#include <thread>
+//#include <thread>
 #include <algorithm>
 
 
@@ -54,17 +53,13 @@ private:
 void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
                                         std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   std::mutex mutex;
-  bool interrupted = false;
-  std::vector<std::thread> workers;
-  std::vector<bool> finished(_nthreads, false);
+  std::vector<RcppThread::Thread> workers;
   for (uint16_t it = 0; it < _nthreads; ++it) {
-    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted](void) {
+    workers.push_back(RcppThread::Thread([this, &c, f, it, &mutex](void) {
       for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
         try {
-          if (!interrupted) {
-            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
-            f(i, dat, mutex);
-          }
+          std::shared_ptr<chunk_data> dat = c->read_chunk(i);
+          f(i, dat, mutex);
         } catch (std::string s) {
           GCBS_ERROR(s);
           continue;
@@ -72,98 +67,43 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
           GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
           continue;
         }
+        RcppThread::checkUserInterrupt();
       }
-      finished[it] = true;
     }));
-  }
-  
-  bool done = false;
-  int i=0;
-  while (!done) {
-    done = true;
-    for (uint16_t it = 0; it < _nthreads; ++it) {
-      done = done && finished[it];
-    }
-    if (!done) {
-      if (Progress::check_abort()) {
-        interrupted = true; // still need to wait for threads to finish current chunk
-      }
-      uint32_t cur_ms = std::min(500, 50 + i*50);
-      std::this_thread::sleep_for(std::chrono::milliseconds(cur_ms));
-    }
-    ++i;
   }
   for (uint16_t it = 0; it < _nthreads; ++it) {
     workers[it].join();
-  }
-  if (interrupted) {
-    throw std::string("computations have been interrupted by the user");
   }
 }
 
 
 
 struct error_handling_r {
-  static std::mutex _m_errhandl;
-  static std::stringstream _err_stream;
-  static bool _defer;
-  
-  static void defer_output() {
-    _m_errhandl.lock();
-    _defer = true;
-    _m_errhandl.unlock();
-  }
-  
-  static void do_output() {
-    _m_errhandl.lock();
-    _defer = false;
-    Rcpp::Rcerr << _err_stream.str() << std::endl;
-    _err_stream.str(""); 
-    _m_errhandl.unlock();
-  }
-  
   static void debug(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "Error  message: "  << msg << where_str << std::endl;
+      RcppThread::Rcout << "Error  message: "  << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning  message: " << msg << where_str << std::endl;
+      RcppThread::Rcout << "Warning  message: " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "Info message: " << msg << where_str << std::endl;
+      RcppThread::Rcout << "Info message: " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "Debug message: "  << msg << where_str << std::endl;
+      RcppThread::Rcout << "Debug message: "  << msg << where_str << std::endl;
     }
-    if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str() ;
-      _err_stream.str(""); 
-    }
-    _m_errhandl.unlock();
   }
   
   static void standard(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "Error: " << msg << std::endl;
+      RcppThread::Rcout << "Error: " << msg << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning: " << msg << std::endl;
+      RcppThread::Rcout << "Warning: " << msg << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "## " << msg << std::endl;
+      RcppThread::Rcout << "## " << msg << std::endl;
     }
-    if (!_defer) {
-      Rcpp::Rcerr << _err_stream.str();
-      _err_stream.str(""); 
-    }
-    
-    _m_errhandl.unlock();
   }
 };
-std::mutex error_handling_r::_m_errhandl;
-std::stringstream error_handling_r::_err_stream;
-bool error_handling_r::_defer = false;
-
 
 
 struct progress_simple_R : public progress {
@@ -182,72 +122,47 @@ struct progress_simple_R : public progress {
   }
   virtual void finalize() override {
     _m.lock();
-    _rp->update(100);
-    error_handling_r::do_output();
+    RcppThread::Rcout << std::endl;
     _m.unlock();
   }
 
-  progress_simple_R() : _p(0), _rp(nullptr) {}
+  progress_simple_R() : _p(0) {}
   
-  ~progress_simple_R(){
-    if (_rp) {
-      delete _rp;
-    }
-  }
+  ~progress_simple_R(){}
 
 private:
   
   std::mutex _m;
   double _p;
-  Progress *_rp;
   
   void _set(double p) { // call this function only with a lock on _m
     
-    //Rcpp::checkUserInterrupt();
-    // if (Progress::check_abort()) {
-    //   throw std::string("Operation has been interrupted by user");
-    // }
-    if (!_rp) {
-      error_handling_r::defer_output();
-      _rp = new Progress(100,true);
-    }
-    
     _p = p;
-    _rp->update((int)(_p*100));
+    RcppThread::Rcout << "[";
+    int pp = 50 * p;
+    int i = 0;
+    while (i < pp) {
+      if (i < pp) RcppThread::Rcout << "=";
+      ++i;
+    }
+    RcppThread::Rcout << ">";
+    ++i;
+    while (i < 50) {
+      RcppThread::Rcout << " ";
+      ++i;
+    }
+    RcppThread::Rcout << "] " << int(p * 100.0) << " %\r" << std::flush;
   }
 };
 
 
 struct progress_none_R : public progress {
   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
-  
-  void set(double p) override {}
-  
+  void set(double p) override {};
   void increment(double dp) override {}
-  virtual void finalize() override {
-    _rp->update(100);
-  }
-  progress_none_R() :  _rp(nullptr) {
-    // instance is needed for Progress::check_abort()
-    _rp = new Progress(100,false);
-  }
-  ~progress_none_R(){
-    if (_rp) {
-      delete _rp;
-    }
-  }
-  
-private:
-  Progress *_rp;
+  virtual void finalize() override {}
+  progress_none_R() {}
 };
-// 
-// struct progress_none_R : public progress {
-//   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
-//   void set(double p) override {};
-//   void increment(double dp) override {}
-//   virtual void finalize() override {}
-//   progress_none_R() {}
-// };
 
 
 
@@ -274,6 +189,11 @@ Rcpp::List libgdalcubes_version() {
 // [[Rcpp::export]]
 std::vector<std::string> libgdalcubes_gdalformats() {
   return config::instance()->gdal_formats();
+}
+
+// [[Rcpp::export]]
+void libgdalcubes_set_gdal_config(std::string k, std::string v) {
+  config::instance()->set_gdal_option(k, v);
 }
 
 // [[Rcpp::export]]

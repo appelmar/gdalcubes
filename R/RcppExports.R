@@ -13,6 +13,10 @@ libgdalcubes_gdalformats <- function() {
     .Call('_gdalcubes_libgdalcubes_gdalformats', PACKAGE = 'gdalcubes')
 }
 
+libgdalcubes_set_gdal_config <- function(k, v) {
+    invisible(.Call('_gdalcubes_libgdalcubes_set_gdal_config', PACKAGE = 'gdalcubes', k, v))
+}
+
 libgdalcubes_gdalversion <- function() {
     .Call('_gdalcubes_libgdalcubes_gdalversion', PACKAGE = 'gdalcubes')
 }
