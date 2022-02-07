@@ -306,6 +306,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libgdalcubes_from_json_file
+SEXP libgdalcubes_from_json_file(std::string path);
+RcppExport SEXP _gdalcubes_libgdalcubes_from_json_file(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_from_json_file(path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// libgdalcubes_from_json_string
+SEXP libgdalcubes_from_json_string(std::string json);
+RcppExport SEXP _gdalcubes_libgdalcubes_from_json_string(SEXP jsonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type json(jsonSEXP);
+    rcpp_result_gen = Rcpp::wrap(libgdalcubes_from_json_string(json));
+    return rcpp_result_gen;
+END_RCPP
+}
 // libgdalcubes_create_rename_bands_cube
 SEXP libgdalcubes_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, std::vector<std::string> names_new);
 RcppExport SEXP _gdalcubes_libgdalcubes_create_rename_bands_cube(SEXP pinSEXP, SEXP names_oldSEXP, SEXP names_newSEXP) {
@@ -730,36 +752,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// libgdalcubes_translate_cog
-std::string libgdalcubes_translate_cog(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options);
-RcppExport SEXP _gdalcubes_libgdalcubes_translate_cog(SEXP collectionSEXP, SEXP out_dirSEXP, SEXP nthreadsSEXP, SEXP overwriteSEXP, SEXP creation_optionsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type collection(collectionSEXP);
-    Rcpp::traits::input_parameter< std::string >::type out_dir(out_dirSEXP);
-    Rcpp::traits::input_parameter< uint16_t >::type nthreads(nthreadsSEXP);
-    Rcpp::traits::input_parameter< bool >::type overwrite(overwriteSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type creation_options(creation_optionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_translate_cog(collection, out_dir, nthreads, overwrite, creation_options));
-    return rcpp_result_gen;
-END_RCPP
-}
-// libgdalcubes_translate_gtiff
-std::string libgdalcubes_translate_gtiff(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options);
-RcppExport SEXP _gdalcubes_libgdalcubes_translate_gtiff(SEXP collectionSEXP, SEXP out_dirSEXP, SEXP nthreadsSEXP, SEXP overwriteSEXP, SEXP creation_optionsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type collection(collectionSEXP);
-    Rcpp::traits::input_parameter< std::string >::type out_dir(out_dirSEXP);
-    Rcpp::traits::input_parameter< uint16_t >::type nthreads(nthreadsSEXP);
-    Rcpp::traits::input_parameter< bool >::type overwrite(overwriteSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type creation_options(creation_optionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(libgdalcubes_translate_gtiff(collection, out_dir, nthreads, overwrite, creation_options));
-    return rcpp_result_gen;
-END_RCPP
-}
 // libgdalcubes_simple_hash
 std::string libgdalcubes_simple_hash(std::string instr);
 RcppExport SEXP _gdalcubes_libgdalcubes_simple_hash(SEXP instrSEXP) {
@@ -813,6 +805,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_create_ncdf_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_ncdf_cube, 3},
     {"_gdalcubes_libgdalcubes_create_dummy_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_dummy_cube, 4},
     {"_gdalcubes_libgdalcubes_copy_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_copy_cube, 1},
+    {"_gdalcubes_libgdalcubes_from_json_file", (DL_FUNC) &_gdalcubes_libgdalcubes_from_json_file, 1},
+    {"_gdalcubes_libgdalcubes_from_json_string", (DL_FUNC) &_gdalcubes_libgdalcubes_from_json_string, 1},
     {"_gdalcubes_libgdalcubes_create_rename_bands_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_rename_bands_cube, 3},
     {"_gdalcubes_libgdalcubes_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_reduce_time_cube, 3},
     {"_gdalcubes_libgdalcubes_create_stream_reduce_time_cube", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stream_reduce_time_cube, 4},
@@ -845,8 +839,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_libgdalcubes_set_threads", (DL_FUNC) &_gdalcubes_libgdalcubes_set_threads, 1},
     {"_gdalcubes_libgdalcubes_set_progress", (DL_FUNC) &_gdalcubes_libgdalcubes_set_progress, 1},
     {"_gdalcubes_libgdalcubes_set_use_overviews", (DL_FUNC) &_gdalcubes_libgdalcubes_set_use_overviews, 1},
-    {"_gdalcubes_libgdalcubes_translate_cog", (DL_FUNC) &_gdalcubes_libgdalcubes_translate_cog, 5},
-    {"_gdalcubes_libgdalcubes_translate_gtiff", (DL_FUNC) &_gdalcubes_libgdalcubes_translate_gtiff, 5},
     {"_gdalcubes_libgdalcubes_simple_hash", (DL_FUNC) &_gdalcubes_libgdalcubes_simple_hash, 1},
     {"_gdalcubes_libgdalcubes_create_stac_collection", (DL_FUNC) &_gdalcubes_libgdalcubes_create_stac_collection, 5},
     {NULL, NULL, 0}

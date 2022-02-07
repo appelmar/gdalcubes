@@ -105,6 +105,14 @@ libgdalcubes_copy_cube <- function(pin) {
     .Call('_gdalcubes_libgdalcubes_copy_cube', PACKAGE = 'gdalcubes', pin)
 }
 
+libgdalcubes_from_json_file <- function(path) {
+    .Call('_gdalcubes_libgdalcubes_from_json_file', PACKAGE = 'gdalcubes', path)
+}
+
+libgdalcubes_from_json_string <- function(json) {
+    .Call('_gdalcubes_libgdalcubes_from_json_string', PACKAGE = 'gdalcubes', json)
+}
+
 libgdalcubes_create_rename_bands_cube <- function(pin, names_old, names_new) {
     .Call('_gdalcubes_libgdalcubes_create_rename_bands_cube', PACKAGE = 'gdalcubes', pin, names_old, names_new)
 }
@@ -231,14 +239,6 @@ libgdalcubes_set_progress <- function(show_progress) {
 
 libgdalcubes_set_use_overviews <- function(use_overviews) {
     invisible(.Call('_gdalcubes_libgdalcubes_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
-}
-
-libgdalcubes_translate_cog <- function(collection, out_dir, nthreads, overwrite, creation_options) {
-    .Call('_gdalcubes_libgdalcubes_translate_cog', PACKAGE = 'gdalcubes', collection, out_dir, nthreads, overwrite, creation_options)
-}
-
-libgdalcubes_translate_gtiff <- function(collection, out_dir, nthreads, overwrite, creation_options) {
-    .Call('_gdalcubes_libgdalcubes_translate_gtiff', PACKAGE = 'gdalcubes', collection, out_dir, nthreads, overwrite, creation_options)
 }
 
 libgdalcubes_simple_hash <- function(instr) {

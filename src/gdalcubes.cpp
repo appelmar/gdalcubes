@@ -1,4 +1,3 @@
-
 #include "gdalcubes/src/gdalcubes.h"
 #include "gdalcubes/src/cube_factory.h"
 
@@ -9,6 +8,7 @@
 #include <memory>
 //#include <thread>
 #include <algorithm>
+
 
 
 using namespace Rcpp;
@@ -54,8 +54,10 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
                                         std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   std::mutex mutex;
   std::vector<RcppThread::Thread> workers;
+  
   for (uint16_t it = 0; it < _nthreads; ++it) {
     workers.push_back(RcppThread::Thread([this, &c, f, it, &mutex](void) {
+      CPLPushErrorHandler(config::gdal_err_handler_default);
       for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
         try {
           std::shared_ptr<chunk_data> dat = c->read_chunk(i);
@@ -69,6 +71,7 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
         }
         RcppThread::checkUserInterrupt();
       }
+      CPLPopErrorHandler();
     }));
   }
   for (uint16_t it = 0; it < _nthreads; ++it) {
@@ -80,6 +83,7 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
 
 struct error_handling_r {
   static void debug(error_level type, std::string msg, std::string where, int error_code) {
+
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
@@ -1105,6 +1109,36 @@ SEXP libgdalcubes_copy_cube(SEXP pin) {
 }
 
 
+// [[Rcpp::export]]
+SEXP libgdalcubes_from_json_file(std::string path) {
+  try {
+    std::shared_ptr<cube>* x  = new std::shared_ptr<cube>(cube_factory::instance()->create_from_json_file(path));
+    Rcpp::XPtr< std::shared_ptr<cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
+SEXP libgdalcubes_from_json_string(std::string json) {
+  try {
+    std::string err;
+    json11::Json j = json11::Json::parse(json, err);
+    if (!err.empty()) {
+      Rcpp::stop(err);
+    }
+    std::shared_ptr<cube>* x  = new std::shared_ptr<cube>(cube_factory::instance()->create_from_json(j));
+    Rcpp::XPtr< std::shared_ptr<cube> > p(x, true);
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
 
 
 
@@ -1642,8 +1676,10 @@ SEXP libgdalcubes_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int3
 // [[Rcpp::export]]
 SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
   try {
+    CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::vector<std::vector<double>> res = vector_queries::query_points(*aa, px, py, pt, srs);
+    CPLPopErrorHandler(); 
     Rcpp::List df(res.size());
   
     for (uint16_t i=0; i<res.size(); ++i) {
@@ -1652,6 +1688,7 @@ SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<dou
     return df;
   }
   catch (std::string s) {
+    CPLPopErrorHandler(); 
     Rcpp::stop(s);
   }
 }
@@ -1660,8 +1697,10 @@ SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<dou
 // [[Rcpp::export]]
 SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
   try {
+    CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::vector<std::vector<std::vector<double>>> res = vector_queries::query_timeseries(*aa, px, py, srs);
+    CPLPopErrorHandler();
     Rcpp::List dflist(res.size());
     
     for (uint16_t i=0; i<res.size(); ++i) {
@@ -1670,6 +1709,7 @@ SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector
     return dflist;
   }
   catch (std::string s) {
+    CPLPopErrorHandler(); 
     Rcpp::stop(s);
   }
 }
@@ -1677,16 +1717,18 @@ SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector
 // [[Rcpp::export]]
 void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
  try {
+    CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-
     std::vector<std::pair<std::string, std::string>> agg;
     // assumption: agg_funcs.size() == agg_bands.size 
     for (uint32_t i=0; i<agg_funcs.size(); ++i) {
       agg.push_back(std::make_pair(agg_funcs[i],agg_bands[i]));
     }
    vector_queries::zonal_statistics(*aa, ogr_dataset, agg, out_path, overwrite, ogr_layer);
+   CPLPopErrorHandler();
   }
   catch (std::string s) {
+    CPLPopErrorHandler();
     Rcpp::stop(s);
   } 
 }
@@ -1711,34 +1753,6 @@ void libgdalcubes_set_progress(bool show_progress) {
 // [[Rcpp::export]]
 void libgdalcubes_set_use_overviews(bool use_overviews) {
   config::instance()->set_gdal_use_overviews(use_overviews);
-}
-
-
-// [[Rcpp::export]]
-std::string libgdalcubes_translate_cog(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options) {
-  try {
-    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(collection);
-    image_collection_ops::translate_cog(*aa, out_dir, nthreads, overwrite, creation_options);
-    return filesystem::join(out_dir, filesystem::filename((*aa)->get_filename()));
-  }
-  catch (std::string s) {
-    Rcpp::stop(s);
-  } 
-  
-}
-
-
-// [[Rcpp::export]]
-std::string libgdalcubes_translate_gtiff(SEXP collection, std::string out_dir, uint16_t nthreads, bool overwrite, std::vector<std::string> creation_options) {
-  try {
-    Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(collection);
-    image_collection_ops::translate_gtiff(*aa, out_dir, nthreads, overwrite, creation_options);
-    return filesystem::join(out_dir, filesystem::filename((*aa)->get_filename()));
-  }
-  catch (std::string s) {
-    Rcpp::stop(s);
-  } 
-  
 }
 
 

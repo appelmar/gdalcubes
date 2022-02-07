@@ -168,7 +168,7 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' Copy a data cube proxy object without copying any data
 #' 
 #' @param  cube source data cube proxy object
-#' @return copied data proxy object 
+#' @return copied data cube proxy object 
 #' @details 
 #' This internal function copies the complete processing chain / graph of a data cube but does not copy any data
 #' It is used internally to avoid in-place modification for operations with potential side effects on source data cubes.
@@ -176,6 +176,62 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
   cc = class(cube)
   cube = libgdalcubes_copy_cube(cube)
   class(cube) <- cc
+  return(cube)
+}
+
+#' Read a data cube from a json description file
+#' 
+#' @param json length-one character vector with a valid json data cube description
+#' @param path source data cube proxy object
+#' @return data cube proxy object 
+#' @details 
+#' Data cubes can be stored as JSON description files. These files do not store any data but the recipe
+#' how a data cube is consructed, i.e., the chain (or graph) of processes involved. 
+#' 
+#' Since data cube objects (as returned from \code{\link{raster_cube}}) cannot be saved with normal R methods,
+#' the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save data cube
+#' objects across several R sessions, as in the examples.
+#' 
+#' @examples{
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' cube = raster_cube(L8.col, v) 
+#' 
+#' # save
+#' fname = tempfile()
+#' writeLines(as_json(cube), fname)
+#' 
+#' # load
+#' json_cube(path = fname)  
+#' }
+#' 
+#' @export
+json_cube <- function(json, path = NULL) {
+  if (!missing(json)) {
+    if (!is.null(path)) {
+      warning("Expected only one of arguments 'json' and 'path'; path will be ignored")
+    }
+    cube = libgdalcubes_from_json_string(json)
+  }
+  else {
+    if (!is.null(path)) {
+      cube = libgdalcubes_from_json_file(path)
+    }
+    else {
+      stop("Missing argument, please provide either a JSON string, or a path to a JSON file")
+    }
+  }
+  class(cube) <- "cube" # TODO: any way to derive exact cube type here?
   return(cube)
 }
 
