@@ -152,7 +152,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = libgdalcubes_create_reduce_time_cube(x, reducers, bands)
+    x = gc_create_reduce_time_cube(x, reducers, bands)
     class(x) <- c("reduce_time_cube", "cube", "xptr")
     return(x)
   }
@@ -184,7 +184,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
     funstr = serialize_function(FUN)
-    funhash = libgdalcubes_simple_hash(funstr)
+    funhash = gc_simple_hash(funstr)
     srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
@@ -197,7 +197,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
     
-    x = libgdalcubes_create_stream_reduce_time_cube(x, cmd, nb, names)
+    x = gc_create_stream_reduce_time_cube(x, cmd, nb, names)
     class(x) <- c("reduce_time_cube", "cube", "xptr")
     return(x)
   }
@@ -269,7 +269,7 @@ reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = libgdalcubes_create_reduce_space_cube(x, reducers, bands)
+    x = gc_create_reduce_space_cube(x, reducers, bands)
     class(x) <- c("reduce_space_cube", "cube", "xptr")
     return(x)
   }
@@ -300,7 +300,7 @@ reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
     funstr = serialize_function(FUN)
-    funhash = libgdalcubes_simple_hash(funstr)
+    funhash = gc_simple_hash(funstr)
     srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
@@ -313,7 +313,7 @@ reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
     cat("write_chunk_from_array(reduce_space(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
     
-    x = libgdalcubes_create_stream_reduce_space_cube(x, cmd, nb, names)
+    x = gc_create_stream_reduce_space_cube(x, cmd, nb, names)
     class(x) <- c("reduce_space_cube", "cube", "xptr")
     return(x)
     
@@ -328,7 +328,7 @@ is.reduce_time_cube  <- function(obj) {
   if(!("reduce_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
@@ -340,7 +340,7 @@ is.reduce_space_cube  <- function(obj) {
   if(!("reduce_space_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

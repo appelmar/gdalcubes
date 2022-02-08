@@ -94,7 +94,7 @@ zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg
   agg_bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
   stopifnot(length(agg_funcs) == length(agg_bands))
   
-  libgdalcubes_zonal_statistics(x, geom, agg_funcs, agg_bands, out_path, overwrite, ogr_layer)
+  gc_zonal_statistics(x, geom, agg_funcs, agg_bands, out_path, overwrite, ogr_layer)
   
   if (!as_stars) {
     return(out_path)

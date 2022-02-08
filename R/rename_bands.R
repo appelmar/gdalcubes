@@ -47,7 +47,7 @@ rename_bands <- function(cube, ...) {
   stopifnot(is.character(arg_values))
   stopifnot(length(arg_names) == length(arg_values))
   
-  x = libgdalcubes_create_rename_bands_cube(cube, arg_names, arg_values)
+  x = gc_create_rename_bands_cube(cube, arg_names, arg_values)
   class(x) <- c("rename_bands_cube", "cube", "xptr")
   return(x)
 }
@@ -59,7 +59,7 @@ is.select_bands_cube  <- function(obj) {
   if(!("select_bands_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

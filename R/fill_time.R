@@ -36,7 +36,7 @@
 fill_time <- function(cube, method="near") {
   stopifnot(is.cube(cube))
   
-  x = libgdalcubes_create_fill_time_cube(cube, method)
+  x = gc_create_fill_time_cube(cube, method)
   class(x) <- c("fill_time_cube", "cube", "xptr")
   return(x)
 }
@@ -47,7 +47,7 @@ is.fill_time_cube  <- function(obj) {
   if(!("fill_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

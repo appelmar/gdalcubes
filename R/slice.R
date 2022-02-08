@@ -50,7 +50,7 @@ slice_time <- function(cube, datetime=NULL, it=NULL) {
     if (length(it) != 1) {
       stop("Invalid argument: length(it) is not equal to 1")
     }
-    x = libgdalcubes_create_slice_time_cube(cube, "", as.integer(it))
+    x = gc_create_slice_time_cube(cube, "", as.integer(it))
   }
   else {
     if (!is.character(datetime)) {
@@ -59,7 +59,7 @@ slice_time <- function(cube, datetime=NULL, it=NULL) {
     if (length(datetime) != 1) {
       stop("Invalid argument: length(datetime) is not equal to 1")
     }
-    x = libgdalcubes_create_slice_time_cube(cube, datetime, 0)
+    x = gc_create_slice_time_cube(cube, datetime, 0)
   }
   class(x) <- c("slice_time_cube", "cube", "xptr")
   return(x)
@@ -71,7 +71,7 @@ is.slice_time_cube  <- function(obj) {
   if(!("slice_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
@@ -132,7 +132,7 @@ slice_space <- function(cube, loc=NULL, i=NULL) {
     if (length(i) != 2) {
       stop("Invalid argument: length(i) is not equal to 2")
     }
-    x = libgdalcubes_create_slice_space_cube(cube, numeric(0), as.integer(i))
+    x = gc_create_slice_space_cube(cube, numeric(0), as.integer(i))
   }
   else {
     if (!is.numeric(loc)) {
@@ -141,7 +141,7 @@ slice_space <- function(cube, loc=NULL, i=NULL) {
     if (length(loc) != 2) {
       stop("Invalid argument: length(loc) is not equal to 2")
     }
-    x = libgdalcubes_create_slice_space_cube(cube, loc, integer(0))
+    x = gc_create_slice_space_cube(cube, loc, integer(0))
   }
   class(x) <- c("slice_space_cube", "cube", "xptr")
   return(x)
@@ -153,7 +153,7 @@ is.slice_space_cube  <- function(obj) {
   if(!("slice_space_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

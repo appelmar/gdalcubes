@@ -49,7 +49,7 @@ query_points <- function(x, px, py, pt, srs) {
     pt = format(pt)
   }
   
-  df = as.data.frame(libgdalcubes_query_points(x, px, py, pt, srs))
+  df = as.data.frame(gc_query_points(x, px, py, pt, srs))
   colnames(df) <- names(x)
   return(df)
   

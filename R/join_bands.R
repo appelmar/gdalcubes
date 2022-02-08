@@ -68,7 +68,7 @@ join_bands <- function(cube_list, cube_names = NULL) {
   
   
   
-  x = libgdalcubes_create_join_bands_cube(cube_list, cube_names)
+  x = gc_create_join_bands_cube(cube_list, cube_names)
   class(x) <- c("join_bands_cube", "cube", "xptr")
   return(x)
 }
@@ -79,7 +79,7 @@ is.join_bands_cube  <- function(obj) {
   if(!("join_bands_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

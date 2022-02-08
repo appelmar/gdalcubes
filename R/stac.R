@@ -202,7 +202,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   )
   
   if (skip_image_metadata) {
-    libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), data.frame())
+    gc_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), data.frame())
   }
   else {
     image_md_df = data.frame(
@@ -211,7 +211,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       value = image_md_value,
       stringsAsFactors = FALSE
     )
-    libgdalcubes_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), image_md_df)
+    gc_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), image_md_df)
   }
   return(image_collection(out_file))
 }

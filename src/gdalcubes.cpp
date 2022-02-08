@@ -14,6 +14,7 @@
 using namespace Rcpp;
 using namespace gdalcubes;
 
+static std::thread::id main_thread_id = std::this_thread::get_id();
 
 
 /**
@@ -172,13 +173,13 @@ struct progress_none_R : public progress {
 
 // see https://stackoverflow.com/questions/26666614/how-do-i-check-if-an-externalptr-is-null-from-within-r
 // [[Rcpp::export]]
-Rcpp::LogicalVector libgdalcubes_is_null(SEXP pointer) {
+Rcpp::LogicalVector gc_is_null(SEXP pointer) {
   return Rcpp::LogicalVector(!R_ExternalPtrAddr(pointer));
 }
 
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_version() {
+Rcpp::List gc_version() {
   version_info v = config::instance()->get_version_info();
   return(Rcpp::List::create(
       Rcpp::Named("VERSION_MAJOR") = v.VERSION_MAJOR ,
@@ -191,33 +192,33 @@ Rcpp::List libgdalcubes_version() {
 }
 
 // [[Rcpp::export]]
-std::vector<std::string> libgdalcubes_gdalformats() {
+std::vector<std::string> gc_gdalformats() {
   return config::instance()->gdal_formats();
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_set_gdal_config(std::string k, std::string v) {
+void gc_set_gdal_config(std::string k, std::string v) {
   config::instance()->set_gdal_option(k, v);
 }
 
 // [[Rcpp::export]]
-std::string libgdalcubes_gdalversion() {
+std::string gc_gdalversion() {
   return config::instance()->gdal_version_info();
 }
 
 // [[Rcpp::export]]
-bool libgdalcubes_gdal_has_geos() {
+bool gc_gdal_has_geos() {
   return config::instance()->gdal_has_geos();
 }
 
 
 // [[Rcpp::export]]
-void libgdalcubes_add_format_dir(std::string dir) {
+void gc_add_format_dir(std::string dir) {
   config::instance()->add_collection_format_preset_dir(dir);
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_init() {
+void gc_init() {
   config::instance()->gdalcubes_init();
   config::instance()->set_default_progress_bar(std::make_shared<progress_simple_R>());
   //config::instance()->set_default_progress_bar(std::make_shared<progress_none>());
@@ -232,13 +233,13 @@ void libgdalcubes_init() {
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_cleanup() {
+void gc_cleanup() {
   config::instance()->gdalcubes_cleanup();
 }
 
-// This function is also covered by libgdalcubes_dimension_values() and should be deprecated
+// This function is also covered by gc_dimension_values() and should be deprecated
 // [[Rcpp::export]]
-Rcpp::StringVector libgdalcubes_datetime_values(SEXP pin) {
+Rcpp::StringVector gc_datetime_values(SEXP pin) {
   Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
   std::shared_ptr<cube> x = *aa;
   
@@ -251,7 +252,7 @@ Rcpp::StringVector libgdalcubes_datetime_values(SEXP pin) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_cube_info( SEXP pin) {
+Rcpp::List gc_cube_info( SEXP pin) {
 
   try {
     Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
@@ -353,7 +354,7 @@ Rcpp::List libgdalcubes_cube_info( SEXP pin) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string dt_unit="") {
+Rcpp::List gc_dimension_values_from_view(Rcpp::List view, std::string dt_unit="") {
   
   cube_view cv;
   
@@ -458,7 +459,7 @@ Rcpp::List libgdalcubes_dimension_values_from_view(Rcpp::List view, std::string 
 
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_dimension_bounds(SEXP pin, std::string dt_unit="") {
+Rcpp::List gc_dimension_bounds(SEXP pin, std::string dt_unit="") {
   
   Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
   
@@ -515,7 +516,7 @@ Rcpp::List libgdalcubes_dimension_bounds(SEXP pin, std::string dt_unit="") {
 }
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
+Rcpp::List gc_dimension_values(SEXP pin, std::string dt_unit="") {
   
   Rcpp::XPtr<std::shared_ptr<cube>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
   
@@ -571,7 +572,7 @@ Rcpp::List libgdalcubes_dimension_values(SEXP pin, std::string dt_unit="") {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_open_image_collection(std::string filename) {
+SEXP gc_open_image_collection(std::string filename) {
   
   try {
     std::shared_ptr<image_collection>* x = new std::shared_ptr<image_collection>( std::make_shared<image_collection>(filename));
@@ -586,7 +587,7 @@ SEXP libgdalcubes_open_image_collection(std::string filename) {
 
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
+Rcpp::List gc_image_collection_info( SEXP pin) {
   
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -699,7 +700,7 @@ Rcpp::List libgdalcubes_image_collection_info( SEXP pin) {
 
 
 // [[Rcpp::export]]
-Rcpp::List libgdalcubes_image_collection_extent( SEXP pin, std::string srs) {
+Rcpp::List gc_image_collection_extent( SEXP pin, std::string srs) {
   
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -728,7 +729,7 @@ Rcpp::List libgdalcubes_image_collection_extent( SEXP pin, std::string srs) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_create_image_collection_from_format(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
+void gc_create_image_collection_from_format(std::vector<std::string> files, std::string format_file, std::string outfile, bool unroll_archives=true) {
   try {
     collection_format cfmt(format_file);
     if (unroll_archives) {
@@ -742,7 +743,7 @@ void libgdalcubes_create_image_collection_from_format(std::vector<std::string> f
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, 
+void gc_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, 
                                                         std::vector<std::string> date_time, bool use_subdatasets, 
                                                         std::vector<std::string> band_names) {
   try {
@@ -755,7 +756,7 @@ void libgdalcubes_create_image_collection_from_datetime(std::string outfile, std
 
 
 // [[Rcpp::export]]
-void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unroll_archives=true, std::string outfile = "") {
+void gc_add_images(SEXP pin, std::vector<std::string> files, bool unroll_archives=true, std::string outfile = "") {
   
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -773,7 +774,7 @@ void libgdalcubes_add_images(SEXP pin, std::vector<std::string> files, bool unro
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_list_collection_formats() {
+SEXP gc_list_collection_formats() {
   try {
     
     // get package directory and add to presets... (file.path(system.file(package="gdalcubes"),"formats"))
@@ -803,7 +804,7 @@ SEXP libgdalcubes_list_collection_formats() {
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_view(SEXP v) {
+SEXP gc_create_view(SEXP v) {
   Rcpp::List view = Rcpp::as<Rcpp::List>(v);
   cube_view cv;
   
@@ -889,7 +890,7 @@ SEXP libgdalcubes_create_view(SEXP v) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask, SEXP v = R_NilValue) {
+SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask, SEXP v = R_NilValue) {
 
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -995,7 +996,7 @@ SEXP libgdalcubes_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chu
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack) {
+SEXP gc_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack) {
   
   try {
     std::shared_ptr<ncdf_cube>* x  = new std::shared_ptr<ncdf_cube>( ncdf_cube::create(path, auto_unpack));
@@ -1019,7 +1020,7 @@ SEXP libgdalcubes_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_s
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::IntegerVector chunk_sizes) {
+SEXP gc_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::IntegerVector chunk_sizes) {
   
   try {
     
@@ -1096,7 +1097,7 @@ SEXP libgdalcubes_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_copy_cube(SEXP pin) {
+SEXP gc_copy_cube(SEXP pin) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<cube>* x  = new std::shared_ptr<cube>(cube_factory::instance()->create_from_json((*aa)->make_constructible_json()));
@@ -1110,7 +1111,7 @@ SEXP libgdalcubes_copy_cube(SEXP pin) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_from_json_file(std::string path) {
+SEXP gc_from_json_file(std::string path) {
   try {
     std::shared_ptr<cube>* x  = new std::shared_ptr<cube>(cube_factory::instance()->create_from_json_file(path));
     Rcpp::XPtr< std::shared_ptr<cube> > p(x, true) ;
@@ -1122,7 +1123,7 @@ SEXP libgdalcubes_from_json_file(std::string path) {
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_from_json_string(std::string json) {
+SEXP gc_from_json_string(std::string json) {
   try {
     std::string err;
     json11::Json j = json11::Json::parse(json, err);
@@ -1145,7 +1146,7 @@ SEXP libgdalcubes_from_json_string(std::string json) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, std::vector<std::string> names_new) {
+SEXP gc_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, std::vector<std::string> names_new) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1167,7 +1168,7 @@ SEXP libgdalcubes_create_rename_bands_cube(SEXP pin, std::vector<std::string> na
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1190,7 +1191,7 @@ SEXP libgdalcubes_create_reduce_time_cube(SEXP pin, std::vector<std::string> red
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+SEXP gc_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<stream_reduce_time_cube>* x = new std::shared_ptr<stream_reduce_time_cube>(stream_reduce_time_cube::create(*aa, cmd, nbands, names));
@@ -1203,7 +1204,7 @@ SEXP libgdalcubes_create_stream_reduce_time_cube(SEXP pin, std::string cmd, uint
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
+SEXP gc_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<stream_reduce_space_cube>* x = new std::shared_ptr<stream_reduce_space_cube>(stream_reduce_space_cube::create(*aa, cmd, nbands, names));
@@ -1217,7 +1218,7 @@ SEXP libgdalcubes_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uin
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1240,7 +1241,7 @@ SEXP libgdalcubes_create_reduce_space_cube(SEXP pin, std::vector<std::string> re
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_window_time_cube_reduce(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP gc_create_window_time_cube_reduce(SEXP pin, std::vector<int> window, std::vector<std::string> reducers, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1262,7 +1263,7 @@ SEXP libgdalcubes_create_window_time_cube_reduce(SEXP pin, std::vector<int> wind
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::vector<double> kernel) {
+SEXP gc_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::vector<double> kernel) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1278,7 +1279,7 @@ SEXP libgdalcubes_create_window_time_cube_kernel(SEXP pin, std::vector<int> wind
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_join_bands_cube(Rcpp::List pin_list,  std::vector<std::string> cube_names) {
+SEXP gc_create_join_bands_cube(Rcpp::List pin_list,  std::vector<std::string> cube_names) {
   try {
     std::vector< std::shared_ptr<cube> > cube_list;
     for (uint16_t i=0; i<pin_list.size(); ++i) {
@@ -1297,7 +1298,7 @@ SEXP libgdalcubes_create_join_bands_cube(Rcpp::List pin_list,  std::vector<std::
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_select_bands_cube(SEXP pin, std::vector<std::string> bands) {
+SEXP gc_create_select_bands_cube(SEXP pin, std::vector<std::string> bands) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1314,7 +1315,7 @@ SEXP libgdalcubes_create_select_bands_cube(SEXP pin, std::vector<std::string> ba
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_select_time_cube(SEXP pin, std::vector<std::string> t) {
+SEXP gc_create_select_time_cube(SEXP pin, std::vector<std::string> t) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1329,7 +1330,7 @@ SEXP libgdalcubes_create_select_time_cube(SEXP pin, std::vector<std::string> t) 
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names, bool keep_bands=false) {
+SEXP gc_create_apply_pixel_cube(SEXP pin, std::vector<std::string> expr, std::vector<std::string> names, bool keep_bands=false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1348,7 +1349,7 @@ SEXP libgdalcubes_create_apply_pixel_cube(SEXP pin, std::vector<std::string> exp
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {
+SEXP gc_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<stream_apply_pixel_cube>* x = new std::shared_ptr<stream_apply_pixel_cube>(stream_apply_pixel_cube::create(*aa, cmd, nbands, names, keep_bands));
@@ -1361,7 +1362,7 @@ SEXP libgdalcubes_create_stream_apply_pixel_cube(SEXP pin, std::string cmd, uint
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_apply_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {
+SEXP gc_create_stream_apply_time_cube(SEXP pin, std::string cmd, uint16_t nbands, std::vector<std::string> names, bool keep_bands = false) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<stream_apply_time_cube>* x = new std::shared_ptr<stream_apply_time_cube>(stream_apply_time_cube::create(*aa, cmd, nbands, names, keep_bands));
@@ -1376,7 +1377,7 @@ SEXP libgdalcubes_create_stream_apply_time_cube(SEXP pin, std::string cmd, uint1
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
+SEXP gc_create_filter_predicate_cube(SEXP pin, std::string pred) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<filter_pixel_cube>* x = new std::shared_ptr<filter_pixel_cube>(filter_pixel_cube::create(*aa, pred));
@@ -1389,7 +1390,7 @@ SEXP libgdalcubes_create_filter_predicate_cube(SEXP pin, std::string pred) {
 }
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs) {
+SEXP gc_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     std::shared_ptr<filter_geom_cube>* x = new std::shared_ptr<filter_geom_cube>(filter_geom_cube::create(*aa, wkt, srs));
@@ -1403,7 +1404,7 @@ SEXP libgdalcubes_create_filter_geom_cube(SEXP pin, std::string wkt, std::string
 
 
 // [[Rcpp::export]]
-void libgdalcubes_debug_output( bool debug) {
+void gc_debug_output( bool debug) {
   try {
     if (debug) {
       config::instance()->set_error_handler(error_handling_r::debug); 
@@ -1421,7 +1422,7 @@ void libgdalcubes_debug_output( bool debug) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, bool with_VRT=false, 
+void gc_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, bool with_VRT=false, 
                              bool write_bounds = true,  SEXP packing = R_NilValue) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
@@ -1460,7 +1461,7 @@ void libgdalcubes_eval_cube( SEXP pin, std::string outfile, uint8_t compression_
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t compression_level=0) {
+void gc_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t compression_level=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     (*aa)->write_chunks_netcdf(dir, name, compression_level);
@@ -1472,7 +1473,7 @@ void libgdalcubes_write_chunks_ncdf( SEXP pin, std::string dir, std::string name
 
 
 // [[Rcpp::export]]
-void libgdalcubes_write_tif( SEXP pin, std::string dir, std::string prefix="", 
+void gc_write_tif( SEXP pin, std::string dir, std::string prefix="", 
                              bool overviews = false, bool cog = false, 
                              SEXP creation_options = R_NilValue,
                              std::string rsmpl_overview = "nearest", 
@@ -1531,7 +1532,7 @@ void libgdalcubes_write_tif( SEXP pin, std::string dir, std::string prefix="",
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
+SEXP gc_create_stream_cube(SEXP pin, std::string cmd) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
@@ -1549,7 +1550,7 @@ SEXP libgdalcubes_create_stream_cube(SEXP pin, std::string cmd) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_simple_cube(std::vector<std::string> files,std::vector<std::string> datetime_values, 
+SEXP gc_create_simple_cube(std::vector<std::string> files,std::vector<std::string> datetime_values, 
                                      std::vector<std::string> bands,  std::vector<std::string> band_names, 
                                      double dx, double dy,  Rcpp::IntegerVector chunk_sizes) {
   try {
@@ -1568,7 +1569,7 @@ SEXP libgdalcubes_create_simple_cube(std::vector<std::string> files,std::vector<
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
+SEXP gc_create_fill_time_cube(SEXP pin, std::string method) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::shared_ptr<fill_time_cube>* x = new std::shared_ptr<fill_time_cube>( fill_time_cube::create(*aa, method));
@@ -1582,7 +1583,7 @@ SEXP libgdalcubes_create_fill_time_cube(SEXP pin, std::string method) {
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method, uint32_t fact=0) {
+SEXP gc_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method, uint32_t fact=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
@@ -1603,7 +1604,7 @@ SEXP libgdalcubes_create_aggregate_time_cube(SEXP pin, std::string dt, std::stri
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_slice_time_cube(SEXP pin, std::string dt, int32_t it=0) {
+SEXP gc_create_slice_time_cube(SEXP pin, std::string dt, int32_t it=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
@@ -1624,7 +1625,7 @@ SEXP libgdalcubes_create_slice_time_cube(SEXP pin, std::string dt, int32_t it=0)
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_slice_space_cube(SEXP pin, std::vector<double> loc, std::vector<int32_t> i) {
+SEXP gc_create_slice_space_cube(SEXP pin, std::vector<double> loc, std::vector<int32_t> i) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
@@ -1646,7 +1647,7 @@ SEXP libgdalcubes_create_slice_space_cube(SEXP pin, std::vector<double> loc, std
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int32_t> iextent, std::string snap) {
+SEXP gc_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int32_t> iextent, std::string snap) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::shared_ptr<crop_cube>* x;
@@ -1674,7 +1675,7 @@ SEXP libgdalcubes_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int3
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
+SEXP gc_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
   try {
     CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
@@ -1695,7 +1696,7 @@ SEXP libgdalcubes_query_points(SEXP pin, std::vector<double> px, std::vector<dou
 
 
 // [[Rcpp::export]]
-SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
+SEXP gc_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
   try {
     CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
@@ -1715,7 +1716,7 @@ SEXP libgdalcubes_query_timeseries(SEXP pin, std::vector<double> px, std::vector
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
+void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
  try {
     CPLPushErrorHandler(config::gdal_err_handler_default);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
@@ -1735,12 +1736,12 @@ void libgdalcubes_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vecto
 
 
 // [[Rcpp::export]]
-void libgdalcubes_set_threads(IntegerVector n) {
+void gc_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_set_progress(bool show_progress) {
+void gc_set_progress(bool show_progress) {
   if (show_progress) {
     config::instance()->set_default_progress_bar(std::make_shared<progress_simple_R>());
   }
@@ -1751,18 +1752,18 @@ void libgdalcubes_set_progress(bool show_progress) {
 
 
 // [[Rcpp::export]]
-void libgdalcubes_set_use_overviews(bool use_overviews) {
+void gc_set_use_overviews(bool use_overviews) {
   config::instance()->set_gdal_use_overviews(use_overviews);
 }
 
 
 // [[Rcpp::export]]
-std::string libgdalcubes_simple_hash(std::string instr) {
+std::string gc_simple_hash(std::string instr) {
   return utils::hash(instr);
 }
 
 // [[Rcpp::export]]
-void libgdalcubes_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile, Rcpp::DataFrame image_md) {
+void gc_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rcpp::DataFrame gdalrefs, std::string outfile, Rcpp::DataFrame image_md) {
   
   try {
     //std::shared_ptr<image_collection>* x = new std::shared_ptr<image_collection>();

@@ -82,7 +82,7 @@ crop <- function(cube, extent=NULL, iextent=NULL, snap = "near") {
     if (length(iextent) > 3) {
       warning("Provided extent has additional items that will be ignored")
     }
-    x = libgdalcubes_create_crop_cube(cube, list(), as.integer(c(iextent$x[1], iextent$x[2], iextent$y[1], iextent$y[2], iextent$t[1], iextent$t[2])), "")
+    x = gc_create_crop_cube(cube, list(), as.integer(c(iextent$x[1], iextent$x[2], iextent$y[1], iextent$y[2], iextent$t[1], iextent$t[2])), "")
   }
   else {
     if (is.null(extent$left)) {
@@ -106,7 +106,7 @@ crop <- function(cube, extent=NULL, iextent=NULL, snap = "near") {
     if (length(extent) > 6) {
       warning("Provided extent has additional items that will be ignored")
     }
-    x = libgdalcubes_create_crop_cube(cube, extent, integer(0), snap)
+    x = gc_create_crop_cube(cube, extent, integer(0), snap)
   }
   class(x) <- c("crop_cube", "cube", "xptr")
   return(x)
@@ -118,7 +118,7 @@ is.crop_cube  <- function(obj) {
   if(!("crop_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

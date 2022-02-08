@@ -19,7 +19,7 @@
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
 raster_cube_dummy <- function(view, nbands=1, fill=1, chunking=c(16, 256, 256)) {
-  x = libgdalcubes_create_dummy_cube(view, nbands, fill, chunking)
+  x = gc_create_dummy_cube(view, nbands, fill, chunking)
   class(x) <- c("dummy_cube", "cube", "xptr")
   return(x)
 }
@@ -28,7 +28,7 @@ is.dummy_cube  <- function(obj) {
   if(!("dummy_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

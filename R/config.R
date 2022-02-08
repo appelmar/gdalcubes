@@ -33,7 +33,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
-    libgdalcubes_set_threads(threads)
+    gc_set_threads(threads)
     .pkgenv$threads = threads
   }
   if (!missing(ncdf_compression_level)) {
@@ -43,7 +43,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   }
   if (!missing(debug)) {
     stopifnot(is.logical(debug))
-    libgdalcubes_debug_output(debug)
+    gc_debug_output(debug)
     .pkgenv$debug = debug
   }
   if (!missing(cache)) {
@@ -57,12 +57,12 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   if (!missing(use_overview_images)) {
     stopifnot(is.logical(use_overview_images))
     .pkgenv$use_overview_images = use_overview_images
-    libgdalcubes_set_use_overviews(use_overview_images)
+    gc_set_use_overviews(use_overview_images)
   }
   if (!missing(show_progress)) {
     stopifnot(is.logical(show_progress))
     .pkgenv$show_progress = show_progress
-    libgdalcubes_set_progress(show_progress)
+    gc_set_progress(show_progress)
   }
   if (!missing(default_chunksize)) {
     if (is.vector(default_chunksize)) {
@@ -84,7 +84,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   # if (!missing(swarm)) {
   #   stopifnot(is.character(swarm))
   #   # check whether all endpoints are accessible
-  #   #libgdalcubes_set_swarm(swarm)
+  #   #gc_set_swarm(swarm)
   #   warning("swarm mode is currently not supported by the R package")
   #   .pkgenv$swarm = swarm
   # }
@@ -109,7 +109,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
 #' gdalcubes_version()
 #' @export
 gdalcubes_version <- function() {
-  return(libgdalcubes_version())
+  return(gc_version())
 }
 
 #' Get available GDAL drivers
@@ -117,7 +117,7 @@ gdalcubes_version <- function() {
 #' gdalcubes_gdalformats()
 #' @export
 gdalcubes_gdalformats <- function() {
-  return(libgdalcubes_gdalformats())
+  return(gc_gdalformats())
 }
 
 #' Check if GDAL was built with GEOS
@@ -125,7 +125,7 @@ gdalcubes_gdalformats <- function() {
 #' gdalcubes_gdal_has_geos()
 #' @export
 gdalcubes_gdal_has_geos <- function() {
-  return(libgdalcubes_gdal_has_geos())
+  return(gc_gdal_has_geos())
 }
 
 
@@ -134,7 +134,7 @@ gdalcubes_gdal_has_geos <- function() {
 #' gdalcubes_gdalversion()
 #' @export
 gdalcubes_gdalversion <- function() {
-  return(libgdalcubes_gdalversion())
+  return(gc_gdalversion())
 }
 
 #' Set GDAL config options
@@ -148,7 +148,7 @@ gdalcubes_gdalversion <- function() {
 gdalcubes_set_gdal_config <- function(key, value) {
   stopifnot(length(key) == 1)
   stopifnog(length(value) == 1)
-  libgdalcubes_set_gdal_config(as.character(key), as.character(value))
+  gc_set_gdal_config(as.character(key), as.character(value))
 }
 
 #' Calculate a default chunk size based on the cube size and currently used number of threads

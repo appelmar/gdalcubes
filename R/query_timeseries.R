@@ -37,7 +37,7 @@ query_timeseries <- function(x, px, py, srs) {
     stop("Expected identical length for point coordinates px and py.")
   }
   
-  res = libgdalcubes_query_timeseries(x, px, py, srs)
+  res = gc_query_timeseries(x, px, py, srs)
   ts = lapply(res, function(z) {
     z = as.data.frame(z)
     colnames(z) = dimension_values(x)$t

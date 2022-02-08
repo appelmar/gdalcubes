@@ -35,7 +35,7 @@
 filter_pixel <- function(cube, pred) {
   stopifnot(is.cube(cube))
 
-  x = libgdalcubes_create_filter_predicate_cube(cube, pred)
+  x = gc_create_filter_predicate_cube(cube, pred)
   class(x) <- c("filter_pixel_cube", "cube", "xptr")
   return(x)
 }
@@ -46,7 +46,7 @@ is.filter_pixel_cube  <- function(obj) {
   if(!("filter_pixel_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

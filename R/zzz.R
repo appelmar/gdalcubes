@@ -4,8 +4,8 @@
 
   # call gdalcubes_init()
   if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
-    libgdalcubes_init()
-    libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
+    gc_init()
+    gc_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
   }
   
   .pkgenv$compression_level = 1
@@ -21,7 +21,7 @@
   else {
     .pkgenv$show_progress = FALSE
   }
-  libgdalcubes_set_progress(.pkgenv$show_progress)
+  gc_set_progress(.pkgenv$show_progress)
   .pkgenv$default_chunksize = .default_chunk_size
 
   #.pkgenv$swarm = NULL
@@ -40,7 +40,7 @@
 
 .onUnload <- function(libpath) {
   if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
-    libgdalcubes_cleanup()
+    gc_cleanup()
   }
 }
 
@@ -57,7 +57,7 @@
     sink(stderr())
   }
   #else {
-  #  x = libgdalcubes_version()
+  #  x = gc_version()
   #  #packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, sep=""))
   #}
 }

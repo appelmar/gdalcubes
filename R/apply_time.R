@@ -141,7 +141,7 @@ apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, ...) {
   # create src file
   # TODO: load the same packages as in the current workspace? see (.packages())
   funstr = serialize_function(FUN)
-  funhash = libgdalcubes_simple_hash(funstr)
+  funhash = gc_simple_hash(funstr)
   srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
   srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
   
@@ -154,7 +154,7 @@ apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, ...) {
   cat("write_chunk_from_array(apply_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
   
-  x = libgdalcubes_create_stream_apply_time_cube(x, cmd, nb, names, keep_bands)
+  x = gc_create_stream_apply_time_cube(x, cmd, nb, names, keep_bands)
   class(x) <- c("apply_time_cube", "cube", "xptr")
   return(x) 
 
@@ -168,7 +168,7 @@ is.apply_time_cube  <- function(obj) {
   if(!("apply_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

@@ -33,7 +33,7 @@
 select_bands <- function(cube, bands) {
   stopifnot(is.cube(cube))
   
-  x = libgdalcubes_create_select_bands_cube(cube, bands)
+  x = gc_create_select_bands_cube(cube, bands)
   class(x) <- c("select_bands_cube", "cube", "xptr")
   return(x)
 }
@@ -45,7 +45,7 @@ is.select_bands_cube  <- function(obj) {
   if(!("select_bands_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

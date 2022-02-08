@@ -76,7 +76,7 @@ filter_geom <- function(cube, geom, srs = NULL) {
     }
   }
  
-  x = libgdalcubes_create_filter_geom_cube(cube, geom, srs)
+  x = gc_create_filter_geom_cube(cube, geom, srs)
   class(x) <- c("filter_geom_cube", "cube", "xptr")
   return(x)
 }
@@ -87,7 +87,7 @@ is.filter_geom_cube  <- function(obj) {
   if(!("filter_geom_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
