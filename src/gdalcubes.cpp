@@ -79,7 +79,7 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
   std::vector<bool> interrupted_bythread(_nthreads, false);
   for (uint16_t it = 0; it < _nthreads; ++it) {
     workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted, &interrupted_bythread](void) {
-      CPLPushErrorHandler(config::gdal_err_handler_default);
+      CPLPushErrorHandler(config::gdal_err_handler_silent);
       for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
         try {
           if (!interrupted) {
@@ -1821,7 +1821,7 @@ SEXP gc_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int32_t> iexte
 // [[Rcpp::export]]
 SEXP gc_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
   try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
+    CPLPushErrorHandler(config::gdal_err_handler_silent);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::vector<std::vector<double>> res = vector_queries::query_points(*aa, px, py, pt, srs);
     CPLPopErrorHandler(); 
@@ -1842,7 +1842,7 @@ SEXP gc_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, s
 // [[Rcpp::export]]
 SEXP gc_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
   try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
+    CPLPushErrorHandler(config::gdal_err_handler_silent);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::vector<std::vector<std::vector<double>>> res = vector_queries::query_timeseries(*aa, px, py, srs);
     CPLPopErrorHandler();
@@ -1862,7 +1862,7 @@ SEXP gc_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> p
 // [[Rcpp::export]]
 void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
  try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
+    CPLPushErrorHandler(config::gdal_err_handler_silent);
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     std::vector<std::pair<std::string, std::string>> agg;
     // assumption: agg_funcs.size() == agg_bands.size 
