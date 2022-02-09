@@ -23,6 +23,9 @@
   }
   gc_set_progress(.pkgenv$show_progress)
   .pkgenv$default_chunksize = .default_chunk_size
+  
+  .pkgenv$streaming_dir = tempdir()
+  gc_set_streamining_dir(.pkgenv$streaming_dir)
 
   #.pkgenv$swarm = NULL
   register_s3_method("stars","st_as_stars", "cube")

@@ -13,7 +13,8 @@ gdalcubes_options(
   ncdf_write_bounds,
   use_overview_images,
   show_progress,
-  default_chunksize
+  default_chunksize,
+  streaming_dir
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ gdalcubes_options(
 \item{show_progress}{logical; if TRUE, a progress bar will be shown for actual computations}
 
 \item{default_chunksize}{length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size}
+
+\item{streaming_dir}{directory where temporary binary files for process streaming will be written to}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
@@ -47,6 +50,9 @@ Caching has no effect on disk or memory consumption,
 it simply tries to reuse existing temporary files where possible.
 For example, changing only parameters to \code{plot} will not require
 rerunning the full data cube operation chain.
+
+The streaming directory can be used to control the performance of user-defined functions,
+if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared memory device.
 
 Passing no arguments will return the current options as a list.
 }

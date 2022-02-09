@@ -62,7 +62,8 @@ Suggests:
     magrittr,
     rmarkdown,
     stars,
-    magick,
+    av,
+    gifski,
     sf
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS

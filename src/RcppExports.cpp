@@ -52,6 +52,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// gc_set_streamining_dir
+void gc_set_streamining_dir(std::string dir);
+RcppExport SEXP _gdalcubes_gc_set_streamining_dir(SEXP dirSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type dir(dirSEXP);
+    gc_set_streamining_dir(dir);
+    return R_NilValue;
+END_RCPP
+}
 // gc_gdalversion
 std::string gc_gdalversion();
 RcppExport SEXP _gdalcubes_gc_gdalversion() {
@@ -782,6 +792,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_version", (DL_FUNC) &_gdalcubes_gc_version, 0},
     {"_gdalcubes_gc_gdalformats", (DL_FUNC) &_gdalcubes_gc_gdalformats, 0},
     {"_gdalcubes_gc_set_gdal_config", (DL_FUNC) &_gdalcubes_gc_set_gdal_config, 2},
+    {"_gdalcubes_gc_set_streamining_dir", (DL_FUNC) &_gdalcubes_gc_set_streamining_dir, 1},
     {"_gdalcubes_gc_gdalversion", (DL_FUNC) &_gdalcubes_gc_gdalversion, 0},
     {"_gdalcubes_gc_gdal_has_geos", (DL_FUNC) &_gdalcubes_gc_gdal_has_geos, 0},
     {"_gdalcubes_gc_add_format_dir", (DL_FUNC) &_gdalcubes_gc_add_format_dir, 1},

@@ -346,6 +346,12 @@ void gc_set_gdal_config(std::string k, std::string v) {
 }
 
 // [[Rcpp::export]]
+void gc_set_streamining_dir(std::string dir) {
+  config::instance()->set_streaming_dir(dir);
+}
+
+
+// [[Rcpp::export]]
 std::string gc_gdalversion() {
   return config::instance()->gdal_version_info();
 }

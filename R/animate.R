@@ -1,15 +1,20 @@
 
 
 #' Animate a data cube as an image time series
-#'
+#' 
+#' This function can animate data cube time series as mp4 videos or animated GIFs.
+#' Depending on the desired output format, either the \code{av} or the \code{gifski}
+#' package is needed to create mp4 and GIF animations respectively.
+#' 
 #' @param x a data cube proxy object (class cube)
 #' @param ... parameters passed to plot.cube
 #' @param fps frames per second of the animation
 #' @param loop how many iterations, 0 = infinite
 #' @param width width (in pixels) of the animation
 #' @param height height (in pixels) of the animation
-#' @param save_as character path where the animation shall be stored as a gif file
+#' @param save_as character path where the animation shall be stored, must end with ".mp4" or ".gif" 
 #' @param plot logical; plot the animation (default is TRUE) 
+#' @return character; path pointing to the the created file
 #' @details 
 #' Animations can be created for single band data cubes or RGB plots of multi-band data cubes (by providing the argument rgb) only.
 #' @seealso \code{\link{plot.cube}}
@@ -37,15 +42,13 @@ animate  <-
            ...,
            fps = 1,
            loop = 0,
-           width = dev.size(units = "px")[1],
-           height = dev.size(units = "px")[2],
-           save_as = NULL,
-           plot = TRUE
+           width = 800,
+           height = 800,
+           save_as = tempfile(fileext = ".gif"),
+           preview = interactive()
            ) {
     
-    if (!requireNamespace("magick", quietly = TRUE))
-      stop("magick package not found, please install first") 
-    
+   
     if(is.null(save_as) && !plot) {
       stop("nothing to do, please set either plot = TRUE or save_as to a filename")
     }
@@ -61,7 +64,23 @@ animate  <-
     if (is.null(additional_args$rgb) && size[1] > 1) {
       stop("animate works only for RGB plots, or single band data cubes")
     }
-      
+    
+    TO_GIF = FALSE  
+    if (endsWith(tolower(save_as), ".gif")) {
+      if (!requireNamespace("gifski", quietly = TRUE))
+        stop("gifski package not found, please install first")
+      TO_GIF = TRUE
+    }
+    else if (endsWith(tolower(save_as), ".mp4")) {
+      if (!requireNamespace("av", quietly = TRUE))
+        stop("av package not found, please install first")
+      TO_GIF = FALSE
+    } 
+    else {
+      stop("unknown output format, please use mp4 or gif")
+    }
+    
+  
   
     fname_start = tempfile()
     png(filename = paste(fname_start, "_%04d.png", sep=""), width=width, height=height)
@@ -75,15 +94,20 @@ animate  <-
       }}, finally = {dev.off()})
     
     imgs = list.files(dirname(fname_start), pattern = paste(basename(fname_start), ".*\\.png" , sep=""), full.names = TRUE)
-    frames = magick::image_read(imgs[1])
-    for (i in 2:length(imgs)) {
-      frames = c(frames,  magick::image_read(imgs[i]))
+    
+    
+    if (TO_GIF) {
+      out_file = ifelse(is.null(save_as), tempfile(fileext = ".gif"), save_as)
+      animation = gifski(imgs, gif_file = out_file, width = width, height = height, delay = 1/0.05, loop = loop, progress = TRUE)
     }
-    animation = magick::image_animate(frames, fps=fps, loop = loop)
-    if (!is.null(save_as)) {
-      magick::image_write(animation, save_as)
+    else {
+      out_file = ifelse(is.null(save_as), tempfile(fileext = ".mp4"), save_as)
+      width = width + (width %% 2)
+      height = height + (height %% 2)
+      animation = av_encode_video(imgs, output = out_file, framerate = fps)
     }
-    if (plot)
-      print(animation)
+
+    if (preview)
+      utils::browseURL(animation)
     return(animation)
   }

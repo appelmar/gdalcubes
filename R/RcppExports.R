@@ -17,6 +17,10 @@ gc_set_gdal_config <- function(k, v) {
     invisible(.Call('_gdalcubes_gc_set_gdal_config', PACKAGE = 'gdalcubes', k, v))
 }
 
+gc_set_streamining_dir <- function(dir) {
+    invisible(.Call('_gdalcubes_gc_set_streamining_dir', PACKAGE = 'gdalcubes', dir))
+}
+
 gc_gdalversion <- function() {
     .Call('_gdalcubes_gc_gdalversion', PACKAGE = 'gdalcubes')
 }

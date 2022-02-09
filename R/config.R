@@ -13,6 +13,7 @@
 #' @param use_overview_images logical; if FALSE, all images are read on original resolution and existing overviews will be ignored
 #' @param show_progress logical; if TRUE, a progress bar will be shown for actual computations
 #' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
+#' @param streaming_dir directory where temporary binary files for process streaming will be written to
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -22,6 +23,9 @@
 #' For example, changing only parameters to \code{plot} will not require
 #' rerunning the full data cube operation chain.
 #' 
+#' The streaming directory can be used to control the performance of user-defined functions,
+#' if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared memory device.
+#' 
 #' Passing no arguments will return the current options as a list.
 #' @examples 
 #' gdalcubes_options(threads=4) # set the number of threads
@@ -29,7 +33,7 @@
 #' gdalcubes_options(threads=1) # reset
 #' @export
 gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
-                              use_overview_images, show_progress, default_chunksize) {
+                              use_overview_images, show_progress, default_chunksize, streaming_dir) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -64,6 +68,11 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     .pkgenv$show_progress = show_progress
     gc_set_progress(show_progress)
   }
+  if (!missing(streaming_dir)) {
+    stopifnot(is.character(streaming_dir))
+    .pkgenv$streaming_dir = streaming_dir
+    gc_set_streamining_dir(streaming_dir)
+  }
   if (!missing(default_chunksize)) {
     if (is.vector(default_chunksize)) {
       stopifnot(length(default_chunksize) == 3)
@@ -97,7 +106,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
       ncdf_write_bounds = .pkgenv$ncdf_write_bounds,
       use_overview_images = .pkgenv$use_overview_images,
       show_progress = .pkgenv$show_progress,
-      default_chunksize = .pkgenv$default_chunksize
+      default_chunksize = .pkgenv$default_chunksize,
+      streaming_dir = .pkgenv$streaming_dir
     ))
   }
 }
