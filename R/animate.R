@@ -98,13 +98,13 @@ animate  <-
     
     if (TO_GIF) {
       out_file = ifelse(is.null(save_as), tempfile(fileext = ".gif"), save_as)
-      animation = gifski(imgs, gif_file = out_file, width = width, height = height, delay = 1/0.05, loop = loop, progress = TRUE)
+      animation = gifski::gifski(imgs, gif_file = out_file, width = width, height = height, delay = 1/fps, loop = loop, progress = TRUE)
     }
     else {
       out_file = ifelse(is.null(save_as), tempfile(fileext = ".mp4"), save_as)
       width = width + (width %% 2)
       height = height + (height %% 2)
-      animation = av_encode_video(imgs, output = out_file, framerate = fps)
+      animation = av::av_encode_video(imgs, output = out_file, framerate = fps)
     }
 
     if (preview)

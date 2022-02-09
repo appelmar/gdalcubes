@@ -157,7 +157,7 @@ gdalcubes_gdalversion <- function() {
 #' @export
 gdalcubes_set_gdal_config <- function(key, value) {
   stopifnot(length(key) == 1)
-  stopifnog(length(value) == 1)
+  stopifnot(length(value) == 1)
   gc_set_gdal_config(as.character(key), as.character(value))
 }
 
