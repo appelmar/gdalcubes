@@ -536,13 +536,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// gc_debug_output
-void gc_debug_output(bool debug);
-RcppExport SEXP _gdalcubes_gc_debug_output(SEXP debugSEXP) {
+// gc_set_err_handler
+void gc_set_err_handler(bool debug, std::string log_to_file);
+RcppExport SEXP _gdalcubes_gc_set_err_handler(SEXP debugSEXP, SEXP log_to_fileSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    gc_debug_output(debug);
+    Rcpp::traits::input_parameter< std::string >::type log_to_file(log_to_fileSEXP);
+    gc_set_err_handler(debug, log_to_file);
     return R_NilValue;
 END_RCPP
 }
@@ -832,7 +833,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_create_stream_apply_time_cube", (DL_FUNC) &_gdalcubes_gc_create_stream_apply_time_cube, 5},
     {"_gdalcubes_gc_create_filter_predicate_cube", (DL_FUNC) &_gdalcubes_gc_create_filter_predicate_cube, 2},
     {"_gdalcubes_gc_create_filter_geom_cube", (DL_FUNC) &_gdalcubes_gc_create_filter_geom_cube, 3},
-    {"_gdalcubes_gc_debug_output", (DL_FUNC) &_gdalcubes_gc_debug_output, 1},
+    {"_gdalcubes_gc_set_err_handler", (DL_FUNC) &_gdalcubes_gc_set_err_handler, 2},
     {"_gdalcubes_gc_eval_cube", (DL_FUNC) &_gdalcubes_gc_eval_cube, 6},
     {"_gdalcubes_gc_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_gc_write_chunks_ncdf, 4},
     {"_gdalcubes_gc_write_tif", (DL_FUNC) &_gdalcubes_gc_write_tif, 8},

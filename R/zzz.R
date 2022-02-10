@@ -13,6 +13,7 @@
   .pkgenv$use_cube_cache = TRUE
   .pkgenv$threads = 1
   .pkgenv$debug = FALSE
+  .pkgenv$log_file = ""
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
   if (interactive()) {

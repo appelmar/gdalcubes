@@ -14,6 +14,7 @@
 #' @param show_progress logical; if TRUE, a progress bar will be shown for actual computations
 #' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
 #' @param streaming_dir directory where temporary binary files for process streaming will be written to
+#' @param log_file character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -33,7 +34,8 @@
 #' gdalcubes_options(threads=1) # reset
 #' @export
 gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
-                              use_overview_images, show_progress, default_chunksize, streaming_dir) {
+                              use_overview_images, show_progress, default_chunksize, streaming_dir, 
+                              log_file) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
@@ -47,8 +49,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   }
   if (!missing(debug)) {
     stopifnot(is.logical(debug))
-    gc_debug_output(debug)
     .pkgenv$debug = debug
+    gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(cache)) {
     stopifnot(is.logical(cache))
@@ -72,6 +74,26 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
     stopifnot(is.character(streaming_dir))
     .pkgenv$streaming_dir = streaming_dir
     gc_set_streamining_dir(streaming_dir)
+  }
+  if (!missing(log_file)) {
+    if (is.null(log_file)) log_file = ""
+    if (is.na(log_file)) log_file = ""
+    stopifnot(is.character(log_file))
+    stopifnot(length(log_file) == 1)
+    
+    if (nchar(log_file[1]) > 0) {
+      if (dir.exists(log_file[1])) {
+        stop("provided log file is a directory")
+      }
+      if (!dir.exists(dirname(log_file[1]))) {
+        stop("parent directory of provided log file does not exist")
+      }
+      if (endsWith(log_file[1],.Platform$file.sep)) {
+        stop("provided log file is a directory")
+      }
+    }
+    .pkgenv$log_file = log_file
+    gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(default_chunksize)) {
     if (is.vector(default_chunksize)) {

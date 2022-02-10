@@ -14,7 +14,8 @@ gdalcubes_options(
   use_overview_images,
   show_progress,
   default_chunksize,
-  streaming_dir
+  streaming_dir,
+  log_file
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ gdalcubes_options(
 \item{default_chunksize}{length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size}
 
 \item{streaming_dir}{directory where temporary binary files for process streaming will be written to}
+
+\item{log_file}{character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether

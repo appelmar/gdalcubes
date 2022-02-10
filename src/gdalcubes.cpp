@@ -6,7 +6,7 @@
 #include <memory>
 #include <thread>
 #include <algorithm>
-
+#include <fstream>
 
 
 using namespace Rcpp;
@@ -159,6 +159,7 @@ struct error_handling_r {
   static std::mutex _m_errhandl;
   static std::stringstream _err_stream;
   static bool _defer;
+  static std::string _logfile;
   
   static void defer_output() {
     _m_errhandl.lock();
@@ -216,11 +217,54 @@ struct error_handling_r {
     }
     _m_errhandl.unlock();
   }
+  
+  static void standard_file(error_level type, std::string msg, std::string where, int error_code) {
+    _m_errhandl.lock();
+    std::ofstream os;
+    os.open(_logfile, std::ios::out | std::ios::app);
+    if (!os.is_open()) {
+      _m_errhandl.unlock();
+      standard(type, msg,  where, error_code);
+      return;
+    }
+    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
+    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
+      os << "Error: " << msg << std::endl;
+    } else if (type == error_level::ERRLVL_WARNING) {
+      os << "Warning: " << msg << std::endl;
+    } else if (type == error_level::ERRLVL_INFO) {
+      os << "## " << msg << std::endl;
+    }
+    _m_errhandl.unlock();
+  }
+  
+  static void debug_file(error_level type, std::string msg, std::string where, int error_code) {
+    _m_errhandl.lock();
+    std::ofstream os;
+    os.open(_logfile, std::ios::out | std::ios::app);
+    if (!os.is_open()) {
+      _m_errhandl.unlock();
+      debug(type, msg,  where, error_code);
+      return;
+    }
+    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
+    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
+    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
+      os << "Error  message: "  << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_WARNING) {
+      os << "Warning  message: " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_INFO) {
+      os << "Info message: " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_DEBUG) {
+      os << "Debug message: "  << msg << where_str << std::endl;
+    }
+    _m_errhandl.unlock();
+  }
 };
 std::mutex error_handling_r::_m_errhandl;
 std::stringstream error_handling_r::_err_stream;
 bool error_handling_r::_defer = false;
-
+std::string error_handling_r::_logfile = "gdalcubes.log";
 
 
 struct progress_simple_R : public progress {
@@ -1554,13 +1598,24 @@ SEXP gc_create_filter_geom_cube(SEXP pin, std::string wkt, std::string srs) {
 
 
 // [[Rcpp::export]]
-void gc_debug_output( bool debug) {
+void gc_set_err_handler(bool debug, std::string log_to_file = "") {
   try {
-    if (debug) {
-      config::instance()->set_error_handler(error_handling_r::debug); 
+    if (log_to_file.empty()) {
+      if (debug) {
+        config::instance()->set_error_handler(error_handling_r::debug); 
+      }
+      else {
+        config::instance()->set_error_handler(error_handling_r::standard); 
+      }
     }
     else {
-      config::instance()->set_error_handler(error_handling_r::standard); 
+      error_handling_r::_logfile = log_to_file;
+      if (debug) {
+        config::instance()->set_error_handler(error_handling_r::debug_file); 
+      }
+      else {
+        config::instance()->set_error_handler(error_handling_r::standard_file); 
+      }
     }
   }
   catch (std::string s) {

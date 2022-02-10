@@ -177,8 +177,8 @@ gc_create_filter_geom_cube <- function(pin, wkt, srs) {
     .Call('_gdalcubes_gc_create_filter_geom_cube', PACKAGE = 'gdalcubes', pin, wkt, srs)
 }
 
-gc_debug_output <- function(debug) {
-    invisible(.Call('_gdalcubes_gc_debug_output', PACKAGE = 'gdalcubes', debug))
+gc_set_err_handler <- function(debug, log_to_file = "") {
+    invisible(.Call('_gdalcubes_gc_set_err_handler', PACKAGE = 'gdalcubes', debug, log_to_file))
 }
 
 gc_eval_cube <- function(pin, outfile, compression_level = 0L, with_VRT = FALSE, write_bounds = TRUE, packing = NULL) {
