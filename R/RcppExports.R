@@ -105,6 +105,10 @@ gc_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_gc_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }
 
+gc_create_empty_cube <- function(v, nbands, chunk_sizes) {
+    .Call('_gdalcubes_gc_create_empty_cube', PACKAGE = 'gdalcubes', v, nbands, chunk_sizes)
+}
+
 gc_copy_cube <- function(pin) {
     .Call('_gdalcubes_gc_copy_cube', PACKAGE = 'gdalcubes', pin)
 }

@@ -304,6 +304,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gc_create_empty_cube
+SEXP gc_create_empty_cube(SEXP v, uint16_t nbands, Rcpp::IntegerVector chunk_sizes);
+RcppExport SEXP _gdalcubes_gc_create_empty_cube(SEXP vSEXP, SEXP nbandsSEXP, SEXP chunk_sizesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type v(vSEXP);
+    Rcpp::traits::input_parameter< uint16_t >::type nbands(nbandsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chunk_sizes(chunk_sizesSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_empty_cube(v, nbands, chunk_sizes));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc_copy_cube
 SEXP gc_copy_cube(SEXP pin);
 RcppExport SEXP _gdalcubes_gc_copy_cube(SEXP pinSEXP) {
@@ -815,6 +828,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_create_image_collection_cube", (DL_FUNC) &_gdalcubes_gc_create_image_collection_cube, 4},
     {"_gdalcubes_gc_create_ncdf_cube", (DL_FUNC) &_gdalcubes_gc_create_ncdf_cube, 3},
     {"_gdalcubes_gc_create_dummy_cube", (DL_FUNC) &_gdalcubes_gc_create_dummy_cube, 4},
+    {"_gdalcubes_gc_create_empty_cube", (DL_FUNC) &_gdalcubes_gc_create_empty_cube, 3},
     {"_gdalcubes_gc_copy_cube", (DL_FUNC) &_gdalcubes_gc_copy_cube, 1},
     {"_gdalcubes_gc_from_json_file", (DL_FUNC) &_gdalcubes_gc_from_json_file, 1},
     {"_gdalcubes_gc_from_json_string", (DL_FUNC) &_gdalcubes_gc_from_json_string, 1},

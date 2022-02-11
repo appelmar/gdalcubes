@@ -2,9 +2,12 @@
 
 * use WKT strings or authority codes in image collections instead of proj4 strings
 * default chunk sizes now consider the number of currently used threads 
-* fix `filter_geom()` issues with larger polygons and polygon contains check 
-* fix unexpected stack overflows due to to GDAL error handler from `sf` calling `Rf_warning()`, which is not thread-safe
 * `animate()` now can produce mp4 and GIF animations and works for larger image sequences using the `av` or `gifski` packages
+* fix `filter_geom()` issues with larger polygons and polygon contains check 
+* major stability improvements:
+  * fix unexpected stack overflows due to to GDAL error handler from `sf` calling `Rf_warning()`, which is not thread-safe
+  * if a GDAL fails to read an image, it will now be simply ignored but not stop processing the current chunk
+  * improved handling and checks for empty chunks in data cube operations 
 
 # gdalcubes 0.5.1 (2021-02-12)
 

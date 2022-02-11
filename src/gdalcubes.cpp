@@ -326,6 +326,7 @@ private:
 };
 
 
+
 // struct progress_none_R : public progress {
 //   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
 //   
@@ -356,6 +357,75 @@ struct progress_none_R : public progress {
   virtual void finalize() override {}
   progress_none_R() {}
 };
+
+
+
+
+
+
+cube_view cube_view_from_list(SEXP v) {
+  Rcpp::List view = Rcpp::as<Rcpp::List>(v);
+  cube_view cv;
+  
+  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
+    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
+    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
+    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
+    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
+    cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
+    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
+    cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
+    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
+    std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
+    cv.srs(srs);  
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
+    cv.t0(datetime::from_string(tmp));
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
+    cv.t1(datetime::from_string(tmp));
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
+    cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
+  }
+  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
+    cv.dt(duration::from_string(tmp));
+    cv.t0().unit(cv.dt().dt_unit); 
+    cv.t1().unit(cv.dt().dt_unit); 
+  }
+  
+  if (view["aggregation"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
+    cv.aggregation_method() = aggregation::from_string(tmp);
+  }
+  if (view["resampling"] != R_NilValue) {
+    std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
+    cv.resampling_method() = resampling::from_string(tmp);
+  }
+  return cv;
+}
+
+
+
 
 
 
@@ -430,6 +500,17 @@ void gc_init() {
 void gc_cleanup() {
   config::instance()->gdalcubes_cleanup();
 }
+
+
+
+
+
+
+
+
+
+
+
 
 // This function is also covered by gc_dimension_values() and should be deprecated
 // [[Rcpp::export]]
@@ -999,64 +1080,7 @@ SEXP gc_list_collection_formats() {
 
 // [[Rcpp::export]]
 SEXP gc_create_view(SEXP v) {
-  Rcpp::List view = Rcpp::as<Rcpp::List>(v);
-  cube_view cv;
-  
-  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-    cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-    cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-    std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
-    cv.srs(srs);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    cv.t0(datetime::from_string(tmp));
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    cv.t1(datetime::from_string(tmp));
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-    cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-    cv.dt(duration::from_string(tmp));
-    cv.t0().unit(cv.dt().dt_unit); 
-    cv.t1().unit(cv.dt().dt_unit); 
-  }
-  
-  if (view["aggregation"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-    cv.aggregation_method() = aggregation::from_string(tmp);
-  }
-  if (view["resampling"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-    cv.resampling_method() = resampling::from_string(tmp);
-  }
-  
+  cube_view cv = cube_view_from_list(v);
   
   return Rcpp::List::create(
     Rcpp::Named("space") = Rcpp::List::create(
@@ -1094,61 +1118,7 @@ SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, 
       x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa));
     }
     else {
-      Rcpp::List view = Rcpp::as<Rcpp::List>(v);
-      cube_view cv;
-      
-      if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-        cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-        cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-        cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-        cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-        cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-        cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-        cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-        cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-        std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
-        cv.srs(srs);
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-        cv.t0(datetime::from_string(tmp));
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-        cv.t1(datetime::from_string(tmp));
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-        cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-        cv.dt(duration::from_string(tmp));
-      }
-      
-      if (view["aggregation"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-        cv.aggregation_method() = aggregation::from_string(tmp);
-      }
-      if (view["resampling"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-        cv.resampling_method() = resampling::from_string(tmp);
-      }
+      cube_view cv = cube_view_from_list(v);
       x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa, cv));
     }
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
@@ -1174,7 +1144,6 @@ SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, 
         (*x)->set_mask(band_name, std::make_shared<range_mask>(min, max, invert, bits));
       }
     }
-    
     
     Rcpp::XPtr< std::shared_ptr<image_collection_cube> > p(x, true) ;
     
@@ -1215,66 +1184,9 @@ SEXP gc_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool
 
 // [[Rcpp::export]]
 SEXP gc_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::IntegerVector chunk_sizes) {
-  
   try {
-    
-      Rcpp::List view = Rcpp::as<Rcpp::List>(v);
-      cube_view cv;
-      
-      if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-        cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-        cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-        cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-        cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-        cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-        cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-        cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-        cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-        std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
-        cv.srs(srs);  
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-        cv.t0(datetime::from_string(tmp));
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-        cv.t1(datetime::from_string(tmp));
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-        cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-      }
-      if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-        cv.dt(duration::from_string(tmp));
-        cv.t0().unit(cv.dt().dt_unit); 
-        cv.t1().unit(cv.dt().dt_unit); 
-      }
-      
-      if (view["aggregation"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-        cv.aggregation_method() = aggregation::from_string(tmp);
-      }
-      if (view["resampling"] != R_NilValue) {
-        std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-        cv.resampling_method() = resampling::from_string(tmp);
-      }
+    Rcpp::List view = Rcpp::as<Rcpp::List>(v);
+    cube_view cv = cube_view_from_list(v);
     
     std::shared_ptr<dummy_cube>* x = new std::shared_ptr<dummy_cube>( dummy_cube::create(cv, nbands, fill));
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
@@ -1287,6 +1199,21 @@ SEXP gc_create_dummy_cube(SEXP v, uint16_t nbands, double fill, Rcpp::IntegerVec
 }
 
 
+// [[Rcpp::export]]
+SEXP gc_create_empty_cube(SEXP v, uint16_t nbands, Rcpp::IntegerVector chunk_sizes) {
+  try {
+    Rcpp::List view = Rcpp::as<Rcpp::List>(v);
+    cube_view cv = cube_view_from_list(v);
+    
+    std::shared_ptr<empty_cube>* x = new std::shared_ptr<empty_cube>(empty_cube::create(cv, nbands));
+    (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    Rcpp::XPtr< std::shared_ptr<empty_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 
