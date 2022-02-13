@@ -169,6 +169,9 @@ struct error_handling_r {
   
   static void do_output() {
     _m_errhandl.lock();
+    // TODO: if _err_stream is extremely large,
+    // print to a file first and afterwards show only last few lines and 
+    // a warning pointing to the file for full output
     if (_err_stream.rdbuf()->in_avail() > 0) {
       r_stderr_buf::print(_err_stream.str());
       _err_stream.str(""); 
