@@ -6,7 +6,7 @@
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
 #' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
-#' @param chunking Vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
+#' @param chunking length-3 vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
@@ -16,7 +16,7 @@
 #'  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
 #'  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
 #' 
-#' 
+#' If chunking is provided as a function, it must accept exactly three arguments for the total size of the cube in t, y, and x axes (in this order). 
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
