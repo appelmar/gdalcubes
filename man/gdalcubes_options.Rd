@@ -15,7 +15,8 @@ gdalcubes_options(
   show_progress,
   default_chunksize,
   streaming_dir,
-  log_file
+  log_file,
+  process_execution
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ gdalcubes_options(
 \item{streaming_dir}{directory where temporary binary files for process streaming will be written to}
 
 \item{log_file}{character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file}
+
+\item{process_execution}{logical; if TRUE, data cube chunks will be processed in separate processes (experimental)}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether

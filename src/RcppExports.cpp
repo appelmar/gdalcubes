@@ -755,6 +755,30 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// gc_exec_worker
+void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir);
+RcppExport SEXP _gdalcubes_gc_exec_worker(SEXP json_pathSEXP, SEXP pidSEXP, SEXP nworkerSEXP, SEXP work_dirSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type json_path(json_pathSEXP);
+    Rcpp::traits::input_parameter< uint32_t >::type pid(pidSEXP);
+    Rcpp::traits::input_parameter< uint32_t >::type nworker(nworkerSEXP);
+    Rcpp::traits::input_parameter< std::string >::type work_dir(work_dirSEXP);
+    gc_exec_worker(json_path, pid, nworker, work_dir);
+    return R_NilValue;
+END_RCPP
+}
+// gc_set_process_execution
+void gc_set_process_execution(IntegerVector n_worker, std::string cmd);
+RcppExport SEXP _gdalcubes_gc_set_process_execution(SEXP n_workerSEXP, SEXP cmdSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type n_worker(n_workerSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cmd(cmdSEXP);
+    gc_set_process_execution(n_worker, cmd);
+    return R_NilValue;
+END_RCPP
+}
 // gc_set_progress
 void gc_set_progress(bool show_progress);
 RcppExport SEXP _gdalcubes_gc_set_progress(SEXP show_progressSEXP) {
@@ -862,6 +886,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_query_timeseries", (DL_FUNC) &_gdalcubes_gc_query_timeseries, 4},
     {"_gdalcubes_gc_zonal_statistics", (DL_FUNC) &_gdalcubes_gc_zonal_statistics, 7},
     {"_gdalcubes_gc_set_threads", (DL_FUNC) &_gdalcubes_gc_set_threads, 1},
+    {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 4},
+    {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 2},
     {"_gdalcubes_gc_set_progress", (DL_FUNC) &_gdalcubes_gc_set_progress, 1},
     {"_gdalcubes_gc_set_use_overviews", (DL_FUNC) &_gdalcubes_gc_set_use_overviews, 1},
     {"_gdalcubes_gc_simple_hash", (DL_FUNC) &_gdalcubes_gc_simple_hash, 1},

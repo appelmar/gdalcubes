@@ -241,6 +241,14 @@ gc_set_threads <- function(n) {
     invisible(.Call('_gdalcubes_gc_set_threads', PACKAGE = 'gdalcubes', n))
 }
 
+gc_exec_worker <- function(json_path, pid, nworker, work_dir) {
+    invisible(.Call('_gdalcubes_gc_exec_worker', PACKAGE = 'gdalcubes', json_path, pid, nworker, work_dir))
+}
+
+gc_set_process_execution <- function(n_worker, cmd) {
+    invisible(.Call('_gdalcubes_gc_set_process_execution', PACKAGE = 'gdalcubes', n_worker, cmd))
+}
+
 gc_set_progress <- function(show_progress) {
     invisible(.Call('_gdalcubes_gc_set_progress', PACKAGE = 'gdalcubes', show_progress))
 }

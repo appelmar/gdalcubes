@@ -1,5 +1,6 @@
 #include "gdalcubes/src/gdalcubes.h"
 #include "gdalcubes/src/cube_factory.h"
+#include "multiprocess.h"
 
 // [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
@@ -1873,6 +1874,21 @@ void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::str
 // [[Rcpp::export]]
 void gc_set_threads(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
+}
+
+
+// [[Rcpp::export]]
+void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir) {
+  chunk_processor_multiprocess::exec(json_path, pid, nworker, work_dir);
+}
+
+
+// [[Rcpp::export]]
+void gc_set_process_execution(IntegerVector n_worker, std::string cmd) {
+  auto p = std::make_shared<chunk_processor_multiprocess>();
+  p->set_cmd(cmd);
+  p->set_nworker(n_worker[0]);
+  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(p));
 }
 
 // [[Rcpp::export]]

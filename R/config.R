@@ -15,6 +15,7 @@
 #' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
 #' @param streaming_dir directory where temporary binary files for process streaming will be written to
 #' @param log_file character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file
+#' @param process_execution logical; if TRUE, data cube chunks will be processed in separate processes (experimental)
 #' @details 
 #' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
 #' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
@@ -35,13 +36,25 @@
 #' @export
 gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
                               use_overview_images, show_progress, default_chunksize, streaming_dir, 
-                              log_file) {
+                              log_file, process_execution) {
   if (!missing(threads)) {
     stopifnot(threads >= 1)
     stopifnot(threads%%1==0)
     gc_set_threads(threads)
     .pkgenv$threads = threads
   }
+  if (!missing(process_execution)) {
+    stopifnot(is.logical(process_execution))
+    if (process_execution) {
+      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e 'gdalcubes:::.exec_worker()'", sep="")
+      gc_set_process_execution(.pkgenv$threads, cmd)
+    }
+    else {
+      gc_set_threads(threads)
+    }
+    .pkgenv$process_execution = process_execution
+  }
+  
   if (!missing(ncdf_compression_level)) {
     stopifnot(ncdf_compression_level %% 1 == 0)
     stopifnot(ncdf_compression_level >= 0 && ncdf_compression_level <= 9)
@@ -129,7 +142,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
       use_overview_images = .pkgenv$use_overview_images,
       show_progress = .pkgenv$show_progress,
       default_chunksize = .pkgenv$default_chunksize,
-      streaming_dir = .pkgenv$streaming_dir
+      streaming_dir = .pkgenv$streaming_dir,
+      process_execution = .pkgenv$process_execution
     ))
   }
 }
