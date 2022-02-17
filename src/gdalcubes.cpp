@@ -287,7 +287,7 @@ struct progress_simple_R : public progress {
   }
   virtual void finalize() override {
     _m.lock();
-    //_set(1);
+    _set(1);
     std::stringstream ss;
     ss << std::endl;
     r_stderr_buf::print(ss.str());

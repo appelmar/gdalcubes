@@ -3,6 +3,8 @@
 #include "gdalcubes/src/cube_factory.h"
 #include "gdalcubes/external/tiny-process-library/process.hpp"
 
+// [[Rcpp::plugins("cpp11")]]
+#include <Rcpp.h>
 #include <fstream>
 
 namespace gdalcubes {
@@ -31,6 +33,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   err.resize(nworker,"");
   std::vector<bool> finished(nworker, false);
   bool all_finished = false;
+  bool any_failed = false;
   std::vector<int> exit_status(nworker, -1);
   for (uint16_t pid=0; pid < nworker; ++pid) {
     
@@ -49,7 +52,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     setenv("GDALCUBES_WORKER_DIR", work_dir.c_str(), 1);
 #endif
     
-    // TODO: unset environment variables after process as been started
+    // start child process
     auto pp = std::make_shared<TinyProcessLib::Process>(
       _cmd, "", [](const char *bytes, std::size_t n) {},
       [&err, &pid](const char *bytes, std::size_t n) {
@@ -58,29 +61,51 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       },
       false);
     p.push_back(pp);
+    
+    // unset environment variables
+#ifdef _WIN32
+    _putenv("GDALCUBES_WORKER=");
+    _putenv("GDALCUBES_WORKER_JSON=");
+    _putenv("GDALCUBES_WORKER_ID=");
+    _putenv("GDALCUBES_WORKER_N=");
+    _putenv("GDALCUBES_WORKER_DIR=");
+#else
+    unsetenv("GDALCUBES_WORKER");
+    unsetenv("GDALCUBES_WORKER_JSON");
+    unsetenv("GDALCUBES_WORKER_ID");
+    unsetenv("GDALCUBES_WORKER_N");
+    unsetenv("GDALCUBES_WORKER_DIR");
+#endif
   }
   
   auto start = std::chrono::system_clock::now();
-  while (!all_finished && !_interrupted) {
-    
-    
+  while (!all_finished) {
+  
     // 1. check if processes are still running
     all_finished = true;
+    any_failed = false;
     for (uint16_t pid=0; pid < nworker; ++pid) {
       if(p[pid]->try_get_exit_status(exit_status[pid])) {
         finished[pid] = true;
+        if (exit_status[pid] != 0) {
+          any_failed = true;
+        }
       }
       else {
         all_finished = false;
       }
     }
+    if (any_failed) {
+      break;
+    }
+    
     
     // 2. check whether there are finished chunks
     // Notice that this must be executed even if all_finished is true,
     // because there may be remaining chunks
     std::vector<std::pair<std::string, chunkid_t>> chunk_queue;
     filesystem::iterate_directory(work_dir, [&chunk_queue](const std::string& f) {
-     
+
       // Consider files with name X.nc, where X is an integer number
       // Temporary files will start with a dot and are NOT considered here
       std::regex r("^([0-9]+)\\.nc$");
@@ -98,7 +123,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
         }
       }
     });
-    
+
     // add finished chunks to output
     for (auto it = chunk_queue.begin(); it != chunk_queue.end(); ++it) {
       try {
@@ -107,11 +132,11 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
         dat->read_ncdf(it->first);
         f(it->second, dat, mutex);
         filesystem::remove(it->first);
-        
+
         // for debugging only
         //filesystem::move(it->first,it->first + "DONE.nc");
-        
-        
+
+
       } catch (std::string s) {
         GCBS_ERROR(s);
         continue;
@@ -124,39 +149,52 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     
     // 3. sleep and check user interrupt
     if (!all_finished) {
-      if (_interrupted) {
-        for (uint16_t pid=0; pid < nworker; ++pid) {
-          if(p[pid]->try_get_exit_status(exit_status[pid])) {
-            p[pid]->kill();
-          }
-        }
+      auto end = std::chrono::system_clock::now();
+      auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      if (elapsed > std::chrono::milliseconds(1500)) {
+       try {
+         Rcpp::checkUserInterrupt();
+       }
+       catch (...) {
+         _interrupted = true;
+         break;
+       }
+        start = std::chrono::system_clock::now();
       }
-      else {
-        auto end = std::chrono::system_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        if (elapsed > std::chrono::milliseconds(2000)) {
-          // TODO: check interrupt
-          start = std::chrono::system_clock::now();
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
   }
+  
   if (_interrupted) {
     for (uint16_t pid=0; pid < nworker; ++pid) {
-      if(p[pid]->try_get_exit_status(exit_status[pid])) {
-        p[pid]->kill();
+      if(!p[pid]->try_get_exit_status(exit_status[pid])) {
+        GCBS_DEBUG("killing worker process #" + std::to_string(pid) );
+        p[pid]->kill(true);
       }
     }
     GCBS_ERROR("computations have been interrupted by the user");
     
     // TODO: clean up potential intermediate files and similar?!
   }
-  else {
-    // check error status
+  else if (any_failed) {
+    for (uint16_t pid=0; pid < nworker; ++pid) {
+      if(!p[pid]->try_get_exit_status(exit_status[pid])) {
+        GCBS_DEBUG("killing worker process #" + std::to_string(pid) + " because one or more other worker processes failed" );
+        p[pid]->kill(true);
+      }
+      else {
+        if (exit_status[pid] != 0) {
+          GCBS_ERROR("worker process #" + std::to_string(pid) + " returned " + std::to_string(exit_status[pid]));
+        }
+      }
+    }
+    
+  }
+  else { // all_finished is true
+    // check error status anyway
     for (uint16_t pid=0; pid < nworker; ++pid) {
       if(exit_status[pid] != 0) {
-        GCBS_ERROR("worker process " + std::to_string(pid) + " returned error code " + std::to_string(exit_status[pid]));
+        GCBS_ERROR("worker process #" + std::to_string(pid) + " returned " + std::to_string(exit_status[pid]));
       }
     }
   }
@@ -173,6 +211,7 @@ void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uin
     std::string outfile =  filesystem::join(work_dir, std::to_string(id) + ".nc");
     std::string outfile_temp =  filesystem::join(work_dir, "." + std::to_string(id) + ".nc");
     
+    // TODO: exception handling?!
     cube->read_chunk(id)->write_ncdf(outfile_temp); // TODO: add compression level and force?!
     filesystem::move(outfile_temp, outfile);
   }

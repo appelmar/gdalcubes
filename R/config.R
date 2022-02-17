@@ -50,7 +50,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
       gc_set_process_execution(.pkgenv$threads, cmd)
     }
     else {
-      gc_set_threads(threads)
+      gc_set_threads(.pkgenv$threads)
     }
     .pkgenv$process_execution = process_execution
   }
