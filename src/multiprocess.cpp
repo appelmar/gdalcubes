@@ -1,7 +1,7 @@
 
 #include "multiprocess.h"
 #include "gdalcubes/src/cube_factory.h"
-#include "gdalcubes/external/tiny-process-library/process.hpp"
+#include "gdalcubes/src/external/tiny-process-library/process.hpp"
 
 // [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
