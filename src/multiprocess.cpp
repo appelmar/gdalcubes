@@ -13,9 +13,10 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
                                          std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   
   GCBS_DEBUG("Using " + std::to_string(this->_nworker) + " worker");
-  std::string cube_id = utils::generate_unique_filename();
+  
+  std::string job_id = utils::generate_unique_filename();
   std::mutex mutex;
-  std::string work_dir = filesystem::join(config::instance()->get_streaming_dir(), cube_id);
+  std::string work_dir = filesystem::join(config::instance()->get_streaming_dir(), job_id);
   if (filesystem::exists(work_dir)) {
     GCBS_ERROR("Directory '" + work_dir + "' for storing intermediate chunk data already exists");
     throw std::string("Directory '" + work_dir + "' for storing intermediate chunk data already exists");
@@ -29,53 +30,50 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   
   uint16_t nworker = _nworker;
   std::vector<std::shared_ptr<TinyProcessLib::Process>> p;
-  std::vector<std::string> err;
-  err.resize(nworker,"");
   std::vector<bool> finished(nworker, false);
   bool all_finished = false;
   bool any_failed = false;
   std::vector<int> exit_status(nworker, -1);
   for (uint16_t pid=0; pid < nworker; ++pid) {
     
+    json11::Json j = json11::Json::object{ 
+      {"job_id", job_id},
+      {"worker_id", pid},
+      {"worker_count", nworker},
+      {"job_start", ""}, // TODO
+      {"workdir", work_dir},
+      {"cube", filesystem::join(work_dir, "cube.json")},
+      {"gdalcubes_options", json11::Json::object{
+        {"debug", true}, // TODO
+        {"log_dir", filesystem::join(work_dir, "worker_" + std::to_string(pid))},
+        {"ncdf_compression_level", 0}, // TODO
+        {"streaming_dir", work_dir},
+        {"use_overview_images", true} // TODO
+      }},
+      {"gdal_options", json11::Json::object{
+        {"NUM_THREADS", "ALL_CPUS"}, // TODO
+        {"GDAL_CACHEMAX", "64"},// TODO
+        {"VSI_CACHE", "TRUE"}, // TODO
+        {"VSI_CACHE_SIZE", "25000"} // TODO
+        // TODO add further options if set
+      }}
+    }; 
     
-#ifdef _WIN32
-    _putenv("GDALCUBES_WORKER=1");
-    _putenv((std::string("GDALCUBES_WORKER_JSON") + "=" + json_path.c_str()));
-    _putenv((std::string("GDALCUBES_WORKER_ID") + "=" + std::to_string(pid).c_str()));
-    _putenv((std::string("GDALCUBES_WORKER_N") + "=" + std::to_string(nworker).c_str()).c_str());
-    _putenv((std::string("GDALCUBES_WORKER_DIR") + "=" + work_dir.c_str()).c_str());
-#else
-    setenv("GDALCUBES_WORKER", "1", 1);
-    setenv("GDALCUBES_WORKER_JSON", json_path.c_str(), 1);
-    setenv("GDALCUBES_WORKER_ID", std::to_string(pid).c_str(), 1);
-    setenv("GDALCUBES_WORKER_N", std::to_string(nworker).c_str(), 1);
-    setenv("GDALCUBES_WORKER_DIR", work_dir.c_str(), 1);
-#endif
+    // write json to file
+    std::ofstream ojson;
+    std::string worker_json_file = filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".json");
+    ojson.open(worker_json_file);
+    ojson << j.dump();
+    ojson.close();
     
-    // start child process
+    // start child process, with first argument being path to the json worker process description
     auto pp = std::make_shared<TinyProcessLib::Process>(
-      _cmd, "", [](const char *bytes, std::size_t n) {},
-      [&err, &pid](const char *bytes, std::size_t n) {
-        //err[pid] = std::string(bytes, n);
-        //GCBS_DEBUG(err[pid]);
-      },
+      _cmd + " " + worker_json_file, "", 
+      [](const char *bytes, std::size_t n) {},
+      [](const char *bytes, std::size_t n) {}, 
       false);
     p.push_back(pp);
     
-    // unset environment variables
-#ifdef _WIN32
-    _putenv("GDALCUBES_WORKER=");
-    _putenv("GDALCUBES_WORKER_JSON=");
-    _putenv("GDALCUBES_WORKER_ID=");
-    _putenv("GDALCUBES_WORKER_N=");
-    _putenv("GDALCUBES_WORKER_DIR=");
-#else
-    unsetenv("GDALCUBES_WORKER");
-    unsetenv("GDALCUBES_WORKER_JSON");
-    unsetenv("GDALCUBES_WORKER_ID");
-    unsetenv("GDALCUBES_WORKER_N");
-    unsetenv("GDALCUBES_WORKER_DIR");
-#endif
   }
   
   auto start = std::chrono::system_clock::now();
@@ -204,6 +202,8 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
 
 void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uint16_t nworker, std::string work_dir) {
   std::shared_ptr<cube> cube = cube_factory::instance()->create_from_json_file(json_path);
+  
+  // TODO: add gdalcubes worker context JSON file with 
   
   // TODO: how to set important config options (e.g., netCDF compression, GDAL cache size, error handlers, ...)
   for (uint32_t i=pid; i<cube->count_chunks(); i+= nworker) {

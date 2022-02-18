@@ -46,7 +46,8 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   if (!missing(process_execution)) {
     stopifnot(is.logical(process_execution))
     if (process_execution) {
-      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e 'gdalcubes:::.exec_worker()'", sep="")
+      worker_script = system.file("scripts/worker.R", package = "gdalcubes")
+      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla '", worker_script, "'", sep="")
       gc_set_process_execution(.pkgenv$threads, cmd)
     }
     else {
