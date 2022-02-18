@@ -1,5 +1,5 @@
 #!/usr/bin/env r
-sink(tempfile(tmpdir = "/tmp", fileext = "_gc.log"))
+
 args = commandArgs(trailingOnly=TRUE)
 if (length(args) < 1) {
   stop("Missing input argument(s)")
@@ -13,6 +13,8 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 }
 j = jsonlite::fromJSON(json)
 
+
+# TODO: find good default parameters 
 library(gdalcubes)
 # set gdalcubes options
 do.call(gdalcubes_options,args = j$gdalcubes_options)

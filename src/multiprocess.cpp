@@ -44,17 +44,17 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       {"workdir", work_dir},
       {"cube", filesystem::join(work_dir, "cube.json")},
       {"gdalcubes_options", json11::Json::object{
-        {"debug", true}, // TODO
+        {"debug", false}, // TODO
         {"log_dir", filesystem::join(work_dir, "worker_" + std::to_string(pid))},
         {"ncdf_compression_level", 0}, // TODO
         {"streaming_dir", work_dir},
         {"use_overview_images", true} // TODO
       }},
       {"gdal_options", json11::Json::object{
-        {"NUM_THREADS", "ALL_CPUS"}, // TODO
-        {"GDAL_CACHEMAX", "64"},// TODO
-        {"VSI_CACHE", "TRUE"}, // TODO
-        {"VSI_CACHE_SIZE", "25000"} // TODO
+        {"NUM_THREADS", "ALL_CPUS"} // TODO
+       // {"GDAL_CACHEMAX", "64"},// TODO
+       /// {"VSI_CACHE", "TRUE"}, // TODO
+       // {"VSI_CACHE_SIZE", "25000"} // TODO
         // TODO add further options if set
       }}
     }; 
