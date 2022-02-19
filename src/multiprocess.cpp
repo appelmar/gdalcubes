@@ -45,14 +45,14 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       {"cube", filesystem::join(work_dir, "cube.json")},
       {"gdalcubes_options", json11::Json::object{
         {"debug", false}, // TODO
-        {"log_dir", filesystem::join(work_dir, "worker_" + std::to_string(pid))},
+        {"log_dir", filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")},
         {"ncdf_compression_level", 0}, // TODO
         {"streaming_dir", work_dir},
         {"use_overview_images", true} // TODO
       }},
       {"gdal_options", json11::Json::object{
-        {"NUM_THREADS", "ALL_CPUS"} // TODO
-       // {"GDAL_CACHEMAX", "64"},// TODO
+        {"NUM_THREADS", "ALL_CPUS"}, // TODO
+        {"GDAL_CACHEMAX", "256"} // TODO
        /// {"VSI_CACHE", "TRUE"}, // TODO
        // {"VSI_CACHE_SIZE", "25000"} // TODO
         // TODO add further options if set
@@ -85,7 +85,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     for (uint16_t pid=0; pid < nworker; ++pid) {
       if(p[pid]->try_get_exit_status(exit_status[pid])) {
         finished[pid] = true;
-        if (exit_status[pid] != 0) {
+        if (exit_status[pid] > 0) {
           any_failed = true;
         }
       }
@@ -137,9 +137,11 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
 
       } catch (std::string s) {
         GCBS_ERROR(s);
+        Rcpp::warning("Chunk" + std::to_string(it->second) + " could not be added to output.");
         continue;
       } catch (...) {
         GCBS_ERROR("unexpected exception while processing chunk");
+        Rcpp::warning("Chunk" + std::to_string(it->second) + " could not be added to output.");
         continue;
       }
     }
@@ -181,7 +183,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
         p[pid]->kill(true);
       }
       else {
-        if (exit_status[pid] != 0) {
+        if (exit_status[pid] > 0) {
           GCBS_ERROR("worker process #" + std::to_string(pid) + " returned " + std::to_string(exit_status[pid]));
         }
       }
@@ -191,13 +193,33 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   else { // all_finished is true
     // check error status anyway
     for (uint16_t pid=0; pid < nworker; ++pid) {
-      if(exit_status[pid] != 0) {
+      if(exit_status[pid] > 0) {
         GCBS_ERROR("worker process #" + std::to_string(pid) + " returned " + std::to_string(exit_status[pid]));
+        any_failed = true;
       }
     }
   }
+  
+  // Print output from worker processes
+  for (uint16_t pid=0; pid < nworker; ++pid) {
+    std::string f = filesystem::join(work_dir, "worker_" + std::to_string(pid));// TODO: take from JSON
+    
+    std::ifstream wlogf(f);
+    if (wlogf.is_open()) // TODO: check if empty?
+      Rcpp::Rcerr << wlogf.rdbuf();
+  }
+  
   filesystem::remove(work_dir);
-  _interrupted = false;
+  
+  // Error message
+  if(_interrupted) {
+    _interrupted = false;
+    Rcpp::stop("computations have been interrupted by the user");
+    
+  }
+  else if (any_failed) {
+    Rcpp::stop("one or more worker processes failed to compute data cube chunks");
+  }
 }
 
 void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uint16_t nworker, std::string work_dir) {
@@ -213,7 +235,10 @@ void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uin
     
     // TODO: exception handling?!
     cube->read_chunk(id)->write_ncdf(outfile_temp); // TODO: add compression level and force?!
-    filesystem::move(outfile_temp, outfile);
+    if (filesystem::exists(outfile_temp)) {
+      filesystem::move(outfile_temp, outfile);
+    }
+    // TODO: error handling / exceptions
   }
   
 }

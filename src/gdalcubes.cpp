@@ -33,6 +33,24 @@ std::mutex r_stderr_buf::_m;
 std::stringstream r_stderr_buf::_s;
 
 
+struct r_warn_buf {
+  static std::mutex _m;
+  static std::vector<std::string> _warnings;
+  static void warning(std::string s="") {
+    std::lock_guard<std::mutex> lck(_m);
+    _warnings.push_back(s);
+    if (!_warnings.empty() && r_main_thread_id == std::this_thread::get_id()) {
+      for (uint32_t i=0; i<_warnings.size(); ++i) {
+        Rcpp::warning(_warnings[i]);
+      }
+     _warnings.clear();
+    }
+  }
+};
+std::mutex r_warn_buf::_m;
+std::vector<std::string> r_warn_buf::_warnings;
+
+
 
 
 
@@ -186,13 +204,13 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "Error  message: "  << msg << where_str << std::endl;
+      _err_stream << "[ERROR] "  << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning  message: " << msg << where_str << std::endl;
+      _err_stream << "[WARNING]  " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "Info message: " << msg << where_str << std::endl;
+      _err_stream << "[INFO] " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "Debug message: "  << msg << where_str << std::endl;
+      _err_stream << "[DEBUG] "  << msg << where_str << std::endl;
     }
     if (!_defer) {
       if (_err_stream.rdbuf()->in_avail() > 0) {
@@ -207,9 +225,9 @@ struct error_handling_r {
     _m_errhandl.lock();
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "Error: " << msg << std::endl;
+      _err_stream << "[ERROR] " << msg << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "Warning: " << msg << std::endl;
+      _err_stream << "[WARNING] " << msg << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
       _err_stream << "## " << msg << std::endl;
     }
