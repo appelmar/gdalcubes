@@ -45,16 +45,16 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       {"cube", filesystem::join(work_dir, "cube.json")},
       {"gdalcubes_options", json11::Json::object{
         {"debug", false}, // TODO
-        {"log_dir", filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")},
+        {"log_file", filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")},
         {"ncdf_compression_level", 0}, // TODO
         {"streaming_dir", work_dir},
         {"use_overview_images", true} // TODO
       }},
       {"gdal_options", json11::Json::object{
-        {"NUM_THREADS", "ALL_CPUS"}, // TODO
-        {"GDAL_CACHEMAX", "256"} // TODO
-       /// {"VSI_CACHE", "TRUE"}, // TODO
-       // {"VSI_CACHE_SIZE", "25000"} // TODO
+       // {"NUM_THREADS", "ALL_CPUS"}, // TODO
+       // {"GDAL_CACHEMAX", "1024"}, // TODO
+       // {"VSI_CACHE", "TRUE"}, // TODO
+       // {"VSI_CACHE_SIZE", "50000000"} // TODO
         // TODO add further options if set
       }}
     }; 
@@ -201,12 +201,18 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   }
   
   // Print output from worker processes
+  // TODO: only if debug is true
   for (uint16_t pid=0; pid < nworker; ++pid) {
-    std::string f = filesystem::join(work_dir, "worker_" + std::to_string(pid));// TODO: take from JSON
-    
-    std::ifstream wlogf(f);
-    if (wlogf.is_open()) // TODO: check if empty?
-      Rcpp::Rcerr << wlogf.rdbuf();
+    std::ifstream wlogf(filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")); // TODO: take path from JSON
+    while(!wlogf.eof()) 
+    {
+      std::string msg;
+      std::getline(wlogf, msg);
+      if (!msg.empty()) {
+        msg = "[WORKER #" + std::to_string(pid) + "] " + msg;
+        GCBS_DEBUG(msg);
+      }
+    }
   }
   
   filesystem::remove(work_dir);

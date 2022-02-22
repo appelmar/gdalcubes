@@ -251,9 +251,9 @@ struct error_handling_r {
     }
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      os << "Error: " << msg << std::endl;
+      os << "[ERROR] " << msg << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      os << "Warning: " << msg << std::endl;
+      os << "[WARNING] " << msg << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
       os << "## " << msg << std::endl;
     }
@@ -272,13 +272,13 @@ struct error_handling_r {
     std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
     std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
     if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      os << "Error  message: "  << msg << where_str << std::endl;
+      os << "[ERROR] "  << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_WARNING) {
-      os << "Warning  message: " << msg << where_str << std::endl;
+      os << "[WARNING] " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_INFO) {
-      os << "Info message: " << msg << where_str << std::endl;
+      os << "[INFO] " << msg << where_str << std::endl;
     } else if (type == error_level::ERRLVL_DEBUG) {
-      os << "Debug message: "  << msg << where_str << std::endl;
+      os << "[DEBUG] "  << msg << where_str << std::endl;
     }
     _m_errhandl.unlock();
   }
@@ -507,13 +507,10 @@ void gc_add_format_dir(std::string dir) {
 void gc_init() {
   config::instance()->gdalcubes_init();
   config::instance()->set_default_progress_bar(std::make_shared<progress_simple_R>());
-  //config::instance()->set_default_progress_bar(std::make_shared<progress_none>());
-  
   config::instance()->set_error_handler(error_handling_r::standard); 
   
   // Interruptible chunk processor
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(1)));
-  
   config::instance()->set_gdal_option("GDAL_NUM_THREADS", "ALL_CPUS");
   
 }
@@ -1690,7 +1687,7 @@ SEXP gc_create_stream_cube(SEXP pin, std::string cmd) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
     
-    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd, true));
+    std::shared_ptr<stream_cube>* x = new std::shared_ptr<stream_cube>( stream_cube::create(*aa, cmd));
     
     Rcpp::XPtr< std::shared_ptr<stream_cube> > p(x, true) ;
   
@@ -1890,7 +1887,7 @@ void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::str
 
 
 // [[Rcpp::export]]
-void gc_set_threads(IntegerVector n) {
+void gc_set_thread_execution(IntegerVector n) {
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
 }
 
@@ -1923,6 +1920,11 @@ void gc_set_progress(bool show_progress) {
 // [[Rcpp::export]]
 void gc_set_use_overviews(bool use_overviews) {
   config::instance()->set_gdal_use_overviews(use_overviews);
+}
+
+// [[Rcpp::export]]
+int gc_detect_cores() {
+  return std::thread::hardware_concurrency();
 }
 
 

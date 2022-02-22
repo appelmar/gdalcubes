@@ -5,7 +5,7 @@
 #' or not debug messages should be printed.
 #'
 #' @param ... not used
-#' @param threads number of threads used to process data cubes
+#' @param parallel number of parallel workers used to process data cubes or TRUE to use the number of available cores automatically
 #' @param ncdf_compression_level integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression
 #' @param debug logical;  print debug messages
 #' @param cache logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes
@@ -16,42 +16,69 @@
 #' @param streaming_dir directory where temporary binary files for process streaming will be written to
 #' @param log_file character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file
 #' @param process_execution logical; if TRUE, data cube chunks will be processed in separate processes (experimental)
+#' @param threads number of threads used to process data cubes (deprecated)
 #' @details 
-#' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
-#' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
+#' Data cubes can be processed in parallel where the number of chunks in a cube is distributed among parallel
+#' worker processes. The actual number of used workers can be lower if a data cube as less chunks. If parallel
+#' is TRUE, the number of available cores is used. Setting parallel = FALSE can be used to disable parallel processing.
+#' Notice that since version 0.6.0, separate processes are being used instead of parallel threads to avoid 
+#' possible R session crashes due to some multithreading issues. 
 #' 
 #' Caching has no effect on disk or memory consumption, 
 #' it simply tries to reuse existing temporary files where possible.
-#' For example, changing only parameters to \code{plot} will not require
-#' rerunning the full data cube operation chain.
+#' For example, changing only parameters to \code{plot} will void
+#' reprocessing the same data cube if cache is TRUE.
 #' 
 #' The streaming directory can be used to control the performance of user-defined functions,
 #' if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared memory device.
 #' 
 #' Passing no arguments will return the current options as a list.
 #' @examples 
-#' gdalcubes_options(threads=4) # set the number of threads
+#' gdalcubes_options(parallel=4) # set the number 
 #' gdalcubes_options() # print current options
-#' gdalcubes_options(threads=1) # reset
+#' gdalcubes_options(parallel=FALSE) # reset
 #' @export
-gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
+gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
                               use_overview_images, show_progress, default_chunksize, streaming_dir, 
-                              log_file, process_execution) {
+                              log_file, process_execution, threads) {
   if (!missing(threads)) {
-    stopifnot(threads >= 1)
-    stopifnot(threads%%1==0)
-    gc_set_threads(threads)
-    .pkgenv$threads = threads
+    warning("'threads' option is deprecated; please use 'parallel' instead")
+    parallel = threads
+  }
+  if (!missing(parallel)) {
+    if (is.logical(parallel)) {
+      if (!parallel) {
+        parallel = 1
+      }
+      else {
+        parallel = gc_detect_cores()
+        if (parallel == 0) {
+          warning("Could not detect the number of available cores automaticall, please set manually")
+          parallel = .pkgenv$parallel # use current value
+        }
+      }
+    }
+    stopifnot(parallel >= 1)
+    stopifnot(parallel%%1==0)
+    .pkgenv$parallel = parallel
+    if (.pkgenv$process_execution) {
+      worker_script = system.file("scripts/worker.R", package = "gdalcubes")
+      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
+      gc_set_process_execution(.pkgenv$parallel, cmd)
+    }
+    else {
+      gc_set_thread_execution(.pkgenv$parallel)
+    }
   }
   if (!missing(process_execution)) {
     stopifnot(is.logical(process_execution))
     if (process_execution) {
       worker_script = system.file("scripts/worker.R", package = "gdalcubes")
       cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
-      gc_set_process_execution(.pkgenv$threads, cmd)
+      gc_set_process_execution(.pkgenv$parallel, cmd)
     }
     else {
-      gc_set_threads(.pkgenv$threads)
+      gc_set_thread_execution(.pkgenv$parallel)
     }
     .pkgenv$process_execution = process_execution
   }
@@ -135,7 +162,7 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   # }
   if (nargs() == 0) {
     return(list(
-      threads = .pkgenv$threads,
+      parallel = .pkgenv$parallel,
       ncdf_compression_level = .pkgenv$compression_level,
       debug = .pkgenv$debug,
       cache = .pkgenv$use_cube_cache,

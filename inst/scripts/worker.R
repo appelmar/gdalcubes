@@ -14,7 +14,6 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 j = jsonlite::fromJSON(json)
 
 
-# TODO: find good default parameters 
 library(gdalcubes)
 # set gdalcubes options
 do.call(gdalcubes_options,args = j$gdalcubes_options)
@@ -27,6 +26,5 @@ if (!is.null(gdal_options)) {
   }
 }
 
-# TODO: validate and process further json fields j$job_start and j$job_idj
 gdalcubes:::gc_exec_worker(j$cube, j$worker_id, j$worker_count, j$workdir)
   

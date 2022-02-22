@@ -3,16 +3,16 @@
 .onLoad <- function(libname,pkgname) {
 
   # call gdalcubes_init()
-  if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
-    gc_init()
-    gc_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
-  }
+  #if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
+  gc_init()
+  gc_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
+  #}
   
   .pkgenv$compression_level = 1
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
-  .pkgenv$threads = 1
-  .pkgenv$process_execution = FALSE
+  .pkgenv$parallel = 1
+  .pkgenv$process_execution = TRUE
   .pkgenv$debug = FALSE
   .pkgenv$log_file = ""
   .pkgenv$ncdf_write_bounds = TRUE 
@@ -25,6 +25,10 @@
   }
   gc_set_progress(.pkgenv$show_progress)
   .pkgenv$default_chunksize = .default_chunk_size
+  
+  worker_script = system.file("scripts/worker.R", package = "gdalcubes")
+  cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
+  gc_set_process_execution(.pkgenv$parallel, cmd)
   
   .pkgenv$streaming_dir = tempdir()
   gc_set_streamining_dir(.pkgenv$streaming_dir)
@@ -44,9 +48,9 @@
 }
 
 .onUnload <- function(libpath) {
-  if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
+  #if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
     gc_cleanup()
-  }
+  #}
 }
 
 

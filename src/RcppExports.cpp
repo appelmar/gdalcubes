@@ -745,13 +745,13 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// gc_set_threads
-void gc_set_threads(IntegerVector n);
-RcppExport SEXP _gdalcubes_gc_set_threads(SEXP nSEXP) {
+// gc_set_thread_execution
+void gc_set_thread_execution(IntegerVector n);
+RcppExport SEXP _gdalcubes_gc_set_thread_execution(SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type n(nSEXP);
-    gc_set_threads(n);
+    gc_set_thread_execution(n);
     return R_NilValue;
 END_RCPP
 }
@@ -797,6 +797,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type use_overviews(use_overviewsSEXP);
     gc_set_use_overviews(use_overviews);
     return R_NilValue;
+END_RCPP
+}
+// gc_detect_cores
+int gc_detect_cores();
+RcppExport SEXP _gdalcubes_gc_detect_cores() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(gc_detect_cores());
+    return rcpp_result_gen;
 END_RCPP
 }
 // gc_simple_hash
@@ -885,11 +895,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_query_points", (DL_FUNC) &_gdalcubes_gc_query_points, 5},
     {"_gdalcubes_gc_query_timeseries", (DL_FUNC) &_gdalcubes_gc_query_timeseries, 4},
     {"_gdalcubes_gc_zonal_statistics", (DL_FUNC) &_gdalcubes_gc_zonal_statistics, 7},
-    {"_gdalcubes_gc_set_threads", (DL_FUNC) &_gdalcubes_gc_set_threads, 1},
+    {"_gdalcubes_gc_set_thread_execution", (DL_FUNC) &_gdalcubes_gc_set_thread_execution, 1},
     {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 4},
     {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 2},
     {"_gdalcubes_gc_set_progress", (DL_FUNC) &_gdalcubes_gc_set_progress, 1},
     {"_gdalcubes_gc_set_use_overviews", (DL_FUNC) &_gdalcubes_gc_set_use_overviews, 1},
+    {"_gdalcubes_gc_detect_cores", (DL_FUNC) &_gdalcubes_gc_detect_cores, 0},
     {"_gdalcubes_gc_simple_hash", (DL_FUNC) &_gdalcubes_gc_simple_hash, 1},
     {"_gdalcubes_gc_create_stac_collection", (DL_FUNC) &_gdalcubes_gc_create_stac_collection, 5},
     {NULL, NULL, 0}

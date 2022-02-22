@@ -237,8 +237,8 @@ gc_zonal_statistics <- function(pin, ogr_dataset, agg_funcs, agg_bands, out_path
     invisible(.Call('_gdalcubes_gc_zonal_statistics', PACKAGE = 'gdalcubes', pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer))
 }
 
-gc_set_threads <- function(n) {
-    invisible(.Call('_gdalcubes_gc_set_threads', PACKAGE = 'gdalcubes', n))
+gc_set_thread_execution <- function(n) {
+    invisible(.Call('_gdalcubes_gc_set_thread_execution', PACKAGE = 'gdalcubes', n))
 }
 
 gc_exec_worker <- function(json_path, pid, nworker, work_dir) {
@@ -255,6 +255,10 @@ gc_set_progress <- function(show_progress) {
 
 gc_set_use_overviews <- function(use_overviews) {
     invisible(.Call('_gdalcubes_gc_set_use_overviews', PACKAGE = 'gdalcubes', use_overviews))
+}
+
+gc_detect_cores <- function() {
+    .Call('_gdalcubes_gc_detect_cores', PACKAGE = 'gdalcubes')
 }
 
 gc_simple_hash <- function(instr) {

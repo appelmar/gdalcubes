@@ -6,7 +6,7 @@
 \usage{
 gdalcubes_options(
   ...,
-  threads,
+  parallel,
   ncdf_compression_level,
   debug,
   cache,
@@ -16,13 +16,14 @@ gdalcubes_options(
   default_chunksize,
   streaming_dir,
   log_file,
-  process_execution
+  process_execution,
+  threads
 )
 }
 \arguments{
 \item{...}{not used}
 
-\item{threads}{number of threads used to process data cubes}
+\item{parallel}{number of parallel workers used to process data cubes or TRUE to use the number of available cores automatically}
 
 \item{ncdf_compression_level}{integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression}
 
@@ -43,19 +44,24 @@ gdalcubes_options(
 \item{log_file}{character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file}
 
 \item{process_execution}{logical; if TRUE, data cube chunks will be processed in separate processes (experimental)}
+
+\item{threads}{number of threads used to process data cubes (deprecated)}
 }
 \description{
 Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
 or not debug messages should be printed.
 }
 \details{
-Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
-than the number of chunks of a cube thus has no effect and will not further reduce computation times.
+Data cubes can be processed in parallel where the number of chunks in a cube is distributed among parallel
+worker processes. The actual number of used workers can be lower if a data cube as less chunks. If parallel
+is TRUE, the number of available cores is used. Setting parallel = FALSE can be used to disable parallel processing.
+Notice that since version 0.6.0, separate processes are being used instead of parallel threads to avoid 
+possible R session crashes due to some multithreading issues. 
 
 Caching has no effect on disk or memory consumption, 
 it simply tries to reuse existing temporary files where possible.
-For example, changing only parameters to \code{plot} will not require
-rerunning the full data cube operation chain.
+For example, changing only parameters to \code{plot} will void
+reprocessing the same data cube if cache is TRUE.
 
 The streaming directory can be used to control the performance of user-defined functions,
 if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared memory device.
@@ -63,7 +69,7 @@ if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared 
 Passing no arguments will return the current options as a list.
 }
 \examples{
-gdalcubes_options(threads=4) # set the number of threads
+gdalcubes_options(parallel=4) # set the number 
 gdalcubes_options() # print current options
-gdalcubes_options(threads=1) # reset
+gdalcubes_options(parallel=FALSE) # reset
 }
