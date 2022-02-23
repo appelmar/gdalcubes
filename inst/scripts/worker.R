@@ -26,5 +26,5 @@ if (!is.null(gdal_options)) {
   }
 }
 
-gdalcubes:::gc_exec_worker(j$cube, j$worker_id, j$worker_count, j$workdir)
+gdalcubes:::gc_exec_worker(j$cube, j$worker_id, j$worker_count, j$workdir, gdalcubes_options()$ncdf_compression_level)
   

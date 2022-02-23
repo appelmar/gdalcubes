@@ -46,7 +46,8 @@ LIBGDALCUBES = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/external/tiny-process-library/process.o \
 			gdalcubes/src/external/tiny-process-library/process_win.o \
 			gdalcubes/src/external/json11/json11.o \
-			multiprocess.o 
+			multiprocess.o \
+			error.o
 
 PKG_CPPFLAGS = -I$(RWINLIB_GDAL)/include/gdal-3.2.1 \
                -I$(RWINLIB_GDAL)/include/netcdf-4.7.3 \

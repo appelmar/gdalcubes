@@ -756,26 +756,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // gc_exec_worker
-void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir);
-RcppExport SEXP _gdalcubes_gc_exec_worker(SEXP json_pathSEXP, SEXP pidSEXP, SEXP nworkerSEXP, SEXP work_dirSEXP) {
+void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir, int compression);
+RcppExport SEXP _gdalcubes_gc_exec_worker(SEXP json_pathSEXP, SEXP pidSEXP, SEXP nworkerSEXP, SEXP work_dirSEXP, SEXP compressionSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type json_path(json_pathSEXP);
     Rcpp::traits::input_parameter< uint32_t >::type pid(pidSEXP);
     Rcpp::traits::input_parameter< uint32_t >::type nworker(nworkerSEXP);
     Rcpp::traits::input_parameter< std::string >::type work_dir(work_dirSEXP);
-    gc_exec_worker(json_path, pid, nworker, work_dir);
+    Rcpp::traits::input_parameter< int >::type compression(compressionSEXP);
+    gc_exec_worker(json_path, pid, nworker, work_dir, compression);
     return R_NilValue;
 END_RCPP
 }
 // gc_set_process_execution
-void gc_set_process_execution(IntegerVector n_worker, std::string cmd);
-RcppExport SEXP _gdalcubes_gc_set_process_execution(SEXP n_workerSEXP, SEXP cmdSEXP) {
+void gc_set_process_execution(IntegerVector n_worker, std::string cmd, bool debug, int ncdf_compression_level, bool use_overviews, Rcpp::List gdal_options);
+RcppExport SEXP _gdalcubes_gc_set_process_execution(SEXP n_workerSEXP, SEXP cmdSEXP, SEXP debugSEXP, SEXP ncdf_compression_levelSEXP, SEXP use_overviewsSEXP, SEXP gdal_optionsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type n_worker(n_workerSEXP);
     Rcpp::traits::input_parameter< std::string >::type cmd(cmdSEXP);
-    gc_set_process_execution(n_worker, cmd);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< int >::type ncdf_compression_level(ncdf_compression_levelSEXP);
+    Rcpp::traits::input_parameter< bool >::type use_overviews(use_overviewsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type gdal_options(gdal_optionsSEXP);
+    gc_set_process_execution(n_worker, cmd, debug, ncdf_compression_level, use_overviews, gdal_options);
     return R_NilValue;
 END_RCPP
 }
@@ -896,8 +901,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_query_timeseries", (DL_FUNC) &_gdalcubes_gc_query_timeseries, 4},
     {"_gdalcubes_gc_zonal_statistics", (DL_FUNC) &_gdalcubes_gc_zonal_statistics, 7},
     {"_gdalcubes_gc_set_thread_execution", (DL_FUNC) &_gdalcubes_gc_set_thread_execution, 1},
-    {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 4},
-    {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 2},
+    {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 5},
+    {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 6},
     {"_gdalcubes_gc_set_progress", (DL_FUNC) &_gdalcubes_gc_set_progress, 1},
     {"_gdalcubes_gc_set_use_overviews", (DL_FUNC) &_gdalcubes_gc_set_use_overviews, 1},
     {"_gdalcubes_gc_detect_cores", (DL_FUNC) &_gdalcubes_gc_detect_cores, 0},

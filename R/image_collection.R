@@ -90,7 +90,7 @@ print.image_collection <- function(x, ..., n=6) {
     cat(paste("Empty image collection object\n"))
   }
   else {
-    cat(paste("Image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), " bands\n"))
+    cat(paste("Image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), "bands\n"))
     cat("Images:\n")
     print(head(info$images, n))
     if (n < nrow(info$images)) {

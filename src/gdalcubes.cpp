@@ -1,56 +1,18 @@
 #include "gdalcubes/src/gdalcubes.h"
 #include "gdalcubes/src/cube_factory.h"
 #include "multiprocess.h"
+#include "error.h"
 
 // [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
 #include <memory>
 #include <thread>
 #include <algorithm>
-#include <fstream>
+//#include <fstream>
 
 
 using namespace Rcpp;
 using namespace gdalcubes;
-
-static std::thread::id r_main_thread_id = std::this_thread::get_id();
-
-
-struct r_stderr_buf {
-  static std::mutex _m;
-  static std::stringstream _s;
-  static void print(std::string s="") {
-    std::lock_guard<std::mutex> lck(_m);
-    _s << s;
-    if (!_s.str().empty() && r_main_thread_id == std::this_thread::get_id()) {
-      REprintf("%s", _s.str().c_str());
-      //R_FlushConsole(); // TODO: needed for stderr?
-      _s.str("");
-    }
-  }
-};
-std::mutex r_stderr_buf::_m;
-std::stringstream r_stderr_buf::_s;
-
-
-struct r_warn_buf {
-  static std::mutex _m;
-  static std::vector<std::string> _warnings;
-  static void warning(std::string s="") {
-    std::lock_guard<std::mutex> lck(_m);
-    _warnings.push_back(s);
-    if (!_warnings.empty() && r_main_thread_id == std::this_thread::get_id()) {
-      for (uint32_t i=0; i<_warnings.size(); ++i) {
-        Rcpp::warning(_warnings[i]);
-      }
-     _warnings.clear();
-    }
-  }
-};
-std::mutex r_warn_buf::_m;
-std::vector<std::string> r_warn_buf::_warnings;
-
-
 
 
 
@@ -170,123 +132,6 @@ void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
 }
 
 
-
-
-
-
-struct error_handling_r {
-  static std::mutex _m_errhandl;
-  static std::stringstream _err_stream;
-  static bool _defer;
-  static std::string _logfile;
-  
-  static void defer_output() {
-    _m_errhandl.lock();
-    _defer = true;
-    _m_errhandl.unlock();
-  }
-  
-  static void do_output() {
-    _m_errhandl.lock();
-    // TODO: if _err_stream is extremely large,
-    // print to a file first and afterwards show only last few lines and 
-    // a warning pointing to the file for full output
-    if (_err_stream.rdbuf()->in_avail() > 0) {
-      r_stderr_buf::print(_err_stream.str());
-      _err_stream.str(""); 
-    }
-    _defer = false;
-    _m_errhandl.unlock();
-  }
-  
-  static void debug(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
-    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
-    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      _err_stream << "[ERROR] "  << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "[WARNING]  " << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "[INFO] " << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_DEBUG) {
-      _err_stream << "[DEBUG] "  << msg << where_str << std::endl;
-    }
-    if (!_defer) {
-      if (_err_stream.rdbuf()->in_avail() > 0) {
-        r_stderr_buf::print(_err_stream.str());
-        _err_stream.str(""); 
-      }
-    }
-    _m_errhandl.unlock();
-  }
-  
-  static void standard(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
-    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      _err_stream << "[ERROR] " << msg << std::endl;
-    } else if (type == error_level::ERRLVL_WARNING) {
-      _err_stream << "[WARNING] " << msg << std::endl;
-    } else if (type == error_level::ERRLVL_INFO) {
-      _err_stream << "## " << msg << std::endl;
-    }
-    if (!_defer) {
-      if (_err_stream.rdbuf()->in_avail() > 0) {
-        r_stderr_buf::print(_err_stream.str());
-        _err_stream.str(""); 
-      }
-    }
-    _m_errhandl.unlock();
-  }
-  
-  static void standard_file(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
-    std::ofstream os;
-    os.open(_logfile, std::ios::out | std::ios::app);
-    if (!os.is_open()) {
-      _m_errhandl.unlock();
-      standard(type, msg,  where, error_code);
-      return;
-    }
-    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-      os << "[ERROR] " << msg << std::endl;
-    } else if (type == error_level::ERRLVL_WARNING) {
-      os << "[WARNING] " << msg << std::endl;
-    } else if (type == error_level::ERRLVL_INFO) {
-      os << "## " << msg << std::endl;
-    }
-    _m_errhandl.unlock();
-  }
-  
-  static void debug_file(error_level type, std::string msg, std::string where, int error_code) {
-    _m_errhandl.lock();
-    std::ofstream os;
-    os.open(_logfile, std::ios::out | std::ios::app);
-    if (!os.is_open()) {
-      _m_errhandl.unlock();
-      debug(type, msg,  where, error_code);
-      return;
-    }
-    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
-    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL ) {
-      os << "[ERROR] "  << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_WARNING) {
-      os << "[WARNING] " << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_INFO) {
-      os << "[INFO] " << msg << where_str << std::endl;
-    } else if (type == error_level::ERRLVL_DEBUG) {
-      os << "[DEBUG] "  << msg << where_str << std::endl;
-    }
-    _m_errhandl.unlock();
-  }
-};
-std::mutex error_handling_r::_m_errhandl;
-std::stringstream error_handling_r::_err_stream;
-bool error_handling_r::_defer = false;
-std::string error_handling_r::_logfile = "gdalcubes.log";
 
 
 struct progress_simple_R : public progress {
@@ -1893,16 +1738,32 @@ void gc_set_thread_execution(IntegerVector n) {
 
 
 // [[Rcpp::export]]
-void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir) {
-  chunk_processor_multiprocess::exec(json_path, pid, nworker, work_dir);
+void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir, int compression = 0) {
+  chunk_processor_multiprocess::exec(json_path, pid, nworker, work_dir, compression);
 }
 
 
 // [[Rcpp::export]]
-void gc_set_process_execution(IntegerVector n_worker, std::string cmd) {
+void gc_set_process_execution(IntegerVector n_worker, std::string cmd, bool debug, int ncdf_compression_level, 
+                              bool use_overviews, Rcpp::List gdal_options) {
   auto p = std::make_shared<chunk_processor_multiprocess>();
   p->set_cmd(cmd);
   p->set_nworker(n_worker[0]);
+  p->set_debug(debug);
+  p->set_ncdf_compression_level(ncdf_compression_level);
+  p->set_use_overviews(use_overviews);
+  
+  std::unordered_map<std::string, std::string> opt;
+  if (gdal_options.names() != R_NilValue) {
+    std::vector<std::string> nms = gdal_options.names();
+    for (int i=0; i<gdal_options.size(); ++i) {
+      std::string key = nms[i];
+      std::string value = gdal_options[key];
+      opt[key] = value;
+    }
+    p->set_gdal_options(opt);
+  }
+
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(p));
 }
 

@@ -2,6 +2,7 @@
 #include "multiprocess.h"
 #include "gdalcubes/src/cube_factory.h"
 #include "gdalcubes/src/external/tiny-process-library/process.hpp"
+#include "error.h"
 
 // [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
@@ -13,6 +14,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
                                          std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
   
   GCBS_DEBUG("Using " + std::to_string(this->_nworker) + " worker");
+  _interrupted = false;
   
   std::string job_id = utils::generate_unique_filename();
   std::mutex mutex;
@@ -34,8 +36,14 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   bool all_finished = false;
   bool any_failed = false;
   std::vector<int> exit_status(nworker, -1);
+  
+  
+  json11::Json::object j_gdal_options;
+  for (auto it = _gdal_options.begin(); it != _gdal_options.end(); ++it) {
+    j_gdal_options[it->first.c_str()] = it->second;
+  }
+  
   for (uint16_t pid=0; pid < nworker; ++pid) {
-    
     json11::Json j = json11::Json::object{ 
       {"job_id", job_id},
       {"worker_id", pid},
@@ -44,19 +52,13 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       {"workdir", work_dir},
       {"cube", filesystem::join(work_dir, "cube.json")},
       {"gdalcubes_options", json11::Json::object{
-        {"debug", false}, // TODO
+        {"debug", _debug}, 
         {"log_file", filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")},
-        {"ncdf_compression_level", 0}, // TODO
+        {"ncdf_compression_level", _ncdf_compression_level}, 
         {"streaming_dir", work_dir},
-        {"use_overview_images", true} // TODO
+        {"use_overview_images", _use_overviews}
       }},
-      {"gdal_options", json11::Json::object{
-       // {"NUM_THREADS", "ALL_CPUS"}, // TODO
-       // {"GDAL_CACHEMAX", "1024"}, // TODO
-       // {"VSI_CACHE", "TRUE"}, // TODO
-       // {"VSI_CACHE_SIZE", "50000000"} // TODO
-        // TODO add further options if set
-      }}
+      {"gdal_options",j_gdal_options}
     }; 
     
     // write json to file
@@ -201,21 +203,24 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   }
   
   // Print output from worker processes
-  // TODO: only if debug is true
-  for (uint16_t pid=0; pid < nworker; ++pid) {
-    std::ifstream wlogf(filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")); // TODO: take path from JSON
-    while(!wlogf.eof()) 
-    {
-      std::string msg;
-      std::getline(wlogf, msg);
-      if (!msg.empty()) {
-        msg = "[WORKER #" + std::to_string(pid) + "] " + msg;
-        GCBS_DEBUG(msg);
+  if (_debug || any_failed) {
+    for (uint16_t pid=0; pid < nworker; ++pid) {
+      std::ifstream wlogf(filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")); // TODO: take path from JSON
+      while(!wlogf.eof()) 
+      {
+        std::string msg;
+        std::getline(wlogf, msg);
+        if (!msg.empty()) {
+          std::stringstream sss;
+          sss << "[WORKER #" << std::to_string(pid) << "] " <<  msg << std::endl;
+          r_stderr_buf::print(sss.str());
+        }
       }
     }
   }
   
   filesystem::remove(work_dir);
+  r_stderr_buf::print(); // make sure that deferred output is printed
   
   // Error message
   if(_interrupted) {
@@ -228,19 +233,16 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   }
 }
 
-void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uint16_t nworker, std::string work_dir) {
+void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uint16_t nworker, std::string work_dir, int ncdf_compression_level) {
   std::shared_ptr<cube> cube = cube_factory::instance()->create_from_json_file(json_path);
   
-  // TODO: add gdalcubes worker context JSON file with 
-  
-  // TODO: how to set important config options (e.g., netCDF compression, GDAL cache size, error handlers, ...)
   for (uint32_t i=pid; i<cube->count_chunks(); i+= nworker) {
     chunkid_t id = i;
     std::string outfile =  filesystem::join(work_dir, std::to_string(id) + ".nc");
     std::string outfile_temp =  filesystem::join(work_dir, "." + std::to_string(id) + ".nc");
     
     // TODO: exception handling?!
-    cube->read_chunk(id)->write_ncdf(outfile_temp); // TODO: add compression level and force?!
+    cube->read_chunk(id)->write_ncdf(outfile_temp, ncdf_compression_level); 
     if (filesystem::exists(outfile_temp)) {
       filesystem::move(outfile_temp, outfile);
     }

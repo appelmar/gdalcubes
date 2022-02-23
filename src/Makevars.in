@@ -41,6 +41,7 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/external/tiny-process-library/process_unix.o \
 			gdalcubes/src/external/json11/json11.o \
 			multiprocess.o \
+			error.o \
 			gdalcubes.o \
 			RcppExports.o
 

@@ -62,9 +62,8 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
     stopifnot(parallel%%1==0)
     .pkgenv$parallel = parallel
     if (.pkgenv$process_execution) {
-      worker_script = system.file("scripts/worker.R", package = "gdalcubes")
-      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
-      gc_set_process_execution(.pkgenv$parallel, cmd)
+      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
     }
     else {
       gc_set_thread_execution(.pkgenv$parallel)
@@ -73,9 +72,8 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
   if (!missing(process_execution)) {
     stopifnot(is.logical(process_execution))
     if (process_execution) {
-      worker_script = system.file("scripts/worker.R", package = "gdalcubes")
-      cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
-      gc_set_process_execution(.pkgenv$parallel, cmd)
+      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
     }
     else {
       gc_set_thread_execution(.pkgenv$parallel)
@@ -87,10 +85,16 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
     stopifnot(ncdf_compression_level %% 1 == 0)
     stopifnot(ncdf_compression_level >= 0 && ncdf_compression_level <= 9)
     .pkgenv$compression_level = ncdf_compression_level
+    # This option does NOT automatically set worker.compression_level
   }
   if (!missing(debug)) {
     stopifnot(is.logical(debug))
     .pkgenv$debug = debug
+    .pkgenv$worker.debug = debug # set debug mode for worker processes, too
+    if (.pkgenv$process_execution) {
+      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+    }
     gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(cache)) {
@@ -104,6 +108,11 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
   if (!missing(use_overview_images)) {
     stopifnot(is.logical(use_overview_images))
     .pkgenv$use_overview_images = use_overview_images
+    .pkgenv$worker.use_overview_images = use_overview_images # set value for worker processes, too
+    if (.pkgenv$process_execution) {
+      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+    }
     gc_set_use_overviews(use_overview_images)
   }
   if (!missing(show_progress)) {
@@ -220,9 +229,15 @@ gdalcubes_gdalversion <- function() {
 #' gdalcubes_set_gdal_config("GDAL_NUM_THREADS", "ALL_CPUS")
 #' @export
 gdalcubes_set_gdal_config <- function(key, value) {
+  # TODO: implement ... as named elements to set several GDAL options with one funciton call
   stopifnot(length(key) == 1)
   stopifnot(length(value) == 1)
+  .pkgenv$worker.gdal_options[as.character(key)] = as.character(value)
   gc_set_gdal_config(as.character(key), as.character(value))
+  if (.pkgenv$process_execution) {
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+  }
 }
 
 #' Calculate a default chunk size based on the cube size and currently used number of threads

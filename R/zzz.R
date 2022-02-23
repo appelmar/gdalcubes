@@ -17,6 +17,11 @@
   .pkgenv$log_file = ""
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
+  .pkgenv$worker.debug = FALSE
+  .pkgenv$worker.compression_level = 0
+  .pkgenv$worker.use_overview_images = TRUE
+  .pkgenv$worker.gdal_options = list()
+  
   if (interactive()) {
     .pkgenv$show_progress = TRUE
   }
@@ -28,7 +33,9 @@
   
   worker_script = system.file("scripts/worker.R", package = "gdalcubes")
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
-  gc_set_process_execution(.pkgenv$parallel, cmd)
+  .pkgenv$worker.cmd = cmd
+  gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                           .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
   
   .pkgenv$streaming_dir = tempdir()
   gc_set_streamining_dir(.pkgenv$streaming_dir)

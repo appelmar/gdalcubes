@@ -241,12 +241,12 @@ gc_set_thread_execution <- function(n) {
     invisible(.Call('_gdalcubes_gc_set_thread_execution', PACKAGE = 'gdalcubes', n))
 }
 
-gc_exec_worker <- function(json_path, pid, nworker, work_dir) {
-    invisible(.Call('_gdalcubes_gc_exec_worker', PACKAGE = 'gdalcubes', json_path, pid, nworker, work_dir))
+gc_exec_worker <- function(json_path, pid, nworker, work_dir, compression = 0L) {
+    invisible(.Call('_gdalcubes_gc_exec_worker', PACKAGE = 'gdalcubes', json_path, pid, nworker, work_dir, compression))
 }
 
-gc_set_process_execution <- function(n_worker, cmd) {
-    invisible(.Call('_gdalcubes_gc_set_process_execution', PACKAGE = 'gdalcubes', n_worker, cmd))
+gc_set_process_execution <- function(n_worker, cmd, debug, ncdf_compression_level, use_overviews, gdal_options) {
+    invisible(.Call('_gdalcubes_gc_set_process_execution', PACKAGE = 'gdalcubes', n_worker, cmd, debug, ncdf_compression_level, use_overviews, gdal_options))
 }
 
 gc_set_progress <- function(show_progress) {
