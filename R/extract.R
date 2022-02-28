@@ -16,13 +16,18 @@
 #' @details 
 #' The geometry in \code{sf} can be of any simple feature type supported by GDAL, including 
 #' POINTS, LINES, POLYGONS, MULTI*, and more. If no time information is provided
-#' in one of the arguments \code{datetime} or \code{ţime_column}, the full time series
-#' of the input data cube is returned. 
+#' in one of the arguments \code{datetime} or \code{time_column}, the full time series
+#' of pixels with regard to the features are returned. 
 #' 
 #' Pixels with missing values are automatically dropped from the result. It is hence not
 #' guaranteed that the result will contain rows for all input features.
 #'
 #' Features are automatically reprojected if the coordinate reference system differs from the data cube.
+#' 
+#' Extracted values can be aggregated by features by providing a summary function. 
+#' If \code{reduce_time} is FALSE (the default), the values are grouped 
+#' by feature and time, i.e., the result will contain unique combinations of FID and time.
+#' To ignore time and produce a single value per feature, \code{reduce_time} can be set to TRUE.
 #' 
 #' @examples
 #' # if not already done in other examples
@@ -47,6 +52,11 @@
 #'     x = sf::read_sf(system.file("nycd.gpkg", package = "gdalcubes"))
 #'     zstats = gdalcubes:::extract(L8.ndvi,x, FUN=median, reduce_time = TRUE)
 #'     zstats
+       # combine with original sf object
+#'     x$FID = rownames(x)
+#'     x = merge(x, zstats, by = "FID")
+#'     x
+#'     # plot(x["NDVI"])
 #'   }
 #' }
 #' @export
