@@ -30,7 +30,7 @@ animate(
 
 \item{save_as}{character path where the animation shall be stored, must end with ".mp4" or ".gif"}
 
-\item{plot}{logical; plot the animation (default is TRUE)}
+\item{preview}{logical; preview the animation}
 }
 \value{
 character; path pointing to the the created file

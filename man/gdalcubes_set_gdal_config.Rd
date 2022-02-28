@@ -6,6 +6,11 @@
 \usage{
 gdalcubes_set_gdal_config(key, value)
 }
+\arguments{
+\item{key}{name of a GDAL config option to be set}
+
+\item{value}{value}
+}
 \description{
 Set GDAL config options
 }

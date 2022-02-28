@@ -198,7 +198,7 @@ gdalcubes_version <- function() {
 #' Get available GDAL drivers
 #' @examples 
 #' gdalcubes_gdalformats()
-#' @export
+#' @export 
 gdalcubes_gdalformats <- function() {
   return(gc_gdalformats())
 }
@@ -222,6 +222,8 @@ gdalcubes_gdalversion <- function() {
 
 #' Set GDAL config options
 #' 
+#' @param key name of a GDAL config option to be set
+#' @param value value
 #' @details 
 #' Details and a list of possible options can be found at 
 #' \href{https://gdal.org/user/configoptions.html}{https://gdal.org/user/configoptions.html}.
@@ -229,7 +231,7 @@ gdalcubes_gdalversion <- function() {
 #' gdalcubes_set_gdal_config("GDAL_NUM_THREADS", "ALL_CPUS")
 #' @export
 gdalcubes_set_gdal_config <- function(key, value) {
-  # TODO: implement ... as named elements to set several GDAL options with one funciton call
+  # TODO: implement ... as named elements to set several GDAL options with one function call
   stopifnot(length(key) == 1)
   stopifnot(length(value) == 1)
   .pkgenv$worker.gdal_options[as.character(key)] = as.character(value)
@@ -240,7 +242,10 @@ gdalcubes_set_gdal_config <- function(key, value) {
   }
 }
 
-#' Calculate a default chunk size based on the cube size and currently used number of threads
+#' Calculate a default chunk size based on the cube size and currently used number of thread
+#' @param nt size of a cube in time direction
+#' @param ny size of a cube in y direction
+#' @param nx size of a cube in x direction
 #' @examples 
 #' .default_chunk_size(12, 1000, 1000)
 #' @export

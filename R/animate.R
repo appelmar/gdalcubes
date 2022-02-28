@@ -13,7 +13,7 @@
 #' @param width width (in pixels) of the animation
 #' @param height height (in pixels) of the animation
 #' @param save_as character path where the animation shall be stored, must end with ".mp4" or ".gif" 
-#' @param plot logical; plot the animation (default is TRUE) 
+#' @param preview logical; preview the animation 
 #' @return character; path pointing to the the created file
 #' @details 
 #' Animations can be created for single band data cubes or RGB plots of multi-band data cubes (by providing the argument rgb) only.

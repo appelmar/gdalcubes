@@ -2,12 +2,19 @@
 % Please edit documentation in R/config.R
 \name{.default_chunk_size}
 \alias{.default_chunk_size}
-\title{Calculate a default chunk size based on the cube size and currently used number of threads}
+\title{Calculate a default chunk size based on the cube size and currently used number of thread}
 \usage{
 .default_chunk_size(nt, ny, nx)
 }
+\arguments{
+\item{nt}{size of a cube in time direction}
+
+\item{ny}{size of a cube in y direction}
+
+\item{nx}{size of a cube in x direction}
+}
 \description{
-Calculate a default chunk size based on the cube size and currently used number of threads
+Calculate a default chunk size based on the cube size and currently used number of thread
 }
 \examples{
 .default_chunk_size(12, 1000, 1000)
