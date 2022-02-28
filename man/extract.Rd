@@ -77,6 +77,7 @@ if (gdalcubes_gdal_has_geos()) {
     x = sf::read_sf(system.file("nycd.gpkg", package = "gdalcubes"))
     zstats = gdalcubes:::extract(L8.ndvi,x, FUN=median, reduce_time = TRUE)
     zstats
+    # combine with original sf object
     x$FID = rownames(x)
     x = merge(x, zstats, by = "FID")
     x
