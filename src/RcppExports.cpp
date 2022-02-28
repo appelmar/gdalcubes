@@ -588,6 +588,17 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// gc_as_array
+NumericVector gc_as_array(SEXP pin);
+RcppExport SEXP _gdalcubes_gc_as_array(SEXP pinSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_as_array(pin));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc_write_tif
 void gc_write_tif(SEXP pin, std::string dir, std::string prefix, bool overviews, bool cog, SEXP creation_options, std::string rsmpl_overview, SEXP packing);
 RcppExport SEXP _gdalcubes_gc_write_tif(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP, SEXP overviewsSEXP, SEXP cogSEXP, SEXP creation_optionsSEXP, SEXP rsmpl_overviewSEXP, SEXP packingSEXP) {
@@ -745,6 +756,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// gc_extract
+Rcpp::DataFrame gc_extract(SEXP pin, std::string ogr_dataset, std::string time_column);
+RcppExport SEXP _gdalcubes_gc_extract(SEXP pinSEXP, SEXP ogr_datasetSEXP, SEXP time_columnSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type ogr_dataset(ogr_datasetSEXP);
+    Rcpp::traits::input_parameter< std::string >::type time_column(time_columnSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_extract(pin, ogr_dataset, time_column));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc_set_thread_execution
 void gc_set_thread_execution(IntegerVector n);
 RcppExport SEXP _gdalcubes_gc_set_thread_execution(SEXP nSEXP) {
@@ -889,6 +913,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_set_err_handler", (DL_FUNC) &_gdalcubes_gc_set_err_handler, 2},
     {"_gdalcubes_gc_eval_cube", (DL_FUNC) &_gdalcubes_gc_eval_cube, 6},
     {"_gdalcubes_gc_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_gc_write_chunks_ncdf, 4},
+    {"_gdalcubes_gc_as_array", (DL_FUNC) &_gdalcubes_gc_as_array, 1},
     {"_gdalcubes_gc_write_tif", (DL_FUNC) &_gdalcubes_gc_write_tif, 8},
     {"_gdalcubes_gc_create_stream_cube", (DL_FUNC) &_gdalcubes_gc_create_stream_cube, 2},
     {"_gdalcubes_gc_create_simple_cube", (DL_FUNC) &_gdalcubes_gc_create_simple_cube, 7},
@@ -900,6 +925,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_query_points", (DL_FUNC) &_gdalcubes_gc_query_points, 5},
     {"_gdalcubes_gc_query_timeseries", (DL_FUNC) &_gdalcubes_gc_query_timeseries, 4},
     {"_gdalcubes_gc_zonal_statistics", (DL_FUNC) &_gdalcubes_gc_zonal_statistics, 7},
+    {"_gdalcubes_gc_extract", (DL_FUNC) &_gdalcubes_gc_extract, 3},
     {"_gdalcubes_gc_set_thread_execution", (DL_FUNC) &_gdalcubes_gc_set_thread_execution, 1},
     {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 5},
     {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 6},

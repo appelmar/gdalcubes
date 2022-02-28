@@ -10,6 +10,7 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/cube.o \
 			gdalcubes/src/cube_factory.o \
 			gdalcubes/src/error.o \
+			gdalcubes/src/extract_geom.o \
 			gdalcubes/src/image_collection.o \
 			gdalcubes/src/image_collection_cube.o \
 			gdalcubes/src/image_collection_ops.o \

@@ -1467,6 +1467,25 @@ void gc_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t 
   }
 }
 
+// [[Rcpp::export]]
+NumericVector gc_as_array(SEXP pin) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::shared_ptr<chunk_data> x = (*aa)->to_double_array();
+    chunk_size_btyx size = x->size();
+    NumericVector v (size[0]*size[1]*size[2]*size[3],NA_REAL);
+    for (uint32_t i=0; i < size[0]*size[1]*size[2]*size[3]; ++i) {
+      v[i] = ((double*)(x->buf()))[i];
+    }
+    return v;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
 
 // [[Rcpp::export]]
 void gc_write_tif( SEXP pin, std::string dir, std::string prefix="", 
@@ -1729,6 +1748,87 @@ void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::str
     Rcpp::stop(s);
   } 
 }
+
+
+
+
+
+// [[Rcpp::export]]
+Rcpp::DataFrame gc_extract(SEXP pin, std::string ogr_dataset, std::string time_column = "") {
+  try {
+    CPLPushErrorHandler(config::gdal_err_handler_default);
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    auto x = std::shared_ptr<extract_geom>(extract_geom::create(*aa, ogr_dataset, time_column));
+    
+    std::vector<std::vector<double>> out;
+    out.resize(x->size_bands());
+    
+    auto p = config::instance()->get_default_chunk_processor();
+    
+    std::shared_ptr<progress> prg = config::instance()->get_default_progress_bar()->get();
+    prg->set(0);  // explicitly set to zero to show progress bar immediately
+    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [prg, &out, x](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
+      if (!dat->empty()) {
+        for (uint32_t i=0; i<out.size(); ++i) {
+          out[i].insert(out[i].end(), &((double*)(dat->buf()))[i*dat->size()[1]],&((double*)(dat->buf()))[(i+1)*dat->size()[1]]);
+        }
+      }
+      prg->increment((double)1 / (double)x->count_chunks());
+    };
+    p->apply(x, f);
+    prg->finalize();
+    
+    
+    uint32_t ncol = out.size();
+    uint32_t nrow = out[0].size();
+    
+    Rcpp::List df; 
+    IntegerVector col_FID(nrow);
+    for (uint32_t i=0; i<nrow; ++i) {
+      col_FID[i] = (int)out[0][i];
+    }
+    df.push_back(col_FID);
+    CharacterVector col_time(nrow);
+    for (uint32_t i=0; i<nrow; ++i) {
+      col_time[i] = (*aa)->st_reference()->datetime_at_index((int)out[1][i]).to_string();
+    }
+    df.push_back(col_time);
+    
+    for (uint32_t j=2; j<ncol; ++j) {
+      df.push_back(out[j]);
+    }
+     
+
+    StringVector row_names(nrow);
+    for (int i = 0; i < nrow; ++i) {
+      row_names(i) = std::to_string(i+1);
+    }
+    df.attr("row.names") = row_names;
+    
+    
+    StringVector col_names(ncol);
+    col_names(0) = "FID";
+    col_names(1) = "time";
+    for (int i = 2; i < ncol; ++i) {
+      col_names(i) = (*aa)->bands().get(i-2).name;
+    }
+    df.attr("names") = col_names;
+    df.attr("class") = "data.frame";
+    
+    CPLPopErrorHandler();
+    return df;
+  }
+  catch (std::string s) {
+    CPLPopErrorHandler();
+    Rcpp::stop(s);
+  } 
+}
+
+
+
+
+
+
 
 
 // [[Rcpp::export]]
