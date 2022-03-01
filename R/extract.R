@@ -49,7 +49,7 @@
 #' 
 #' if (gdalcubes_gdal_has_geos()) {
 #'   if (requireNamespace("sf", quietly = TRUE)) {
-#'     x = sf::read_sf(system.file("nycd.gpkg", package = "gdalcubes"))
+#'     x = sf::st_read(system.file("nycd.gpkg", package = "gdalcubes"))
 #'     zstats = gdalcubes:::extract(L8.ndvi,x, FUN=median, reduce_time = TRUE)
 #'     zstats
 #'     # combine with original sf object
