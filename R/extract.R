@@ -1,7 +1,7 @@
 #' Extract values from a data cube by spatial or spatiotemporal features
 #'
-#' Extract pixel values of a data cube from a set of simple features. 
-#' Among others, most important applications include the extraction of full time 
+#' Extract pixel values of a data cube from a set of spatial or spatiotemporal features. 
+#' Applications include the extraction of full time 
 #' series at irregular points, extraction from spatiotemporal points, extraction of
 #' pixel values in polygons, and computing summary statistics over polygons.
 #' 
@@ -37,14 +37,14 @@
 #'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 #' }
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M", 
+#' v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
 #'               aggregation = "median", resampling = "bilinear",
 #'               extent=list(left=388941.2, right=766552.4,
-#'                           bottom=4345299, top=4744931, 
+#'                           bottom=4345299, top=4744931,
 #'                           t0="2018-01-01", t1="2018-04-30"))
-#' L8.cube = raster_cube(L8.col, v) 
-#' L8.cube = select_bands(L8.cube, c("B04", "B05")) 
-#' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI") 
+#' L8.cube = raster_cube(L8.col, v)
+#' L8.cube = select_bands(L8.cube, c("B04", "B05"))
+#' L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
 #' L8.ndvi
 #' 
 #' if (gdalcubes_gdal_has_geos()) {
