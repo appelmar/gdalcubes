@@ -39,7 +39,8 @@
 #' 
 #' @export
 query_points <- function(x, px, py, pt, srs) {
-  
+  .Deprecated("extract", package="gdalcubes", 
+              "query_points(), query_timeseries() and, zonal_statistics() will be removed; please use extract instead")
   
   if (length(px) != length(py) || length(py) != length(pt)) {
     stop("Expected identical length for point coordinates px, py, and pt.")

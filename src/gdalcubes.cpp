@@ -16,124 +16,6 @@ using namespace gdalcubes;
 
 
 
-
-/**
- * @brief Implementation of the chunk_processor class for multithreaded parallel chunk processing, interruptible by R
- */
-class chunk_processor_multithread_interruptible : public chunk_processor {
-public:
-  /**
-   * @brief Construct a multithreaded chunk processor
-   * @param nthreads number of threads
-   */
-  chunk_processor_multithread_interruptible(uint16_t nthreads) : _nthreads(nthreads) {}
-  
-  /**
-   * @copydoc chunk_processor::max_threads
-   */
-  uint32_t max_threads() override {
-    return _nthreads;
-  }
-  
-  /**
-   * @copydoc chunk_processor::apply
-   */
-  void apply(std::shared_ptr<cube> c,
-             std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) override;
-  
-  /**
-   * Query the number of threads to be used in parallel chunk processing
-   * @return the number of threads
-   */
-  inline uint16_t get_threads() { return _nthreads; }
-  
-private:
-  uint16_t _nthreads;
-};
-
-void chunk_processor_multithread_interruptible::apply(std::shared_ptr<cube> c,
-                                                      std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f) {
-  std::mutex mutex;
-  bool interrupted = false;
-  std::vector<std::thread> workers;
-  std::vector<bool> finished(_nthreads, false);
-  std::vector<bool> interrupted_bythread(_nthreads, false);
-  for (uint16_t it = 0; it < _nthreads; ++it) {
-    workers.push_back(std::thread([this, &c, f, it, &mutex, &finished, &interrupted, &interrupted_bythread](void) {
-      CPLPushErrorHandler(config::gdal_err_handler_default);
-      for (uint32_t i = it; i < c->count_chunks(); i += _nthreads) {
-        try {
-          if (!interrupted) {
-            std::shared_ptr<chunk_data> dat = c->read_chunk(i);
-            f(i, dat, mutex);
-          }
-          else {
-            interrupted_bythread[it] = true;
-          }
-        } catch (std::string s) {
-          GCBS_ERROR(s);
-          continue;
-        } catch (...) {
-          GCBS_ERROR("unexpected exception while processing chunk " + std::to_string(i));
-          continue;
-        }
-      }
-      finished[it] = true;
-      CPLPopErrorHandler();
-    }));
-  }
-  r_stderr_buf::print();
-  
-  bool done = false;
-  int i=0;
-  uint32_t sleep_ms = 100;
-  uint32_t interrupt_ms = 2000;
-  uint32_t interrupt_every = interrupt_ms / sleep_ms;
-  while (!done) {
-    done = true;
-    for (uint16_t it = 0; it < _nthreads; ++it) {
-      done = done && finished[it];
-    }
-    if (!done) {
-      if (i >= interrupt_every && i % interrupt_every == 0) {
-        try {
-          Rcpp::checkUserInterrupt();
-        }
-        catch (...) {
-          interrupted = true;
-          break;
-        }
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
-    }
-    r_stderr_buf::print();
-    ++i;
-  }
-  for (uint16_t it = 0; it < _nthreads; ++it) {
-    workers[it].join();
-  }
-  r_stderr_buf::print();
-  
-  // sometimes when a user interrupt has been detected very late, 
-  // the result is still okay, because ongoing chunk computations 
-  // won't be stopped. The following loop finds out whether any chunks have been omitted
-  // or not. If not we do not need to throw an error message that the computations
-  // have been interrupted.
-  bool any_incomplete = false;
-  for (uint16_t it = 0; it < _nthreads; ++it) {
-    if (interrupted_bythread[it]) {
-      any_incomplete = true;
-      break;
-    }
-  }
-  if (interrupted && any_incomplete) {
-    throw std::string("computations have been interrupted by the user");
-  }
-}
-
-
-
-
 struct progress_simple_R : public progress {
   std::shared_ptr<progress> get() override { return std::make_shared<progress_simple_R>(); }
   
@@ -192,31 +74,6 @@ private:
   }
 };
 
-
-
-// struct progress_none_R : public progress {
-//   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
-//   
-//   void set(double p) override {}
-//   
-//   void increment(double dp) override {}
-//   virtual void finalize() override {
-//     _rp->update(100);
-//   }
-//   progress_none_R() :  _rp(nullptr) {
-//     // instance is needed for Progress::check_abort()
-//     _rp = new Progress(100,false);
-//   }
-//   ~progress_none_R(){
-//     if (_rp) {
-//       delete _rp;
-//     }
-//   }
-//   
-// private:
-//   Progress *_rp;
-// };
-// 
 struct progress_none_R : public progress {
   std::shared_ptr<progress> get() override { return std::make_shared<progress_none_R>(); }
   void set(double p) override {};
@@ -224,8 +81,6 @@ struct progress_none_R : public progress {
   virtual void finalize() override {}
   progress_none_R() {}
 };
-
-
 
 
 
@@ -355,7 +210,6 @@ void gc_init() {
   config::instance()->set_error_handler(error_handling_r::standard); 
   
   // Interruptible chunk processor
-  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(1)));
   config::instance()->set_gdal_option("GDAL_NUM_THREADS", "ALL_CPUS");
   
 }
@@ -1829,12 +1683,6 @@ Rcpp::DataFrame gc_extract(SEXP pin, std::string ogr_dataset, std::string time_c
 
 
 
-
-
-// [[Rcpp::export]]
-void gc_set_thread_execution(IntegerVector n) {
-  config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread_interruptible>(n[0])));
-}
 
 
 // [[Rcpp::export]]

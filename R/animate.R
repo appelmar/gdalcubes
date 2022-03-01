@@ -1,5 +1,3 @@
-
-
 #' Animate a data cube as an image time series
 #' 
 #' This function can animate data cube time series as mp4 videos or animated GIFs.
@@ -37,77 +35,77 @@
 #' animate(select_bands(raster_cube(L8.col, v), c("B05")), col=terrain.colors, key.pos=1)
 #' }
 #' @export
-animate  <- 
-  function(x,
+animate <- function(x,
            ...,
            fps = 1,
            loop = 0,
            width = 800,
            height = 800,
            save_as = tempfile(fileext = ".gif"),
-           preview = interactive()
-           ) {
+           preview = interactive()) 
+{
     
    
-    if(is.null(save_as) && !plot) {
-      stop("nothing to do, please set either plot = TRUE or save_as to a filename")
-    }
-    
-    stopifnot(is.cube(x))
-    size = c(nbands(x), size(x))
-    
-    if(size[2] == 1) {
-      stop("nothing to animate; cube has only one time slice")
-    }
-    
-    additional_args = list(...)
-    if (is.null(additional_args$rgb) && size[1] > 1) {
-      stop("animate works only for RGB plots, or single band data cubes")
-    }
-    
-    TO_GIF = FALSE  
-    if (endsWith(tolower(save_as), ".gif")) {
-      if (!requireNamespace("gifski", quietly = TRUE))
-        stop("gifski package not found, please install first")
-      TO_GIF = TRUE
-    }
-    else if (endsWith(tolower(save_as), ".mp4")) {
-      if (!requireNamespace("av", quietly = TRUE))
-        stop("av package not found, please install first")
-      TO_GIF = FALSE
-    } 
-    else {
-      stop("unknown output format, please use mp4 or gif")
-    }
-    
-  
-  
-    fname_start = tempfile()
-    png(filename = paste(fname_start, "_%04d.png", sep=""), width=width, height=height)
-
-    tryCatch({
-      for (i in 1:size[2]) {
-        args = additional_args
-        args$t = i
-        args$x = x
-        do.call("plot.cube", args=args)
-      }}, finally = {dev.off()})
-    
-    imgs = list.files(dirname(fname_start), pattern = paste(basename(fname_start), ".*\\.png" , sep=""), full.names = TRUE)
-    
-    
-    if (TO_GIF) {
-      out_file = ifelse(is.null(save_as), tempfile(fileext = ".gif"), save_as)
-      animation = gifski::gifski(imgs, gif_file = out_file, width = width, height = height, delay = 1/fps, loop = loop, progress = TRUE)
-    }
-    else {
-      out_file = ifelse(is.null(save_as), tempfile(fileext = ".mp4"), save_as)
-      width = width + (width %% 2)
-      height = height + (height %% 2)
-      animation = av::av_encode_video(imgs, output = out_file, framerate = fps)
-    }
-
-    if (preview)
-      utils::browseURL(animation)
-    return(animation)
+  if(is.null(save_as) && !plot) {
+    stop("nothing to do, please set either plot = TRUE or save_as to a filename")
   }
+  
+  stopifnot(is.cube(x))
+  size = c(nbands(x), size(x))
+  
+  if(size[2] == 1) {
+    stop("nothing to animate; cube has only one time slice")
+  }
+  
+  additional_args = list(...)
+  if (is.null(additional_args$rgb) && size[1] > 1) {
+    stop("animate works only for RGB plots, or single band data cubes")
+  }
+  
+  TO_GIF = FALSE  
+  if (endsWith(tolower(save_as), ".gif")) {
+    if (!requireNamespace("gifski", quietly = TRUE))
+      stop("gifski package not found, please install first")
+    TO_GIF = TRUE
+  }
+  else if (endsWith(tolower(save_as), ".mp4")) {
+    if (!requireNamespace("av", quietly = TRUE))
+      stop("av package not found, please install first")
+    TO_GIF = FALSE
+  } 
+  else {
+    stop("unknown output format, please use mp4 or gif")
+  }
+  
+
+
+  fname_start = tempfile()
+  png(filename = paste(fname_start, "_%04d.png", sep=""), width=width, height=height)
+
+  tryCatch({
+    for (i in 1:size[2]) {
+      args = additional_args
+      args$t = i
+      args$x = x
+      do.call("plot.cube", args=args)
+    }}, finally = {dev.off()})
+  
+  imgs = list.files(dirname(fname_start), pattern = paste(basename(fname_start), ".*\\.png" , sep=""), full.names = TRUE)
+  
+  
+  if (TO_GIF) {
+    out_file = ifelse(is.null(save_as), tempfile(fileext = ".gif"), save_as)
+    animation = gifski::gifski(imgs, gif_file = out_file, width = width, height = height, delay = 1/fps, loop = loop, progress = TRUE)
+  }
+  else {
+    out_file = ifelse(is.null(save_as), tempfile(fileext = ".mp4"), save_as)
+    width = width + (width %% 2)
+    height = height + (height %% 2)
+    animation = av::av_encode_video(imgs, output = out_file, framerate = fps)
+  }
+
+  if (preview)
+    utils::browseURL(animation)
+  return(animation)
+}
+

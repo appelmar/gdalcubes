@@ -58,7 +58,8 @@
 #' 
 #' @export
 zonal_statistics <- function(x, geom, expr, out_path = tempfile(fileext = ".gpkg"), overwrite = FALSE, ogr_layer = NULL, as_stars = FALSE, stars_use_intervals = FALSE) {
-
+  .Deprecated("extract", package="gdalcubes", 
+              "query_points(), query_timeseries() and, zonal_statistics() will be removed; please use extract instead")
   
   stopifnot(is.cube(x))
   out_path = path.expand(out_path)

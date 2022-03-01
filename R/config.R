@@ -15,7 +15,6 @@
 #' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
 #' @param streaming_dir directory where temporary binary files for process streaming will be written to
 #' @param log_file character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file
-#' @param process_execution logical; if TRUE, data cube chunks will be processed in separate processes (experimental)
 #' @param threads number of threads used to process data cubes (deprecated)
 #' @details 
 #' Data cubes can be processed in parallel where the number of chunks in a cube is distributed among parallel
@@ -40,7 +39,7 @@
 #' @export
 gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
                               use_overview_images, show_progress, default_chunksize, streaming_dir, 
-                              log_file, process_execution, threads) {
+                              log_file, threads) {
   if (!missing(threads)) {
     warning("'threads' option is deprecated; please use 'parallel' instead")
     parallel = threads
@@ -61,26 +60,11 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
     stopifnot(parallel >= 1)
     stopifnot(parallel%%1==0)
     .pkgenv$parallel = parallel
-    if (.pkgenv$process_execution) {
-      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
-                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
-    }
-    else {
-      gc_set_thread_execution(.pkgenv$parallel)
-    }
-  }
-  if (!missing(process_execution)) {
-    stopifnot(is.logical(process_execution))
-    if (process_execution) {
-      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
-                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
-    }
-    else {
-      gc_set_thread_execution(.pkgenv$parallel)
-    }
-    .pkgenv$process_execution = process_execution
-  }
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
   
+  }
   if (!missing(ncdf_compression_level)) {
     stopifnot(ncdf_compression_level %% 1 == 0)
     stopifnot(ncdf_compression_level >= 0 && ncdf_compression_level <= 9)
@@ -91,10 +75,10 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
     stopifnot(is.logical(debug))
     .pkgenv$debug = debug
     .pkgenv$worker.debug = debug # set debug mode for worker processes, too
-    if (.pkgenv$process_execution) {
-      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
-                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
-    }
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+    
     gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(cache)) {
@@ -109,10 +93,10 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
     stopifnot(is.logical(use_overview_images))
     .pkgenv$use_overview_images = use_overview_images
     .pkgenv$worker.use_overview_images = use_overview_images # set value for worker processes, too
-    if (.pkgenv$process_execution) {
-      gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
-                               .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
-    }
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+  
     gc_set_use_overviews(use_overview_images)
   }
   if (!missing(show_progress)) {
@@ -179,8 +163,7 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
       use_overview_images = .pkgenv$use_overview_images,
       show_progress = .pkgenv$show_progress,
       default_chunksize = .pkgenv$default_chunksize,
-      streaming_dir = .pkgenv$streaming_dir,
-      process_execution = .pkgenv$process_execution
+      streaming_dir = .pkgenv$streaming_dir
     ))
   }
 }
@@ -236,10 +219,9 @@ gdalcubes_set_gdal_config <- function(key, value) {
   stopifnot(length(value) == 1)
   .pkgenv$worker.gdal_options[as.character(key)] = as.character(value)
   gc_set_gdal_config(as.character(key), as.character(value))
-  if (.pkgenv$process_execution) {
-    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
-                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
-  }
+  gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                           .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+
 }
 
 #' Calculate a default chunk size based on the cube size and currently used number of thread

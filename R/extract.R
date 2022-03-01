@@ -60,7 +60,7 @@
 #'   }
 #' }
 #' @export
-extract <- function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, ..., reduce_time = FALSE) {
+extract = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, ..., reduce_time = FALSE) {
   
   stopifnot(is.cube(cube))
   if (!is.null(datetime) && !is.null(time_column)) {
@@ -116,6 +116,7 @@ extract <- function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, .
   
   return(out)
 }
+
   
   
   

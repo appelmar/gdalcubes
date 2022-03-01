@@ -245,10 +245,6 @@ gc_extract <- function(pin, ogr_dataset, time_column = "") {
     .Call('_gdalcubes_gc_extract', PACKAGE = 'gdalcubes', pin, ogr_dataset, time_column)
 }
 
-gc_set_thread_execution <- function(n) {
-    invisible(.Call('_gdalcubes_gc_set_thread_execution', PACKAGE = 'gdalcubes', n))
-}
-
 gc_exec_worker <- function(json_path, pid, nworker, work_dir, compression = 0L) {
     invisible(.Call('_gdalcubes_gc_exec_worker', PACKAGE = 'gdalcubes', json_path, pid, nworker, work_dir, compression))
 }

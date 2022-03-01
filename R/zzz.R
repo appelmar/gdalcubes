@@ -12,7 +12,6 @@
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
   .pkgenv$parallel = 1
-  .pkgenv$process_execution = TRUE
   .pkgenv$debug = FALSE
   .pkgenv$log_file = ""
   .pkgenv$ncdf_write_bounds = TRUE 

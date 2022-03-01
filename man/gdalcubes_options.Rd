@@ -16,7 +16,6 @@ gdalcubes_options(
   default_chunksize,
   streaming_dir,
   log_file,
-  process_execution,
   threads
 )
 }
@@ -42,8 +41,6 @@ gdalcubes_options(
 \item{streaming_dir}{directory where temporary binary files for process streaming will be written to}
 
 \item{log_file}{character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file}
-
-\item{process_execution}{logical; if TRUE, data cube chunks will be processed in separate processes (experimental)}
 
 \item{threads}{number of threads used to process data cubes (deprecated)}
 }

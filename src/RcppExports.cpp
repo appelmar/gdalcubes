@@ -769,16 +769,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// gc_set_thread_execution
-void gc_set_thread_execution(IntegerVector n);
-RcppExport SEXP _gdalcubes_gc_set_thread_execution(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type n(nSEXP);
-    gc_set_thread_execution(n);
-    return R_NilValue;
-END_RCPP
-}
 // gc_exec_worker
 void gc_exec_worker(std::string json_path, uint32_t pid, uint32_t nworker, std::string work_dir, int compression);
 RcppExport SEXP _gdalcubes_gc_exec_worker(SEXP json_pathSEXP, SEXP pidSEXP, SEXP nworkerSEXP, SEXP work_dirSEXP, SEXP compressionSEXP) {
@@ -926,7 +916,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_query_timeseries", (DL_FUNC) &_gdalcubes_gc_query_timeseries, 4},
     {"_gdalcubes_gc_zonal_statistics", (DL_FUNC) &_gdalcubes_gc_zonal_statistics, 7},
     {"_gdalcubes_gc_extract", (DL_FUNC) &_gdalcubes_gc_extract, 3},
-    {"_gdalcubes_gc_set_thread_execution", (DL_FUNC) &_gdalcubes_gc_set_thread_execution, 1},
     {"_gdalcubes_gc_exec_worker", (DL_FUNC) &_gdalcubes_gc_exec_worker, 5},
     {"_gdalcubes_gc_set_process_execution", (DL_FUNC) &_gdalcubes_gc_set_process_execution, 6},
     {"_gdalcubes_gc_set_progress", (DL_FUNC) &_gdalcubes_gc_set_progress, 1},
