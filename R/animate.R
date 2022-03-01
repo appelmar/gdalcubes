@@ -7,7 +7,7 @@
 #' @param x a data cube proxy object (class cube)
 #' @param ... parameters passed to plot.cube
 #' @param fps frames per second of the animation
-#' @param loop how many iterations, 0 = infinite
+#' @param loop how many iterations, TRUE = infinite
 #' @param width width (in pixels) of the animation
 #' @param height height (in pixels) of the animation
 #' @param save_as character path where the animation shall be stored, must end with ".mp4" or ".gif" 
@@ -38,7 +38,7 @@
 animate <- function(x,
            ...,
            fps = 1,
-           loop = 0,
+           loop = TRUE,
            width = 800,
            height = 800,
            save_as = tempfile(fileext = ".gif"),

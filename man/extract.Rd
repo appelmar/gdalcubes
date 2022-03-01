@@ -30,7 +30,7 @@ extract(
 \item{reduce_time}{logical; if TRUE, time is ignored when \code{FUN} is applied}
 }
 \value{
-data frame with columns FID, time, and data cube bands / variables
+A data.frame with columns FID, time, and data cube bands / variables
 }
 \description{
 Extract pixel values of a data cube from a set of spatial or spatiotemporal features. 

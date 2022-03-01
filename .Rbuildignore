@@ -76,8 +76,8 @@
 ^\.pkgdown.R$
 ^\.test.*$
 ^\.*.db$ 
-^\proj_conf_test$
-^\proj_conf_test.cpp$
-^\proj_conf_test.c$
+^proj_conf_test$
+^proj_conf_test.cpp$
+^proj_conf_test.c$
 ^\.local$
 ^\.config$

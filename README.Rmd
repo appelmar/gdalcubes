@@ -4,10 +4,10 @@ output: github_document
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.path = ".img/")
+knitr::opts_chunk$set(fig.path = "man/figures/")
 ```
 
-# gdalcubes <img src=".img/logo.svg" align="right" alt="" width="120" />
+# gdalcubes <img src="man/figures/logo.svg" align="right" alt="" width="120" />
 
 [![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes-r)
@@ -146,7 +146,7 @@ Calling data cube operations always returns _proxy_ objects, computations are st
 
 ## Animations
 
-Multitemporal data cubes can be animated (thanks to the [magick package](https://cran.r-project.org/web/packages/magick/index.html)):
+Multitemporal data cubes can be animated (thanks to the [gifski package](https://cran.r-project.org/package=gifski)):
 
 ```{r animation}
 v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-550000, top=-450000, 
@@ -155,9 +155,10 @@ v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-
 
 raster_cube(L8.col, v.subarea.yearly) |>
   select_bands(c("B02","B03","B04")) |>
-  animate(rgb=3:1, zlim=c(100,1000))
+  animate(rgb=3:1, zlim=c(100,1000), save_as("man/figures/animation.gif"))
 ```
 
+![](man/figures/animation.gif)
 
 ## Data cube export
 

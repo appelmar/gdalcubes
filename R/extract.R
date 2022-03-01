@@ -12,7 +12,7 @@
 #' @param FUN optional function to compute per feature summary statistics
 #' @param ... additional arguments passed to \code{FUN}
 #' @param reduce_time logical; if TRUE, time is ignored when \code{FUN} is applied
-#' @return data frame with columns FID, time, and data cube bands / variables 
+#' @return A data.frame with columns FID, time, and data cube bands / variables 
 #' @details 
 #' The geometry in \code{sf} can be of any simple feature type supported by GDAL, including 
 #' POINTS, LINES, POLYGONS, MULTI*, and more. If no time information is provided

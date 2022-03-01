@@ -8,7 +8,7 @@ animate(
   x,
   ...,
   fps = 1,
-  loop = 0,
+  loop = TRUE,
   width = 800,
   height = 800,
   save_as = tempfile(fileext = ".gif"),
@@ -22,7 +22,7 @@ animate(
 
 \item{fps}{frames per second of the animation}
 
-\item{loop}{how many iterations, 0 = infinite}
+\item{loop}{how many iterations, TRUE = infinite}
 
 \item{width}{width (in pixels) of the animation}
 

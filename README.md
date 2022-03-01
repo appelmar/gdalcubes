@@ -69,8 +69,8 @@ libraries are automatically downloaded from
 
 Please install the system libraries e.g. with the package manager of
 your Linux distribution. Also make sure that you are using a recent
-version of GDAL (&gt;2.3.0). On Ubuntu, the following commands install
-all libraries.
+version of GDAL (>2.3.0). On Ubuntu, the following commands install all
+libraries.
 
     sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
     sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev libudunits2-dev
@@ -105,7 +105,7 @@ metadata such as their spatial extent and acquisition time. The
 resulting *image collection* is stored on disk, and typically consumes a
 few kilobytes per image. Due to the diverse structure of satellite image
 products, the rules how to derive the required metadata are formalized
-as *collection\_formats*. The package comes with predefined formats for
+as *collection_formats*. The package comes with predefined formats for
 some Sentinel, Landsat, and MODIS products (see `collection_formats()`
 to print a list of available formats).
 
@@ -113,7 +113,11 @@ to print a list of available formats).
 library(gdalcubes)
 
 gdalcubes_options(threads=8)
+```
 
+    ## Warning: 'threads' option is deprecated; please use 'parallel' instead
+
+``` r
 files = list.files("L8_Amazon", recursive = TRUE, 
                    full.names = TRUE, pattern = ".tif") 
 length(files)
@@ -200,7 +204,7 @@ x
 plot(x, rgb=3:1, zlim=c(0,1200))
 ```
 
-![](.img/cubes-1.png)<!-- -->
+![](man/figures/cubes-1.png)<!-- -->
 
 ``` r
 library(RColorBrewer)
@@ -210,7 +214,7 @@ library(RColorBrewer)
   plot(zlim=c(0,1),  nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
-![](.img/cubes-2.png)<!-- -->
+![](man/figures/cubes-2.png)<!-- -->
 
 Calling data cube operations always returns *proxy* objects,
 computations are started lazily when users call e.g. `plot()`.
@@ -230,14 +234,7 @@ raster_cube(L8.col, v.subarea.yearly) |>
   animate(rgb=3:1, zlim=c(100,1000))
 ```
 
-    ##   format width height colorspace matte filesize density
-    ## 1    gif   672    480       sRGB FALSE        0   72x72
-    ## 2    gif   672    480       sRGB  TRUE        0   72x72
-    ## 3    gif   672    480       sRGB  TRUE        0   72x72
-    ## 4    gif   672    480       sRGB  TRUE        0   72x72
-    ## 5    gif   672    480       sRGB  TRUE        0   72x72
-
-![](.img/animation-2.gif)<!-- -->
+    ## [1] "/tmp/Rtmp7JLcZe/file45ceff577ab3.gif"
 
 ## Data cube export
 
@@ -261,7 +258,7 @@ x
     ## resolution : 1000, 1000  (x, y)
     ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
     ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs 
-    ## names      : cube_e71f313266bf62013, cube_e71f313266bf62014, cube_e71f313266bf62015, cube_e71f313266bf62016, cube_e71f313266bf62017, cube_e71f313266bf62018, cube_e71f313266bf62019
+    ## names      : cube_45cef7a412af52013, cube_45cef7a412af52014, cube_45cef7a412af52015, cube_45cef7a412af52016, cube_45cef7a412af52017, cube_45cef7a412af52018, cube_45cef7a412af52019
 
 ``` r
 suppressPackageStartupMessages(library(stars))
@@ -300,7 +297,7 @@ raster_cube(L8.col, v.overview) |>
   plot(zlim=c(0,1), nbreaks=10, col=brewer.pal(9, "YlGn"), key.pos=1)
 ```
 
-![](.img/select_time-1.png)<!-- -->
+![](man/figures/select_time-1.png)<!-- -->
 
 ## User-defined functions
 
@@ -322,7 +319,7 @@ raster_cube(L8.col, v.subarea.monthly) |>
   plot(rgb=3:1, zlim=c(100,1000))
 ```
 
-![](.img/greenest_pixel_composite-1.png)<!-- -->
+![](man/figures/greenest_pixel_composite-1.png)<!-- -->
 
 ## Extraction of pixels, time series, and summary statistics over polygons
 
@@ -344,17 +341,20 @@ raster_cube(L8.col, v.overview) |>
   query_points(x,y,t, v.overview$space$srs)
 ```
 
+    ## Warning: query_points(), query_timeseries() and, zonal_statistics() will be
+    ## removed from {gdalcubes}; please use extract instead
+
     ##         B04      B05
-    ## 1       NaN      NaN
-    ## 2       NaN      NaN
-    ## 3  235.1634 3248.733
-    ## 4       NaN      NaN
-    ## 5       NaN      NaN
-    ## 6       NaN      NaN
+    ## 1  297.5209 3136.432
+    ## 2  223.1427 2553.972
+    ## 3       NaN      NaN
+    ## 4  361.1667 1458.727
+    ## 5  298.9745 3353.125
+    ## 6  215.3710 3041.908
     ## 7       NaN      NaN
-    ## 8  236.1728 3409.626
+    ## 8  357.8217 3421.868
     ## 9       NaN      NaN
-    ## 10      NaN      NaN
+    ## 10 526.5719 3476.786
 
 ``` r
 raster_cube(L8.col, v.overview) |>
@@ -362,31 +362,34 @@ raster_cube(L8.col, v.overview) |>
   query_timeseries(x, y, v.overview$space$srs)
 ```
 
+    ## Warning: query_points(), query_timeseries() and, zonal_statistics() will be
+    ## removed from {gdalcubes}; please use extract instead
+
     ## $B04
-    ##        2013     2014      2015      2016      2017      2018     2019
-    ## 1       NaN 700.0095 1270.5242 1525.8437  737.9342 1215.0860      NaN
-    ## 2       NaN      NaN       NaN       NaN       NaN       NaN      NaN
-    ## 3  211.5819 264.8878 1204.3398  344.6974  235.1634  236.3439 213.4668
-    ## 4       NaN      NaN       NaN       NaN       NaN       NaN      NaN
-    ## 5       NaN      NaN       NaN       NaN       NaN       NaN      NaN
-    ## 6       NaN      NaN       NaN       NaN       NaN       NaN      NaN
-    ## 7       NaN 207.2001  232.3275  206.9891 1090.8719  221.5985      NaN
-    ## 8  236.1728 592.0282  332.1617  311.1650  335.7071       NaN 798.8248
-    ## 9       NaN      NaN       NaN       NaN       NaN       NaN      NaN
-    ## 10      NaN      NaN       NaN       NaN       NaN       NaN      NaN
+    ##        2013     2014     2015     2016     2017     2018      2019
+    ## 1  178.8032 194.3003 297.5209 427.9238 221.4601 236.6107  180.6811
+    ## 2  305.8662 294.1127 247.4792 223.1427 374.5344 214.6158 2531.1614
+    ## 3       NaN      NaN      NaN      NaN      NaN      NaN       NaN
+    ## 4  264.4478 361.1667 440.0631 241.8271 318.4331 286.2758  270.6851
+    ## 5       NaN 211.6150 235.1649 217.0421 258.1895 298.9745       NaN
+    ## 6  233.5684 244.3935 261.3581 215.3710 243.2040 221.5211  207.3327
+    ## 7       NaN      NaN      NaN      NaN      NaN      NaN       NaN
+    ## 8  802.5234 686.1201 605.8128 558.0118 957.1572 598.0507  357.8217
+    ## 9       NaN      NaN      NaN      NaN      NaN      NaN       NaN
+    ## 10 526.5719 584.5279 552.4053 446.8985 559.2131      NaN 2091.3242
     ## 
     ## $B05
-    ##        2013      2014      2015     2016      2017     2018     2019
-    ## 1       NaN  357.5399  961.2185 1146.951  394.1609 1002.021      NaN
-    ## 2       NaN       NaN       NaN      NaN       NaN      NaN      NaN
-    ## 3  2892.996 2918.1467 3535.2247 3196.897 3248.7328 2857.153 2874.204
-    ## 4       NaN       NaN       NaN      NaN       NaN      NaN      NaN
-    ## 5       NaN       NaN       NaN      NaN       NaN      NaN      NaN
-    ## 6       NaN       NaN       NaN      NaN       NaN      NaN      NaN
-    ## 7       NaN 3030.9393 3421.7411 2791.029 3314.5022 3275.457      NaN
-    ## 8  3409.626 3687.8726 3332.8307 3379.766 3395.1829      NaN 2974.423
-    ## 9       NaN       NaN       NaN      NaN       NaN      NaN      NaN
-    ## 10      NaN       NaN       NaN      NaN       NaN      NaN      NaN
+    ##        2013     2014     2015     2016     2017     2018     2019
+    ## 1  3028.967 3224.338 3136.432 3311.149 3082.105 2937.708 2996.010
+    ## 2  2593.811 2541.794 2518.740 2553.972 2616.666 2562.746 4135.738
+    ## 3       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 4  1297.813 1458.727 1976.067 1659.612 1930.342 1713.668 1681.446
+    ## 5       NaN 3223.367 3135.819 3115.661 3231.252 3353.125      NaN
+    ## 6  3289.476 3314.617 3233.742 3041.908 3260.252 3017.479 3052.137
+    ## 7       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 8  2970.381 3057.052 2826.871 2952.442 2921.329 2873.760 3421.868
+    ## 9       NaN      NaN      NaN      NaN      NaN      NaN      NaN
+    ## 10 3476.786 3499.043 3507.859 3544.688 3871.839      NaN 3606.099
 
 To compute time series of summary statistics over spatial polygons, we
 need to specify polygon geometries (e.g., as an `sf` object) and specify
@@ -415,7 +418,10 @@ raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) |>
   plot(max.plot = 12)
 ```
 
-![](.img/zonal_statistics-1.png)<!-- -->
+    ## Warning: query_points(), query_timeseries() and, zonal_statistics() will be
+    ## removed from {gdalcubes}; please use extract instead
+
+![](man/figures/zonal_statistics-1.png)<!-- -->
 
 Though this is a small toy example only, the implementation works for a
 large number of polygons and bigger data cubes, too (tested with 50k

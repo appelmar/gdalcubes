@@ -45,8 +45,8 @@ gdalcubes_options(
 \item{threads}{number of threads used to process data cubes (deprecated)}
 }
 \description{
-Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
-or not debug messages should be printed.
+Set global package options to change the default behavior of gdalcubes. These include how many parallel processes are used
+to process data cubes, how created netCDF files are compressed, and whether or not debug messages should be printed.
 }
 \details{
 Data cubes can be processed in parallel where the number of chunks in a cube is distributed among parallel

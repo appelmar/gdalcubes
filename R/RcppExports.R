@@ -193,10 +193,6 @@ gc_write_chunks_ncdf <- function(pin, dir, name, compression_level = 0L) {
     invisible(.Call('_gdalcubes_gc_write_chunks_ncdf', PACKAGE = 'gdalcubes', pin, dir, name, compression_level))
 }
 
-gc_as_array <- function(pin) {
-    .Call('_gdalcubes_gc_as_array', PACKAGE = 'gdalcubes', pin)
-}
-
 gc_write_tif <- function(pin, dir, prefix = "", overviews = FALSE, cog = FALSE, creation_options = NULL, rsmpl_overview = "nearest", packing = NULL) {
     invisible(.Call('_gdalcubes_gc_write_tif', PACKAGE = 'gdalcubes', pin, dir, prefix, overviews, cog, creation_options, rsmpl_overview, packing))
 }
@@ -227,18 +223,6 @@ gc_create_slice_space_cube <- function(pin, loc, i) {
 
 gc_create_crop_cube <- function(pin, extent, iextent, snap) {
     .Call('_gdalcubes_gc_create_crop_cube', PACKAGE = 'gdalcubes', pin, extent, iextent, snap)
-}
-
-gc_query_points <- function(pin, px, py, pt, srs) {
-    .Call('_gdalcubes_gc_query_points', PACKAGE = 'gdalcubes', pin, px, py, pt, srs)
-}
-
-gc_query_timeseries <- function(pin, px, py, srs) {
-    .Call('_gdalcubes_gc_query_timeseries', PACKAGE = 'gdalcubes', pin, px, py, srs)
-}
-
-gc_zonal_statistics <- function(pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer) {
-    invisible(.Call('_gdalcubes_gc_zonal_statistics', PACKAGE = 'gdalcubes', pin, ogr_dataset, agg_funcs, agg_bands, out_path, overwrite, ogr_layer))
 }
 
 gc_extract <- function(pin, ogr_dataset, time_column = "") {

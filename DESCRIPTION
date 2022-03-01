@@ -64,7 +64,8 @@ Suggests:
     stars,
     av,
     gifski,
-    sf
+    sf, 
+    tinytest
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes

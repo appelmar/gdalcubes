@@ -1322,26 +1322,6 @@ void gc_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t 
 }
 
 // [[Rcpp::export]]
-NumericVector gc_as_array(SEXP pin) {
-  try {
-    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    std::shared_ptr<chunk_data> x = (*aa)->to_double_array();
-    chunk_size_btyx size = x->size();
-    NumericVector v (size[0]*size[1]*size[2]*size[3],NA_REAL);
-    for (uint32_t i=0; i < size[0]*size[1]*size[2]*size[3]; ++i) {
-      v[i] = ((double*)(x->buf()))[i];
-    }
-    return v;
-    
-  }
-  catch (std::string s) {
-    Rcpp::stop(s);
-  }
-}
-
-
-
-// [[Rcpp::export]]
 void gc_write_tif( SEXP pin, std::string dir, std::string prefix="", 
                              bool overviews = false, bool cog = false, 
                              SEXP creation_options = R_NilValue,
@@ -1541,70 +1521,6 @@ SEXP gc_create_crop_cube(SEXP pin, Rcpp::List extent, std::vector<int32_t> iexte
     Rcpp::stop(s);
   }
 }
-
-
-// [[Rcpp::export]]
-SEXP gc_query_points(SEXP pin, std::vector<double> px, std::vector<double> py, std::vector<std::string> pt, std::string srs) {
-  try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
-    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    std::vector<std::vector<double>> res = vector_queries::query_points(*aa, px, py, pt, srs);
-    CPLPopErrorHandler(); 
-    Rcpp::List df(res.size());
-  
-    for (uint16_t i=0; i<res.size(); ++i) {
-     df[i] = res[i];
-    }
-    return df;
-  }
-  catch (std::string s) {
-    CPLPopErrorHandler(); 
-    Rcpp::stop(s);
-  }
-}
-
-
-// [[Rcpp::export]]
-SEXP gc_query_timeseries(SEXP pin, std::vector<double> px, std::vector<double> py, std::string srs) {
-  try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
-    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    std::vector<std::vector<std::vector<double>>> res = vector_queries::query_timeseries(*aa, px, py, srs);
-    CPLPopErrorHandler();
-    Rcpp::List dflist(res.size());
-    
-    for (uint16_t i=0; i<res.size(); ++i) {
-      dflist[i] = res[i];
-    }
-    return dflist;
-  }
-  catch (std::string s) {
-    CPLPopErrorHandler(); 
-    Rcpp::stop(s);
-  }
-}
-
-// [[Rcpp::export]]
-void gc_zonal_statistics(SEXP pin, std::string ogr_dataset, std::vector<std::string> agg_funcs, std::vector<std::string> agg_bands, std::string out_path, bool overwrite, std::string ogr_layer) {
- try {
-    CPLPushErrorHandler(config::gdal_err_handler_default);
-    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
-    std::vector<std::pair<std::string, std::string>> agg;
-    // assumption: agg_funcs.size() == agg_bands.size 
-    for (uint32_t i=0; i<agg_funcs.size(); ++i) {
-      agg.push_back(std::make_pair(agg_funcs[i],agg_bands[i]));
-    }
-    vector_queries::zonal_statistics(*aa, ogr_dataset, agg, out_path, overwrite, ogr_layer);
-    CPLPopErrorHandler();
-  }
-  catch (std::string s) {
-    CPLPopErrorHandler();
-    Rcpp::stop(s);
-  } 
-}
-
-
-
 
 
 // [[Rcpp::export]]

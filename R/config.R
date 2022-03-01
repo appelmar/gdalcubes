@@ -1,8 +1,8 @@
 
 #' Set or read global options of the gdalcubes package
 #'
-#' Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
-#' or not debug messages should be printed.
+#' Set global package options to change the default behavior of gdalcubes. These include how many parallel processes are used
+#' to process data cubes, how created netCDF files are compressed, and whether or not debug messages should be printed.
 #'
 #' @param ... not used
 #' @param parallel number of parallel workers used to process data cubes or TRUE to use the number of available cores automatically
@@ -41,7 +41,7 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
                               use_overview_images, show_progress, default_chunksize, streaming_dir, 
                               log_file, threads) {
   if (!missing(threads)) {
-    warning("'threads' option is deprecated; please use 'parallel' instead")
+    .Deprecated("parallel","gdalcubes", "'threads' option is deprecated; please use 'parallel' instead")
     parallel = threads
   }
   if (!missing(parallel)) {
