@@ -75,7 +75,7 @@
 ^\.github$
 ^\.pkgdown.R$
 ^\.test.*$
-^\.*.db$ # image collections
+^\.*.db$ 
 ^\proj_conf_test$
 ^\proj_conf_test.cpp$
 ^\proj_conf_test.c$
