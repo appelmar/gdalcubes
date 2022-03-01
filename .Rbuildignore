@@ -75,3 +75,9 @@
 ^\.github$
 ^\.pkgdown.R$
 ^\.test.*$
+^\.*.db$ # image collections
+^\proj_conf_test$
+^\proj_conf_test.cpp$
+^\proj_conf_test.c$
+^\.local$
+^\.config$

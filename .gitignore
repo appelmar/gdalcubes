@@ -45,3 +45,10 @@ src/Makevars
 cran-comments.md
 L8_Amazon.zip
 L8_Amazon
+*.db # image collections
+proj_conf_test
+proj_conf_test.cpp
+proj_conf_test.c
+.test
+.local
+.config
