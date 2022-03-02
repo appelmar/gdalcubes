@@ -296,7 +296,7 @@ hence makes it easy to create training data for machine learning models.
 # Further reading
 
 * Introductory [tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
-* [Tutorial video](https://youtu.be/Xlg__2PeTXM?t=3693) how to use gdalcubes in the cloud, presented at OpenGeoHub Summer School 2021
+* [Tutorial on YouTube](https://youtu.be/Xlg__2PeTXM?t=3693) how to use gdalcubes in the cloud, streamed at OpenGeoHub Summer School 2021
 * [1st blog post on r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) 
 * [2nd blog post on r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html) describing how to use gdalcubes in cloud-computing environments
 * [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal

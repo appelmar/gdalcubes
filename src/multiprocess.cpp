@@ -31,6 +31,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   jsonfile.close();  
   
   uint16_t nworker = _nworker;
+  
   std::vector<std::shared_ptr<TinyProcessLib::Process>> p;
   std::vector<bool> finished(nworker, false);
   bool all_finished = false;
@@ -69,11 +70,11 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     ojson.close();
     
     // start child process, with first argument being path to the json worker process description
+    TinyProcessLib::Config pconf;
+    pconf.show_window = TinyProcessLib::Config::ShowWindow::hide;
     auto pp = std::make_shared<TinyProcessLib::Process>(
-      _cmd + " " + worker_json_file, "", 
-      [](const char *bytes, std::size_t n) {},
-      [](const char *bytes, std::size_t n) {}, 
-      false);
+      _cmd + " " + worker_json_file, "", nullptr,
+      nullptr, false, pconf);
     p.push_back(pp);
     
   }
