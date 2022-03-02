@@ -230,13 +230,13 @@ gdalcubes_set_gdal_config <- function(key, value) {
 #' @param nx size of a cube in x direction
 #' @examples 
 #' .default_chunk_size(12, 1000, 1000)
-#' @export
+#' @noRd
 .default_chunk_size <- function(nt, ny, nx) {
   
-  nthreads = .pkgenv$threads
+  nparallel = .pkgenv$nparallel
   
   ct = 1
-  target_pixels_per_chunk = ny * nx * nt / nthreads
+  target_pixels_per_chunk = ny * nx * nt / nparallel
   
   # multiples of 256
   cy = max(floor(sqrt(target_pixels_per_chunk) / 256), 1) * 256

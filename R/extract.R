@@ -49,8 +49,21 @@
 #' 
 #' if (gdalcubes_gdal_has_geos()) {
 #'   if (requireNamespace("sf", quietly = TRUE)) {
+#'   
+#'     x = runif(20, v$space$left, v$space$right)
+#'     y = runif(20, v$space$bottom, v$space$top)
+#'     t = sample(seq(as.Date("2018-01-01"),as.Date("2018-04-30"), by = 1),20, replace = TRUE)
+#'     df = sf::st_as_sf(data.frame(x = x, y = y), coords = c("x", "y"), crs = v$space$srs)
+#' 
+#'     # spatiotemporal points
+#'     extract_geom(L8.ndvi, df, datetime = t)
+#' 
+#'     # time series at spatial points
+#'     extract_geom(L8.ndvi, df)
+#'   
+#'     # summary statistics over polygons
 #'     x = sf::st_read(system.file("nycd.gpkg", package = "gdalcubes"))
-#'     zstats = gdalcubes:::extract(L8.ndvi,x, FUN=median, reduce_time = TRUE)
+#'     zstats = extract_geom(L8.ndvi,x, FUN=median, reduce_time = TRUE)
 #'     zstats
 #'     # combine with original sf object
 #'     x$FID = rownames(x)
@@ -60,7 +73,7 @@
 #'   }
 #' }
 #' @export
-extract = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, ..., reduce_time = FALSE) {
+extract_geom = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, ..., reduce_time = FALSE) {
   
   stopifnot(is.cube(cube))
   if (!is.null(datetime) && !is.null(time_column)) {

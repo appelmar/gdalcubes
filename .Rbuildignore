@@ -81,3 +81,5 @@
 ^proj_conf_test.c$
 ^\.local$
 ^\.config$
+^man/figures$
+

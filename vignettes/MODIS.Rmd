@@ -131,7 +131,7 @@ and modifying the data type to save disk space.
 
 ## Parallel processing
 
-gdalcubes supports multithreaded evaluation of data cube operations. Calling `gdalcubes_options(parallel = n)` will tell all following data cube operations to use up to `n` parallel worker processes. Since worker threads are assigned to chunks of the data cube, the actual number of threads used is lower for cubes with less than `n` chunks.
+gdalcubes supports parallel processing of data cube operations. Calling `gdalcubes_options(parallel = n)` will tell all following data cube operations to use up to `n` parallel processes. Notice that worker processes are assigned to chunks of the data cube and the true number of processes can be lower if there are less than `n` chunks.
 
 
 # Further reading

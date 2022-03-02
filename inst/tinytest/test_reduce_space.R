@@ -10,7 +10,7 @@ gdalcubes:::.raster_cube_dummy(v, 3, 1.0) |>
   reduce_space(c("sum(band1)", "median(band2)", "mean(band3)", "min(band1)","max(band2)", "var(band3)")) |>
   as_array() -> x
 
-expect_true(all(x[1,,,] == 500*500))
+expect_true(all(x[1,,,] == 100*100))
 expect_true(all(x[2,,,] == 1))
 expect_true(all(x[3,,,] == 1))
 expect_true(all(x[4,,,] == 1))

@@ -8,7 +8,7 @@ v
 gdalcubes:::.raster_cube_dummy(v, 1, 1.0) |>
   aggregate_time(dt = "P1M", method = "sum") |>
   as_array() -> x
-expect_equal(dim(x), c(1, 12, 500, 500))
+expect_equal(dim(x), c(1, 12, 250, 250))
 
 expect_true(all(x[1,1,,] == 31))
 expect_true(all(x[1,2,,] == 28))
@@ -34,7 +34,7 @@ expect_equal(x,y)
 gdalcubes:::.raster_cube_dummy(v, 1, 1.0) |>
   aggregate_time(dt = "P5D", method = "mean") |>
   as_array() -> x
-expect_equal(dim(x), c(1,73,500,500))
+expect_equal(dim(x), c(1,73,250,250))
 expect_true(all(x == 1))
 
 

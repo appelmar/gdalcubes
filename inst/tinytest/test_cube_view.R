@@ -23,8 +23,3 @@ expect_equal(v$space$nx, 5000)
 expect_equal(v$space$ny, 5000)
 expect_equal(v$space$dx, 0.001)
 expect_equal(v$space$dy, 0.001)
-
-v = cube_view(v, dt = "P1D")
-expect_equal(v$time$nt, 365)
-expect_equal(v$time$t0, "2021-01-01")
-expect_equal(v$time$t1, "2021-12-31")
