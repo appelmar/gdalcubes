@@ -1570,7 +1570,7 @@ Rcpp::DataFrame gc_extract(SEXP pin, std::string ogr_dataset, std::string time_c
      
 
     StringVector row_names(nrow);
-    for (int i = 0; i < nrow; ++i) {
+    for (uint32_t i = 0; i < nrow; ++i) {
       row_names(i) = std::to_string(i+1);
     }
     df.attr("row.names") = row_names;
@@ -1579,7 +1579,7 @@ Rcpp::DataFrame gc_extract(SEXP pin, std::string ogr_dataset, std::string time_c
     StringVector col_names(ncol);
     col_names(0) = "FID";
     col_names(1) = "time";
-    for (int i = 2; i < ncol; ++i) {
+    for (uint32_t i = 2; i < ncol; ++i) {
       col_names(i) = (*aa)->bands().get(i-2).name;
     }
     df.attr("names") = col_names;
@@ -1618,16 +1618,17 @@ void gc_set_process_execution(IntegerVector n_worker, std::string cmd, bool debu
   p->set_use_overviews(use_overviews);
   
   std::unordered_map<std::string, std::string> opt;
-  if (gdal_options.names() != R_NilValue) {
+  if (gdal_options.size() > 0) {
     std::vector<std::string> nms = gdal_options.names();
-    for (int i=0; i<gdal_options.size(); ++i) {
-      std::string key = nms[i];
-      std::string value = gdal_options[key];
-      opt[key] = value;
+    if ((size_t)gdal_options.size() == (size_t)nms.size()) {
+      for (int i=0; i<gdal_options.size(); ++i) {
+        std::string key = nms[i];
+        std::string value = gdal_options[key];
+        opt[key] = value;
+      }
+      p->set_gdal_options(opt);
     }
-    p->set_gdal_options(opt);
   }
-
   config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(p));
 }
 
