@@ -104,6 +104,7 @@ length(files)
 sum(file.size(files)) / 1024^2 # MiB
 
 L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
+L8.col
 ```
 
 

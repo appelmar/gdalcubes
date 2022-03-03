@@ -62,7 +62,7 @@ if (!file.exists(file.path(tempdir(), "L8.db"))) {
   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
 }
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
-v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
+v = cube_view(srs="EPSG:32618", dy=1000, dx=1000, dt="P1M",
               aggregation = "median", resampling = "bilinear",
               extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931,
