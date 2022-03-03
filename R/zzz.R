@@ -3,26 +3,41 @@
 .onLoad <- function(libname,pkgname) {
 
   # call gdalcubes_init()
-  if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
-    libgdalcubes_init()
-    libgdalcubes_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
-  }
+  #if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
+  gc_init()
+  gc_add_format_dir(file.path(system.file(package="gdalcubes"),"formats")) # add collection formats directory 
+  #}
   
   .pkgenv$compression_level = 1
   .pkgenv$cube_cache = new.env()
   .pkgenv$use_cube_cache = TRUE
-  .pkgenv$threads = 1
+  .pkgenv$parallel = 1
   .pkgenv$debug = FALSE
+  .pkgenv$log_file = ""
   .pkgenv$ncdf_write_bounds = TRUE 
   .pkgenv$use_overview_images = TRUE
+  .pkgenv$worker.debug = FALSE
+  .pkgenv$worker.compression_level = 0
+  .pkgenv$worker.use_overview_images = TRUE
+  .pkgenv$worker.gdal_options = list()
+  
   if (interactive()) {
     .pkgenv$show_progress = TRUE
   }
   else {
     .pkgenv$show_progress = FALSE
   }
-  libgdalcubes_set_progress(.pkgenv$show_progress)
+  gc_set_progress(.pkgenv$show_progress)
   .pkgenv$default_chunksize = .default_chunk_size
+  
+  worker_script = system.file("scripts/worker.R", package = "gdalcubes")
+  cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
+  .pkgenv$worker.cmd = cmd
+  gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                           .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+  
+  .pkgenv$streaming_dir = tempdir()
+  gc_set_streamining_dir(.pkgenv$streaming_dir)
 
   #.pkgenv$swarm = NULL
   register_s3_method("stars","st_as_stars", "cube")
@@ -39,9 +54,9 @@
 }
 
 .onUnload <- function(libpath) {
-  if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
-    libgdalcubes_cleanup()
-  }
+  #if(!Sys.getenv("GDALCUBES_STREAMING") == "1") {
+    gc_cleanup()
+  #}
 }
 
 
@@ -57,7 +72,7 @@
     sink(stderr())
   }
   #else {
-  #  x = libgdalcubes_version()
+  #  x = gc_version()
   #  #packageStartupMessage(paste("Using gdalcubes library version ", x$VERSION_MAJOR, ".", x$VERSION_MINOR, ".", x$VERSION_PATCH, sep=""))
   #}
 }

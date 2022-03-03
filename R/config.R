@@ -1,11 +1,11 @@
 
 #' Set or read global options of the gdalcubes package
 #'
-#' Set global package options to change the default behavior of gdalcubes. These include how many threads are used to process data cubes, how created netCDF files are compressed, and whether
-#' or not debug messages should be printed.
+#' Set global package options to change the default behavior of gdalcubes. These include how many parallel processes are used
+#' to process data cubes, how created netCDF files are compressed, and whether or not debug messages should be printed.
 #'
 #' @param ... not used
-#' @param threads number of threads used to process data cubes
+#' @param parallel number of parallel workers used to process data cubes or TRUE to use the number of available cores automatically
 #' @param ncdf_compression_level integer; compression level for created netCDF files, 0=no compression, 1=fast compression, 9=small compression
 #' @param debug logical;  print debug messages
 #' @param cache logical; TRUE if temporary data cubes should be cached to support fast reprocessing of the same cubes
@@ -13,38 +13,73 @@
 #' @param use_overview_images logical; if FALSE, all images are read on original resolution and existing overviews will be ignored
 #' @param show_progress logical; if TRUE, a progress bar will be shown for actual computations
 #' @param default_chunksize length-three vector with chunk size in t, y, x directions or a function taking a data cube size and returning a suggested chunk size 
+#' @param streaming_dir directory where temporary binary files for process streaming will be written to
+#' @param log_file character, if empty string or NULL, diagnostic messages will be printed to the console, otherwise to the provided file
+#' @param threads number of threads used to process data cubes (deprecated)
 #' @details 
-#' Data cubes can be processed in parallel where one thread processes one chunk at a time. Setting more threads
-#' than the number of chunks of a cube thus has no effect and will not further reduce computation times.
+#' Data cubes can be processed in parallel where the number of chunks in a cube is distributed among parallel
+#' worker processes. The actual number of used workers can be lower if a data cube as less chunks. If parallel
+#' is TRUE, the number of available cores is used. Setting parallel = FALSE can be used to disable parallel processing.
+#' Notice that since version 0.6.0, separate processes are being used instead of parallel threads to avoid 
+#' possible R session crashes due to some multithreading issues. 
 #' 
 #' Caching has no effect on disk or memory consumption, 
 #' it simply tries to reuse existing temporary files where possible.
-#' For example, changing only parameters to \code{plot} will not require
-#' rerunning the full data cube operation chain.
+#' For example, changing only parameters to \code{plot} will void
+#' reprocessing the same data cube if cache is TRUE.
+#' 
+#' The streaming directory can be used to control the performance of user-defined functions,
+#' if disk IO is a bottleneck. Ideally, this can be set to a directory on a shared memory device.
 #' 
 #' Passing no arguments will return the current options as a list.
 #' @examples 
-#' gdalcubes_options(threads=4) # set the number of threads
+#' gdalcubes_options(parallel=4) # set the number 
 #' gdalcubes_options() # print current options
-#' gdalcubes_options(threads=1) # reset
+#' gdalcubes_options(parallel=FALSE) # reset
 #' @export
-gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
-                              use_overview_images, show_progress, default_chunksize) {
+gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cache, ncdf_write_bounds, 
+                              use_overview_images, show_progress, default_chunksize, streaming_dir, 
+                              log_file, threads) {
   if (!missing(threads)) {
-    stopifnot(threads >= 1)
-    stopifnot(threads%%1==0)
-    libgdalcubes_set_threads(threads)
-    .pkgenv$threads = threads
+    .Deprecated("parallel","gdalcubes", "'threads' option is deprecated; please use 'parallel' instead")
+    parallel = threads
+  }
+  if (!missing(parallel)) {
+    if (is.logical(parallel)) {
+      if (!parallel) {
+        parallel = 1
+      }
+      else {
+        parallel = gc_detect_cores()
+        if (parallel == 0) {
+          warning("Could not detect the number of available cores automaticall, please set manually")
+          parallel = .pkgenv$parallel # use current value
+        }
+      }
+    }
+    stopifnot(parallel >= 1)
+    stopifnot(parallel%%1==0)
+    .pkgenv$parallel = parallel
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+  
   }
   if (!missing(ncdf_compression_level)) {
     stopifnot(ncdf_compression_level %% 1 == 0)
     stopifnot(ncdf_compression_level >= 0 && ncdf_compression_level <= 9)
     .pkgenv$compression_level = ncdf_compression_level
+    # This option does NOT automatically set worker.compression_level
   }
   if (!missing(debug)) {
     stopifnot(is.logical(debug))
-    libgdalcubes_debug_output(debug)
     .pkgenv$debug = debug
+    .pkgenv$worker.debug = debug # set debug mode for worker processes, too
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+    
+    gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(cache)) {
     stopifnot(is.logical(cache))
@@ -57,12 +92,42 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   if (!missing(use_overview_images)) {
     stopifnot(is.logical(use_overview_images))
     .pkgenv$use_overview_images = use_overview_images
-    libgdalcubes_set_use_overviews(use_overview_images)
+    .pkgenv$worker.use_overview_images = use_overview_images # set value for worker processes, too
+   
+    gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                             .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
+  
+    gc_set_use_overviews(use_overview_images)
   }
   if (!missing(show_progress)) {
     stopifnot(is.logical(show_progress))
     .pkgenv$show_progress = show_progress
-    libgdalcubes_set_progress(show_progress)
+    gc_set_progress(show_progress)
+  }
+  if (!missing(streaming_dir)) {
+    stopifnot(is.character(streaming_dir))
+    .pkgenv$streaming_dir = streaming_dir
+    gc_set_streamining_dir(streaming_dir)
+  }
+  if (!missing(log_file)) {
+    if (is.null(log_file)) log_file = ""
+    if (is.na(log_file)) log_file = ""
+    stopifnot(is.character(log_file))
+    stopifnot(length(log_file) == 1)
+    
+    if (nchar(log_file[1]) > 0) {
+      if (dir.exists(log_file[1])) {
+        stop("provided log file is a directory")
+      }
+      if (!dir.exists(dirname(log_file[1]))) {
+        stop("parent directory of provided log file does not exist")
+      }
+      if (endsWith(log_file[1],.Platform$file.sep)) {
+        stop("provided log file is a directory")
+      }
+    }
+    .pkgenv$log_file = log_file
+    gc_set_err_handler(.pkgenv$debug, .pkgenv$log_file)
   }
   if (!missing(default_chunksize)) {
     if (is.vector(default_chunksize)) {
@@ -84,20 +149,21 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
   # if (!missing(swarm)) {
   #   stopifnot(is.character(swarm))
   #   # check whether all endpoints are accessible
-  #   #libgdalcubes_set_swarm(swarm)
+  #   #gc_set_swarm(swarm)
   #   warning("swarm mode is currently not supported by the R package")
   #   .pkgenv$swarm = swarm
   # }
   if (nargs() == 0) {
     return(list(
-      threads = .pkgenv$threads,
+      parallel = .pkgenv$parallel,
       ncdf_compression_level = .pkgenv$compression_level,
       debug = .pkgenv$debug,
       cache = .pkgenv$use_cube_cache,
       ncdf_write_bounds = .pkgenv$ncdf_write_bounds,
       use_overview_images = .pkgenv$use_overview_images,
       show_progress = .pkgenv$show_progress,
-      default_chunksize = .pkgenv$default_chunksize
+      default_chunksize = .pkgenv$default_chunksize,
+      streaming_dir = .pkgenv$streaming_dir
     ))
   }
 }
@@ -109,15 +175,15 @@ gdalcubes_options <- function(..., threads, ncdf_compression_level, debug, cache
 #' gdalcubes_version()
 #' @export
 gdalcubes_version <- function() {
-  return(libgdalcubes_version())
+  return(gc_version())
 }
 
 #' Get available GDAL drivers
 #' @examples 
 #' gdalcubes_gdalformats()
-#' @export
+#' @export 
 gdalcubes_gdalformats <- function() {
-  return(libgdalcubes_gdalformats())
+  return(gc_gdalformats())
 }
 
 #' Check if GDAL was built with GEOS
@@ -125,7 +191,7 @@ gdalcubes_gdalformats <- function() {
 #' gdalcubes_gdal_has_geos()
 #' @export
 gdalcubes_gdal_has_geos <- function() {
-  return(libgdalcubes_gdal_has_geos())
+  return(gc_gdal_has_geos())
 }
 
 
@@ -134,20 +200,43 @@ gdalcubes_gdal_has_geos <- function() {
 #' gdalcubes_gdalversion()
 #' @export
 gdalcubes_gdalversion <- function() {
-  return(libgdalcubes_gdalversion())
+  return(gc_gdalversion())
 }
 
+#' Set GDAL config options
+#' 
+#' @param key name of a GDAL config option to be set
+#' @param value value
+#' @details 
+#' Details and a list of possible options can be found at 
+#' \href{https://gdal.org/user/configoptions.html}{https://gdal.org/user/configoptions.html}.
+#' @examples 
+#' gdalcubes_set_gdal_config("GDAL_NUM_THREADS", "ALL_CPUS")
+#' @export
+gdalcubes_set_gdal_config <- function(key, value) {
+  # TODO: implement ... as named elements to set several GDAL options with one function call
+  stopifnot(length(key) == 1)
+  stopifnot(length(value) == 1)
+  .pkgenv$worker.gdal_options[as.character(key)] = as.character(value)
+  gc_set_gdal_config(as.character(key), as.character(value))
+  gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
+                           .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
 
-#' Calculate a default chunk size based on the cube size and currently used number of threads
+}
+
+#' Calculate a default chunk size based on the cube size and currently used number of thread
+#' @param nt size of a cube in time direction
+#' @param ny size of a cube in y direction
+#' @param nx size of a cube in x direction
 #' @examples 
 #' .default_chunk_size(12, 1000, 1000)
-#' @export
+#' @noRd
 .default_chunk_size <- function(nt, ny, nx) {
   
-  nthreads = .pkgenv$threads
+  nparallel = .pkgenv$nparallel
   
   ct = 1
-  target_pixels_per_chunk = ny * nx * nt / nthreads
+  target_pixels_per_chunk = ny * nx * nt / nparallel
   
   # multiples of 256
   cy = max(floor(sqrt(target_pixels_per_chunk) / 256), 1) * 256

@@ -55,13 +55,13 @@ aggregate_time <- function(cube, dt, method="mean", fact=NULL) {
     if (fact <= 1) {
       stop("Invalid argument: fact must be an integer number > 1")
     }
-    x = libgdalcubes_create_aggregate_time_cube(cube, "", method, as.integer(fact))
+    x = gc_create_aggregate_time_cube(cube, "", method, as.integer(fact))
   }
   else {
     if (!is.character(dt)) {
       stop("Invalid argument: dt must be of type character")
     }
-    x = libgdalcubes_create_aggregate_time_cube(cube, dt, method, 0)
+    x = gc_create_aggregate_time_cube(cube, dt, method, 0)
   }
   class(x) <- c("aggregate_time_cube", "cube", "xptr")
   return(x)
@@ -73,7 +73,7 @@ is.aggregate_time_cube  <- function(obj) {
   if(!("aggregate_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

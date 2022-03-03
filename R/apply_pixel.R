@@ -118,7 +118,7 @@ apply_pixel.cube <- function(x, expr, names=NULL, keep_bands=FALSE, ..., FUN) {
       names <- paste("band", 1:length(expr), sep="")
     }
     
-    x = libgdalcubes_create_apply_pixel_cube(x, expr, names, keep_bands)
+    x = gc_create_apply_pixel_cube(x, expr, names, keep_bands)
     class(x) <- c("apply_pixel_cube", "cube", "xptr")
     return(x)
   }
@@ -150,7 +150,7 @@ apply_pixel.cube <- function(x, expr, names=NULL, keep_bands=FALSE, ..., FUN) {
     # create src file
     # TODO: load the same packages as in the current workspace? see (.packages())
     funstr = serialize_function(FUN)
-    funhash = libgdalcubes_simple_hash(funstr)
+    funhash = gc_simple_hash(funstr)
     srcfile1 =  file.path(tempdir(), paste(".streamfun_", funhash, ".R", sep=""))
     srcfile1 = gsub("\\\\", "/", srcfile1) # Windows fix
     
@@ -163,7 +163,7 @@ apply_pixel.cube <- function(x, expr, names=NULL, keep_bands=FALSE, ..., FUN) {
     cat("write_chunk_from_array(apply_pixel(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
     
-    x = libgdalcubes_create_stream_apply_pixel_cube(x, cmd, nb, names, keep_bands)
+    x = gc_create_stream_apply_pixel_cube(x, cmd, nb, names, keep_bands)
     class(x) <- c("apply_pixel_cube", "cube", "xptr")
     return(x) 
 
@@ -178,7 +178,7 @@ is.apply_pixel_cube  <- function(obj) {
   if(!("apply_pixel_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

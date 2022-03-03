@@ -10,7 +10,7 @@
 \item{cube}{source data cube proxy object}
 }
 \value{
-copied data proxy object
+copied data cube proxy object
 }
 \description{
 Copy a data cube proxy object without copying any data

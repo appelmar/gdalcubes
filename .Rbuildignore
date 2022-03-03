@@ -11,6 +11,7 @@
 ^src/gdalcubes/\.travis.yml$
 ^src/gdalcubes/\.github$
 ^src/gdalcubes/\.git$
+^vignettes/gc02_AWS_Sentinel2.Rmd$
 ^vignettes/MOD11A2$
 ^vignettes/MOD11A2\.db$
 ^vignettes/MOD11A2\.zip$
@@ -75,3 +76,11 @@
 ^\.github$
 ^\.pkgdown.R$
 ^\.test.*$
+^\.*.db$ 
+^proj_conf_test$
+^proj_conf_test.cpp$
+^proj_conf_test.c$
+^\.local$
+^\.config$
+^man/figures$
+

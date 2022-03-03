@@ -53,14 +53,14 @@ chunk_apply <- function(cube, f) {
   stopifnot(is.cube(cube))
   
   funstr = serialize_function(f)
-  funhash = libgdalcubes_simple_hash(funstr)
+  funhash = gc_simple_hash(funstr)
   srcfile =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
   srcfile = gsub("\\\\", "/", srcfile) # Windows fix
 
   cat(funstr, file = srcfile, append = FALSE)
   
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", "-e ", "\"require(gdalcubes)\" ", "-e ", "\"do.call(eval(parse('", srcfile ,"')), args=list())\"", sep="")
-  x = libgdalcubes_create_stream_cube(cube, cmd)
+  x = gc_create_stream_cube(cube, cmd)
   class(x) <- c("chunk_apply_cube", "cube", "xptr")
   return(x)
 }
@@ -69,7 +69,7 @@ is.chunk_apply_cube  <- function(obj) {
   if(!("chunk_apply_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

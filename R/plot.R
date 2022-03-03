@@ -79,7 +79,7 @@ plot.cube  <-
       if (!is.null(rgb))
         warning("data cube is a pure time-series, ignoring rgb")
       
-      dtvalues = libgdalcubes_datetime_values(x)
+      dtvalues = gc_datetime_values(x)
       #if(periods.in.title) dtvalues = paste(dtvalues, cube_view(x)$time$dt)
       
       if ("ncdf_cube" %in% class(x)) {
@@ -89,7 +89,7 @@ plot.cube  <-
         }
       }
       else if (.pkgenv$use_cube_cache) {
-        j = libgdalcubes_simple_hash(as_json(x))
+        j = gc_simple_hash(as_json(x))
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
           fn = .pkgenv$cube_cache[[j]]
@@ -297,7 +297,7 @@ plot.cube  <-
         }
         bands <- rgb
       }
-      dtvalues = libgdalcubes_datetime_values(x)
+      dtvalues = gc_datetime_values(x)
       if (periods.in.title)
         dtvalues = paste(dtvalues, dimensions(x)$t$pixel_size)
       if (!is.null(t)) {
@@ -383,7 +383,7 @@ plot.cube  <-
         }
       }
       else if (.pkgenv$use_cube_cache) {
-        j = libgdalcubes_simple_hash(as_json(x))
+        j = gc_simple_hash(as_json(x))
         if (!is.null(.pkgenv$cube_cache[[j]])
             && file.exists(.pkgenv$cube_cache[[j]])) {
           fn = .pkgenv$cube_cache[[j]]

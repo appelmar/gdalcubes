@@ -19,7 +19,7 @@
 #' @export
 image_collection <- function(path) {
   stopifnot(file.exists(path))
-  xptr <- libgdalcubes_open_image_collection(path)
+  xptr <- gc_open_image_collection(path)
   class(xptr) <- c("image_collection", "xptr")
   return(xptr)
 }
@@ -29,7 +29,7 @@ is.image_collection <- function(obj) {
   if(!("image_collection" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("Image collection proxy object is invalid")
     return(FALSE)
   }
@@ -58,7 +58,7 @@ is.image_collection <- function(obj) {
 #' @export
 extent <- function(x, srs="EPSG:4326") {
   stopifnot(is.image_collection(x))
-  return(libgdalcubes_image_collection_extent(x, srs))
+  return(gc_image_collection_extent(x, srs))
 }
 
 
@@ -85,12 +85,12 @@ extent <- function(x, srs="EPSG:4326") {
 #' @export
 print.image_collection <- function(x, ..., n=6) {
   stopifnot(is.image_collection(x))
-  info <- libgdalcubes_image_collection_info(x)
+  info <- gc_image_collection_info(x)
   if (length(info) == 0) {
     cat(paste("Empty image collection object\n"))
   }
   else {
-    cat(paste("Image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), " bands\n"))
+    cat(paste("Image collection object, referencing",nrow(info$images), "images with", nrow(info$bands), "bands\n"))
     cat("Images:\n")
     print(head(info$images, n))
     if (n < nrow(info$images)) {
@@ -153,7 +153,7 @@ create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext
   
   if (is.null(date_time)) {
     # use collection format
-    libgdalcubes_create_image_collection_from_format(files, format, out_file, unroll_archives)
+    gc_create_image_collection_from_format(files, format, out_file, unroll_archives)
   }
   else {
     # no collection format, use date_time and band_names (if given)
@@ -167,7 +167,7 @@ create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext
     if (is.null(band_names)) {
       band_names=character()
     }
-      libgdalcubes_create_image_collection_from_datetime(out_file, files, date_time, use_subdatasets, band_names)
+      gc_create_image_collection_from_datetime(out_file, files, date_time, use_subdatasets, band_names)
   }
   
   
@@ -198,7 +198,7 @@ add_images <- function(image_collection, files, unroll_archives = TRUE, out_file
     image_collection = image_collection(image_collection)
   }
   stopifnot(is.image_collection(image_collection))
-  libgdalcubes_add_images(image_collection, files, unroll_archives, out_file)
+  gc_add_images(image_collection, files, unroll_archives, out_file)
   
   if (quiet) {
     return(invisible(image_collection))
@@ -225,7 +225,7 @@ add_images <- function(image_collection, files, unroll_archives = TRUE, out_file
 #' @export
 collection_formats <-function(print=TRUE)
 {
-  df = libgdalcubes_list_collection_formats()
+  df = gc_list_collection_formats()
   df$name = as.character(df$name)
   df$path = as.character(df$path)
   df$description = ""

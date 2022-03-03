@@ -8,11 +8,11 @@ animate(
   x,
   ...,
   fps = 1,
-  loop = 0,
-  width = dev.size(units = "px")[1],
-  height = dev.size(units = "px")[2],
-  save_as = NULL,
-  plot = TRUE
+  loop = TRUE,
+  width = 800,
+  height = 800,
+  save_as = tempfile(fileext = ".gif"),
+  preview = interactive()
 )
 }
 \arguments{
@@ -22,18 +22,23 @@ animate(
 
 \item{fps}{frames per second of the animation}
 
-\item{loop}{how many iterations, 0 = infinite}
+\item{loop}{how many iterations, TRUE = infinite}
 
 \item{width}{width (in pixels) of the animation}
 
 \item{height}{height (in pixels) of the animation}
 
-\item{save_as}{character path where the animation shall be stored as a gif file}
+\item{save_as}{character path where the animation shall be stored, must end with ".mp4" or ".gif"}
 
-\item{plot}{logical; plot the animation (default is TRUE)}
+\item{preview}{logical; preview the animation}
+}
+\value{
+character; path pointing to the the created file
 }
 \description{
-Animate a data cube as an image time series
+This function can animate data cube time series as mp4 videos or animated GIFs.
+Depending on the desired output format, either the \code{av} or the \code{gifski}
+package is needed to create mp4 and GIF animations respectively.
 }
 \details{
 Animations can be created for single band data cubes or RGB plots of multi-band data cubes (by providing the argument rgb) only.

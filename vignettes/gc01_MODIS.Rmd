@@ -1,0 +1,148 @@
+---
+title: "1. Creating data cubes from local MODIS imagery"
+author: "Marius Appel"
+output: 
+  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{1. Creating data cubes from local MODIS imagery}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+ev = unname(Sys.info()["user"]) == "marius"
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = ev
+)
+```
+
+
+The `gdalcubes` package aims at making the work with large collections of Earth observation (EO) imagery (e.g. from [Sentinel 2](https://sentinel.esa.int/web/sentinel/missions/sentinel-2)) **easier** and **faster**. Typical challenges with these data such as overlapping images, different spatial resolutions of spectral bands, irregular temporal sampling, and different coordinate reference systems are abstracted away from users by reading the data as a raster data cube and letting users define the shape of the cube (spatiotemporal extent, resolution, and  spatial reference system). Working with EO imagery then becomes more interactive: going from "_try method X on low resolution and get the result asap_" to "_apply the final method to the full resolution dataset over night_" becomes straightforward.  
+
+This brief vignette illustrates basic ideas of the package. We will use satellite imagery from the Moderate Resolution Imaging Spectroradiometer ([MODIS](https://modis.gsfc.nasa.gov)) that is small enough to process even on older machines. The imagery comes as a set of [HDF4](https://support.hdfgroup.org/products/hdf4/) files.  We assume that you have successfully installed the `gdalcubes` package. Please also make sure that your GDAL installation supports the HDF4 driver (e.g. with `gdalcubes_gdalformats()`).
+
+In the following, we will follow a simple workflow by
+
+1. Collecting image files as an __image collection__ object,
+2. Creating data cubes at various spatiotemporal resolutions and extents, and
+3. Applying simple operations on data cubes including band selection, application of pixel-wise functions, reduction over time, and time series filtering.
+
+# Example dataset
+
+We will use 8-daily land surface temperature from the MODIS product [MOD11A2](https://modis.gsfc.nasa.gov/data/dataprod/mod11.php), covering western Europe (tiles v=13,14, h=03,04) from January to September 2018. The zip archive sums to approximately 600 megabytes. The code below downloads and unzips the data to the current working directory. Since this might sometimes lead to timeouts depending on the the internet connection and availability of the file service, we first increase the global timeout option to at least 30 minutes (though it typically takes only a few minutes or less).
+
+```{r data_download, echo=TRUE, results='hide'}
+options(timeout = max(1800, getOption("timeout")))
+dest_dir = tempdir()
+download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile=file.path(dest_dir, "MOD11A2.zip"),mode = "wb")
+unzip(file.path(dest_dir, "MOD11A2.zip"), exdir = file.path(dest_dir,"MOD11A2"))
+unlink(file.path(dest_dir, "MOD11A2.zip"))
+```
+
+
+# Creating image collections from local image files
+
+As a first step, we must combine the set of files from the MODIS product (MOD11A2) into a single _image collection_ object. The image collection is a simple index, pointing to files and storing the spatial extents, spatial reference systems, acquisition date/time of images and how files relate to image bands. The package comes with a set of predefined rules (called _image collection formats_), how this information can be extracted from filenames for selected EO products. A list of available collection formats including a short description can be printed with:
+
+
+```{r, eval=TRUE}
+library(gdalcubes)
+collection_formats()
+```
+
+In this case, `MxD11A2` is the correct format for our datasets. Internally, collection formats are defined in relatively simple JSON files, presets for other products will be added continuously.   
+
+To create the image collection, we must pass a list of our files and the collection format to the `create_image_collection()` function.  The code below finds all files as character vector of GDAL datasets, which then can be passed as the first argument to the `create_image_collection()` function. The second argument here refers to the image collection format and the third argument provides the name of the output image collection file (which is simply an SQLite database). The collection format also knows that bands are stored as subdatasets in the HDF files.
+
+```{r}
+files = list.files(file.path(dest_dir,"MOD11A2"), pattern=".hdf$", full.names = TRUE)
+MODIS.collection = create_image_collection(files, "MxD11A2")
+```
+
+Image collections can be saved by setting the `out_file` argument in `create_image_collection()` and loaded with the `image_collection()` function. For large collections, the creation hence is typically done only once. 
+
+# Creating a data cube
+
+The created image collection only stores references to original image files and knows about their datetime, spatial extent, and coordinate reference system. Image collections do not store copies of image data and thus typically only comsume a few kilobytes per image. To work with image data as a four-dimensional array (data cube) the `raster_cube()` function creates a data cube from an image collection. This function expects at least two arguments:
+
+1. an image collection object as created above and
+2. a _data cube view_ object defining the spatiotemporal resolution, extent, and the spatial reference system of the target cube 
+
+Further optional arguments include the internal size of chunks for performance optimizations and image masks to 
+drop invalid pixels (e.g. cloud pixels). 
+
+To create a _data cube view_, we can use the `cube_view()` function and define out target data cube geometry.
+Below, we create a data cube with the full spatiotemporal extent of the collection, using the WGS 84 / Pseudo-Mercator projection, and a pixels size of 5km x 5km x one month.
+
+```{r}
+v = cube_view(extent=MODIS.collection, srs = "EPSG:3857", dx = 5000, dy = 5000, dt = "P1M")
+MODIS.cube = raster_cube(MODIS.collection, v)
+MODIS.cube
+
+names(MODIS.cube)
+dim(MODIS.cube)
+```
+
+Notice that `raster_cube()` will not run any computations besides deriving the shape of the output cube. Instead, it will return a _proxy_ object that will not be evaluated until data must be actually read (e.g. when calling `plot(x)`). This not only applies to data cubes from image collections but also for derived cubes (see further below). 
+
+The diagnostic messages simply tell us that the extent of the cube was slightly widened, because the provided pixel size would otherwise lead to simething like "partial" pixels. The reason is that the size of a dimension, (e.g., $right - left$) is not divisible by the pixel size.
+
+
+## Aggregation and resampling
+
+Besides the spatiotemporal extent, the resolution and the spatial reference system, the data cube view contains the two important parameters `aggregation` and `resampling`. Resampling here refers to how images are resampled in space during the reprojection, scaling, and cropping operations.  The temporal aggregation method defines how values for the same cell from different images are combined in the target cube. For example, a data cube with monthly temporal resolution will contain values from multiple images. Currently, possible values are first, last, min, max, mean, and median. These functions are evaluated per data cube pixel.
+
+
+# Data cube operations
+
+The package comes with a few operations on data cubes to (i) select bands (`select_bands()`), (ii) apply pixel-wise arithmetic expressions (`apply_pixel()`), (iii) reduce data cubes over space and time (`reduce_time()`, `reduce_space()`), apply a moving-window function over time (`window_time()`), (iv) join bands of identically shaped data cubes (`join_bands()`), and some more. All of these functions produce a proxy data cube, storing the shape of the result cube but not any data. They all take a (proxy) data cube as first argument and can be chained. The following code demonstrates some of the operations and how data cubes can be plotted.
+
+```{r, fig.align="center", fig.dim=c(4.5,4.5)}
+MOD11A2.bandselect = select_bands(MODIS.cube, c("LST_DAY","LST_NIGHT"))
+MOD11A2.daynight_difference = 
+  apply_pixel(MOD11A2.bandselect, "0.02*(LST_DAY-LST_NIGHT)",names = "LST_difference")
+MOD11A2.reduce = reduce_time(MOD11A2.daynight_difference, "median(LST_difference)")
+plot(MOD11A2.reduce, col=heat.colors, key.pos=1)
+```
+
+The result is the median day night surface temperature difference for all pixels between Jan and December 2018.
+Notice that no data is actually read until we call `plot()`, i.e. all operations again return _proxy_ objects.
+
+Operations on data cubes are designed such that they can be used with the native pipe operator `|>` (or `%>%` from the `magrittr` package). The following code for example derives monthly differences of land surface temperature, from June to September 2018. The `window_time` function here applies the simple time series kernel difference filter $T_t - T_{t-1}$.
+
+```{r, fig.dim=c(7,3.5),fig.align="center"}
+library(magrittr) # get the pipe
+# update v by changing temporal extent only
+v1 = cube_view(view=v, extent=list(t0="2018-06", t1="2018-09")) 
+raster_cube(MODIS.collection, v1)  %>%
+  select_bands(c("LST_DAY")) %>%
+  apply_pixel("LST_DAY * 0.02") %>% # apply scale
+  window_time(kernel=c(-1,1), window=c(1,0)) %>%
+  plot(col=terrain.colors, key.pos=1, zlim=c(-25,25), t = 2:4, ncol = 3)
+```
+
+## Export data cubes to files
+
+Replacing the call to `plot()` with `write_ncdf()`, or `write_tif()` would write the result as NetCDF or GeoTIFF files to disk. While  `write_ncdf()` always produces a single file, `write_tif()` produces one file per time slice and the time is automatically added to the provided output filename. Both functions support compression
+and modifying the data type to save disk space. 
+
+
+
+## Parallel processing
+
+gdalcubes supports parallel processing of data cube operations. Calling `gdalcubes_options(parallel = n)` will tell all following data cube operations to use up to `n` parallel processes. Notice that worker processes are assigned to chunks of the data cube and the true number of processes can be lower if there are less than `n` chunks.
+
+
+# Further reading
+
+This vignette presents a very simple example with a small local dataset. Further tutorials and publications not available as a vignette inside the package but available online include:
+
+-   [A detailed tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html)
+    presented at OpenGeoHub Summer School 2019 where larger Landsat and Sentinel-2 datasets with overlapping images from different spatial reference systems are used and user-defined R functions are applied on data cubes.  
+-   [A blog post](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html)
+    on r-spatial.org explains, how `gdalcubes` can be used to analyze large satellite collections in the cloud using STAC. 
+
+
+
+

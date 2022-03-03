@@ -32,7 +32,7 @@
 select_time <- function(cube, t) {
   stopifnot(is.cube(cube))
   
-  x = libgdalcubes_create_select_time_cube(cube, t)
+  x = gc_create_select_time_cube(cube, t)
   class(x) <- c("select_time_cube", "cube", "xptr")
   return(x)
 }
@@ -44,7 +44,7 @@ is.select_time_cube  <- function(obj) {
   if(!("select_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

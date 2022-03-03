@@ -6,7 +6,7 @@
 #' @param image_collection Source image collection as from \code{image_collection} or \code{create_image_collection}
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
 #' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
-#' @param chunking Vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
+#' @param chunking length-3 vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
@@ -16,7 +16,7 @@
 #'  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
 #'  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
 #' 
-#' 
+#' If chunking is provided as a function, it must accept exactly three arguments for the total size of the cube in t, y, and x axes (in this order). 
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -60,10 +60,10 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$defa
   x = NULL
   if (!missing(view)) {
     stopifnot(is.cube_view(view))
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask, view)
+    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask, view)
   }
   else {
-    x = libgdalcubes_create_image_collection_cube(image_collection, as.integer(chunking), mask)
+    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask)
   }
   class(x) <- c("image_collection_cube", "cube", "xptr")
   return(x)
@@ -157,7 +157,7 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
     dy = -1.0
   }
  
-  x = libgdalcubes_create_simple_cube(x, datetime_values, bands, band_names, dx, dy, as.integer(chunking))
+  x = gc_create_simple_cube(x, datetime_values, bands, band_names, dx, dy, as.integer(chunking))
   class(x) <- c("simple_cube", "cube", "xptr")
   return(x)
 }
@@ -168,14 +168,70 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' Copy a data cube proxy object without copying any data
 #' 
 #' @param  cube source data cube proxy object
-#' @return copied data proxy object 
+#' @return copied data cube proxy object 
 #' @details 
 #' This internal function copies the complete processing chain / graph of a data cube but does not copy any data
 #' It is used internally to avoid in-place modification for operations with potential side effects on source data cubes.
 .copy_cube <- function(cube) {
   cc = class(cube)
-  cube = libgdalcubes_copy_cube(cube)
+  cube = gc_copy_cube(cube)
   class(cube) <- cc
+  return(cube)
+}
+
+#' Read a data cube from a json description file
+#' 
+#' @param json length-one character vector with a valid json data cube description
+#' @param path source data cube proxy object
+#' @return data cube proxy object 
+#' @details 
+#' Data cubes can be stored as JSON description files. These files do not store any data but the recipe
+#' how a data cube is consructed, i.e., the chain (or graph) of processes involved. 
+#' 
+#' Since data cube objects (as returned from \code{\link{raster_cube}}) cannot be saved with normal R methods,
+#' the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save data cube
+#' objects across several R sessions, as in the examples.
+#' 
+#' @examples{
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-01", t1="2018-12"),
+#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
+#' cube = raster_cube(L8.col, v) 
+#' 
+#' # save
+#' fname = tempfile()
+#' writeLines(as_json(cube), fname)
+#' 
+#' # load
+#' json_cube(path = fname)  
+#' }
+#' 
+#' @export
+json_cube <- function(json, path = NULL) {
+  if (!missing(json)) {
+    if (!is.null(path)) {
+      warning("Expected only one of arguments 'json' and 'path'; path will be ignored")
+    }
+    cube = gc_from_json_string(json)
+  }
+  else {
+    if (!is.null(path)) {
+      cube = gc_from_json_file(path)
+    }
+    else {
+      stop("Missing argument, please provide either a JSON string, or a path to a JSON file")
+    }
+  }
+  class(cube) <- "cube" # TODO: any way to derive exact cube type here?
   return(cube)
 }
 
@@ -243,7 +299,7 @@ is.image_collection_cube <- function(obj) {
   if(!("image_collection_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
@@ -255,7 +311,7 @@ is.cube <- function(obj) {
   if(!("cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
@@ -284,10 +340,10 @@ is.cube <- function(obj) {
 #' print(raster_cube(L8.col, v))
 #' @export
 print.cube <- function(x, ...) {
-  if (libgdalcubes_is_null(x)) {
+  if (gc_is_null(x)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  y = libgdalcubes_cube_info(x)
+  y = gc_cube_info(x)
   cat("A GDAL data cube proxy object\n")
   cat("\n")
   cat("Dimensions:\n")
@@ -336,10 +392,10 @@ print.cube <- function(x, ...) {
 #' size(raster_cube(L8.col, v))
 #' @export
 size <- function(obj) {
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$size[2:4])
 }
 
@@ -388,10 +444,10 @@ dim.cube <- function(x) {
 #' names(raster_cube(L8.col, v))
 #' @export
 names.cube <- function(x) {
-  if (libgdalcubes_is_null(x)) {
+  if (gc_is_null(x)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  y = libgdalcubes_cube_info(x)
+  y = gc_cube_info(x)
   return(as.character(y$bands$name))
 }
 
@@ -419,10 +475,10 @@ names.cube <- function(x) {
 #' dimensions(raster_cube(L8.col, v))
 #' @export
 dimensions <- function(obj) {
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  y = libgdalcubes_cube_info(obj)
+  y = gc_cube_info(obj)
   return(y$dimensions)
 }
 
@@ -447,10 +503,10 @@ dimensions <- function(obj) {
 #' bands(raster_cube(L8.col, v))
 #' @export
 bands <- function(obj) {
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     stop("GDAL data cube proxy object is invalid")
   }
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$bands)
 }
 
@@ -476,7 +532,7 @@ bands <- function(obj) {
 #' @export
 srs <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$srs)
 }
 
@@ -502,7 +558,7 @@ srs <- function(obj) {
 #' @export
 proj4 <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$proj4)
 }
 
@@ -530,7 +586,7 @@ proj4 <- function(obj) {
 #' @export
 memsize <- function(obj, unit="MiB") {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   size_bytes = prod(x$size) * 8 # assuming everything is double
   return(switch(unit,
          B = size_bytes,
@@ -570,7 +626,7 @@ memsize <- function(obj, unit="MiB") {
 #' @export
 nbands <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$size[1])
 }
 
@@ -596,7 +652,7 @@ nbands <- function(obj) {
 #' @export
 nt <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$size[2])
 }
 
@@ -622,7 +678,7 @@ nt <- function(obj) {
 #' @export
 ny <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$size[3])
 }
 
@@ -648,7 +704,7 @@ ny <- function(obj) {
 #' @export
 nx <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(x$size[4])
 }
 
@@ -679,7 +735,7 @@ nx <- function(obj) {
 #' @export
 as_json <- function(obj) {
   stopifnot(is.cube(obj))
-  x = libgdalcubes_cube_info(obj)
+  x = gc_cube_info(obj)
   return(jsonlite::prettify(x$graph))
 }
 
@@ -846,21 +902,21 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
   
   if (!chunked) {
     if (.pkgenv$use_cube_cache) {
-      j = libgdalcubes_simple_hash(as_json(x))
+      j = gc_simple_hash(as_json(x))
       if (!is.null(.pkgenv$cube_cache[[j]])
           && file.exists(.pkgenv$cube_cache[[j]])) {
         file.copy(from=.pkgenv$cube_cache[[j]], to = fname, overwrite=TRUE)
       }
       else {
-        libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
+        gc_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
       }
     }
     else {
-      libgdalcubes_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
+      gc_eval_cube(x, fname, .pkgenv$compression_level, with_VRT, .pkgenv$ncdf_write_bounds, pack)
     }
   }
   else {
-    libgdalcubes_write_chunks_ncdf(x, dirname(fname), tools::file_path_sans_ext(basename(fname)), .pkgenv$compression_level)
+    gc_write_chunks_ncdf(x, dirname(fname), tools::file_path_sans_ext(basename(fname)), .pkgenv$compression_level)
   }
   
   if (write_json_descr) {
@@ -963,7 +1019,7 @@ write_tif <- function(x, dir = tempfile(pattern=""), prefix = basename(tempfile(
   
   
   # TODO: find out how to enable caching
-  libgdalcubes_write_tif(x, dir, prefix, overviews, COG, creation_options, rsmpl_overview,  pack)
+  gc_write_tif(x, dir, prefix, overviews, COG, creation_options, rsmpl_overview,  pack)
   if (write_json_descr) {
     if (prefix == "") {
       writeLines(as_json(x), file.path(dir, "cube.json"))
@@ -1014,13 +1070,13 @@ dimension_values <- function(obj, datetime_unit=NULL) {
     if (is.null(datetime_unit)) {
       datetime_unit = ""
     }
-    return(libgdalcubes_dimension_values(obj, datetime_unit)) 
+    return(gc_dimension_values(obj, datetime_unit)) 
   }
   else if (is.cube_view(obj)) {
     if (is.null(datetime_unit)) {
       datetime_unit = ""
     }    
-    return(libgdalcubes_dimension_values_from_view(obj, datetime_unit)) 
+    return(gc_dimension_values_from_view(obj, datetime_unit)) 
   }
   else {
     stop("obj must be either from class cube or from class cube_view")
@@ -1056,7 +1112,7 @@ dimension_bounds <- function(obj, datetime_unit=NULL) {
   if (is.null(datetime_unit)) {
     datetime_unit = ""
   }
-  bnds = libgdalcubes_dimension_bounds(obj, datetime_unit)
+  bnds = gc_dimension_bounds(obj, datetime_unit)
   out = list(t = list(start = bnds$t[seq(1,length(bnds$t), by = 2)], end = bnds$t[seq(2,length(bnds$t), by = 2)]),
              y = list(start = bnds$y[seq(1,length(bnds$y), by = 2)], end = bnds$y[seq(2,length(bnds$y), by = 2)]),
              x = list(start = bnds$x[seq(1,length(bnds$x), by = 2)], end = bnds$x[seq(2,length(bnds$x), by = 2)]))

@@ -36,7 +36,7 @@ ncdf_cube <- function(path, chunking = NULL, auto_unpack = TRUE) {
   if (is.null(chunking)) {
     chunking = integer(0)
   }
-  x = libgdalcubes_create_ncdf_cube(path, chunking, auto_unpack)
+  x = gc_create_ncdf_cube(path, chunking, auto_unpack)
   class(x) <- c("ncdf_cube", "cube", "xptr")
   return(x)
 }
@@ -47,7 +47,7 @@ is.ncdf_cube  <- function(obj) {
   if(!("ncdf_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }

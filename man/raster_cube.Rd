@@ -18,7 +18,7 @@ raster_cube(
 
 \item{mask}{mask pixels of images based on band values, see \code{\link{image_mask}}}
 
-\item{chunking}{Vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.}
+\item{chunking}{length-3 vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.}
 }
 \value{
 A proxy data cube object
@@ -33,6 +33,8 @@ The following steps will be performed when the data cube is requested to read da
  2. For all resulting images, apply gdalwarp to reproject, resize, and resample to an in-memory GDAL dataset
  3. Read the resulting data to the chunk buffer and optionally apply a mask on the result
  4. Update pixel-wise aggregator (as defined in the data cube view) to combine values of multiple images within the same data cube pixels
+
+If chunking is provided as a function, it must accept exactly three arguments for the total size of the cube in t, y, and x axes (in this order).
 }
 \note{
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

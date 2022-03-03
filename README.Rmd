@@ -1,13 +1,14 @@
 ---
 output: github_document
+#always_allow_html: true
 ---
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.path = ".img/")
+knitr::opts_chunk$set(fig.path = "man/figures/")
 ```
 
-# gdalcubes <img src=".img/logo.svg" align="right" alt="" width="120" />
+# gdalcubes <img src="man/figures/logo.svg" align="right" alt="" width="120" />
 
 [![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes-r)
@@ -95,7 +96,7 @@ At first, we must scan all available images once, and extract some metadata such
 ```{r}
 library(gdalcubes)
 
-gdalcubes_options(threads=8)
+gdalcubes_options(parallel=8)
 
 files = list.files("L8_Amazon", recursive = TRUE, 
                    full.names = TRUE, pattern = ".tif") 
@@ -103,6 +104,7 @@ length(files)
 sum(file.size(files)) / 1024^2 # MiB
 
 L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
+L8.col
 ```
 
 
@@ -146,37 +148,42 @@ Calling data cube operations always returns _proxy_ objects, computations are st
 
 ## Animations
 
-Multitemporal data cubes can be animated (thanks to the [magick package](https://cran.r-project.org/web/packages/magick/index.html)):
+Multitemporal data cubes can be animated (thanks to the [gifski package](https://cran.r-project.org/package=gifski)):
 
-```{r animation}
+```{r animation,results='hide'}
 v.subarea.yearly = cube_view(extent=list(left=-6180000, right=-6080000, bottom=-550000, top=-450000, 
                              t0="2014-01-01", t1="2018-12-31"), dt="P1Y", dx=50, dy=50,
                              srs="EPSG:3857", aggregation = "median", resampling = "bilinear")
 
 raster_cube(L8.col, v.subarea.yearly) |>
   select_bands(c("B02","B03","B04")) |>
-  animate(rgb=3:1, zlim=c(100,1000))
+  animate(rgb=3:1,fps = 2, zlim=c(100,1000), width = 400, 
+          height = 400, save_as = "man/figures/animation.gif")
 ```
 
+![](man/figures/animation.gif)
 
 ## Data cube export
 
 Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
 
+```{r extpkgload, include=FALSE} 
+library(raster)
+library(stars)
+```
+
 ```{r, warning=FALSE}
-suppressPackageStartupMessages(library(raster))
 raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   write_tif() |>
-  stack() -> x
+  raster::stack() -> x
 x
 
-suppressPackageStartupMessages(library(stars))
 raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
-  st_as_stars() -> y
+  stars::st_as_stars() -> y
 y
 ```
 
@@ -213,29 +220,32 @@ raster_cube(L8.col, v.subarea.monthly) |>
 
 ## Extraction of pixels, time series, and summary statistics over polygons 
 
-In many cases, one is interested in extracting sets of points, time series, or summary statistics over polygons, e.g., to generate training data for machine learning models. 
-Package version 0.3 therefore introduces the functions `query_points()`, `query_timeseries()`, and `zonal_statistics()`.
+In many cases, one is interested in extracting sets of points, time series, or summary statistics over polygons, e.g., to generate training data for machine learning models. Package version 0.6 therefore introduces the `extract_geom()` function, which replaces the previous implementations in `query_points()`, `query_timeseries()`, and `zonal_statistics()`.
 
-Below, we randomly select 10 locations and query values of single data cube cells and complete time series.
+Below, we randomly select 100 locations and query values of single data cube cells and complete time series.
 
-```{r query}
-x = runif(10, v.overview$space$left, v.overview$space$right)
-y = runif(10, v.overview$space$bottom, v.overview$space$top)
-t = sample(as.character(2013:2019), 10, replace = TRUE)
+```{r extract}
+x = runif(100, v.overview$space$left, v.overview$space$right)
+y = runif(100, v.overview$space$bottom, v.overview$space$top)
+t = sample(as.character(2013:2019), 100, replace = TRUE)
+df = sf::st_as_sf(data.frame(x = x, y = y), coords = c("x", "y"), crs = v.overview$space$srs)
+
+# spatiotemporal points
 raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
-  query_points(x,y,t, v.overview$space$srs)
+  extract_geom(df, datetime = t) |>
+  dplyr::sample_n(15) # print 15 random rows
 
+# time series at spatial points
 raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
-  query_timeseries(x, y, v.overview$space$srs)
+  extract_geom(df) |>
+  dplyr::sample_n(15) # print 15 random rows
 ```
 
-To compute time series of summary statistics over spatial polygons, we need to specify polygon geometries (e.g., as an `sf` object) and specify one or more statistics that we are interested in, similar as we can do in `reduce_time()` or `reduce_space()`. In the following, we use the example Landsat dataset (reduced resolution)  provided with the package and compute median NDVI  within some administrative regions in New York City. The result is a vector data cube in a GeoPackage file that can be further processed and plotted by the `stars` package.
+In the following, we use the example Landsat dataset (reduced resolution) from the package and compute median NDVI values within some administrative regions in New York City. The result is a data.frame containing data cube bands, feature IDs, and time as columns.
 
 ```{r zonal_statistics}
-suppressPackageStartupMessages(library(sf))
-
 L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                        ".TIF", recursive = TRUE, full.names = TRUE)
 v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M", 
@@ -243,42 +253,52 @@ v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
               extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, 
                           t0="2018-01-01", t1="2018-12-31"))
+sf = sf::st_read(system.file("nycd.gpkg", package = "gdalcubes"), quiet = TRUE)
+
 raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) |>
   select_bands(c("B04", "B05")) |>
   apply_pixel("(B05-B04)/(B05+B04)", "NDVI") |>
-  zonal_statistics(system.file("nycd.gpkg", package = "gdalcubes"),
-                  expr = "median(NDVI)", as_stars = TRUE) |>
-  plot(max.plot = 12)
+  extract_geom(sf, FUN = median) -> zstats
+  
+  dplyr::sample_n(zstats, 15) # print 15 random rows
 ```
 
-Though this is a small toy example only, the implementation works for a large number of polygons and bigger data cubes, too (tested with 50k polygons and approx. 500GB Sentinel-2 imagery at 10m spatial resolution). 
+We can combine the result with the original features by a table join on the FID column using `merge()`:
 
+```{r}
+sf$FID = rownames(sf)
+x = merge(sf, zstats, by = "FID")
+plot(x[x$time == "2018-07", "NDVI"])
+```
 
-
+When using input features with additional attributes / labels, the `extract_geom()` function
+hence makes it easy to create training data for machine learning models.
 
 # More Features 
 
+**Cloud support with STAC**: `gdalcubes` can be used directly on cloud computing platforms including Amazon Web Services, Google Cloud Platform, and Microsoft Azure. Imagery can be read from their open data catalogs and discovered by connecting to STAC API endpoints using the [`rstac` package](https://cran.r-project.org/package=rstac) (see links at the end of this page).
 
-**Mask bands**: Imagery that comes with existing masks (e.g. general pixel quality measures or cloud masks) can apply masks during the construction of the raster data cube, such that masked values will not contribute to data cube values. 
+**Masks**: Mask bands (e.g. general pixel quality measures or cloud masks) can be applied during the construction of the raster data cube, such that masked values will not contribute to the data cube values. 
 
-**Chunk streaming**: Internally, data cubes are chunked. Users can modify the size of chunks as an argument to the `raster_cube()` function. This can be useful for performance tuning, or for applying user-defined R functions independently over all chunks, by using the `chunk_apply()` function.
+**Further operations**: The previous examples covered only a limited set of built-in functions. Further data cube operations for example include spatial and/or temporal slicing (`slice_time`, `slice_space`), cropping (`crop`), apply moving window filters over time series (`window_time`), filtering by arithmetic expressions on pixel values and spatial geometries (`filter_pixel`, `filter_geom`), and combining two or more data cubes with identical shape (`join_bands`).
 
 
 
 
 # Limitations
 
-* There is no support for vector data cubes ([stars](https://cran.r-project.org/package=stars) has vector data cubes). 
 * Data cubes are limited to four dimensions ([stars](https://cran.r-project.org/package=stars) has cubes with any number of dimensions). 
-* Some operations such as `window_time()` do not support user-defined functions at the moment.
-* Images must be orthorectified / regularly gridded, Sentinel-1 or Sentinel-5P products require additional preprocessing.
-* Using gdalcubes in distributed computing cloud infrastructures is still work in progress.
+* Some operations such as `window_time()` do not support user-defined R functions at the moment.
+* Images must be orthorectified / regularly gridded; there is no support for curvilinear grids.
+* There is no support for vector data cubes ([stars](https://cran.r-project.org/package=stars) has vector data cubes). 
 
 
 
 # Further reading
 
-* [Tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
+* Introductory [tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
+* [Tutorial on YouTube](https://youtu.be/Xlg__2PeTXM?t=3693) how to use gdalcubes in the cloud, streamed at OpenGeoHub Summer School 2021
 * [1st blog post on r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) 
 * [2nd blog post on r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html) describing how to use gdalcubes in cloud-computing environments
 * [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal
+* [R package website](https://appelmar.github.io/gdalcubes_R/)

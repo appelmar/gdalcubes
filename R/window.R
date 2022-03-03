@@ -104,7 +104,7 @@ window_time.cube <- function(x, expr,  ..., kernel, window) {
       # default
       window = rep((length(kernel) - 1) / 2 ,2)
     }
-    x = libgdalcubes_create_window_time_cube_kernel(x, as.integer(window), as.double(kernel))
+    x = gc_create_window_time_cube_kernel(x, as.integer(window), as.double(kernel))
     class(x) <- c("window_time_cube", "cube", "xptr")
     return(x)
   }
@@ -123,7 +123,7 @@ window_time.cube <- function(x, expr,  ..., kernel, window) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = libgdalcubes_create_window_time_cube_reduce(x, as.integer(window), reducers, bands)
+    x = gc_create_window_time_cube_reduce(x, as.integer(window), reducers, bands)
     class(x) <- c("window_time_cube", "cube", "xptr")
     return(x)
   }
@@ -140,7 +140,7 @@ is.window_time_cube  <- function(obj) {
   if(!("window_time_cube" %in% class(obj))) {
     return(FALSE)
   }
-  if (libgdalcubes_is_null(obj)) {
+  if (gc_is_null(obj)) {
     warning("GDAL data cube proxy object is invalid")
     return(FALSE)
   }
