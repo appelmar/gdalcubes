@@ -11,8 +11,9 @@
 * fix `filter_geom()` error while checking if polygon is within data cube
 * use WKT strings or authority codes in image collections instead of proj4 strings
 * chunk sizes can now be set as a global package option either as constant sizes or as a function of data cube size
-* default chunk sizes consider the number of parallel worker thread 
-* `animate()` now can produce mp4 and GIF animations and works for larger image sequences using the `av` or `gifski` packages
+* default chunk sizes consider the number of parallel worker processes 
+* `animate()` now can produce mp4 and GIF animations
+* `animate()` works for larger image sequences using the `av` or `gifski` packages
 * remove dependency on `RcppProgress`
 
 

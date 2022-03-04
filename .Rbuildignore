@@ -12,15 +12,13 @@
 ^src/gdalcubes/\.github$
 ^src/gdalcubes/\.git$
 ^vignettes/gc02_AWS_Sentinel2.Rmd$
+^vignettes/gc03_ML_training_data.Rmd$
 ^vignettes/MOD11A2$
 ^vignettes/MOD11A2\.db$
 ^vignettes/MOD11A2\.zip$
 ^vignettes/MOD13A3$
 ^vignettes/MOD13A3\.db$
 ^vignettes/MOD13A3\.zip$
-^vignettes/test\.nc$
-^vignettes/getting_started\.html$
-^vignettes/getting_started\.R$
 ^Dockerfile$
 ^example\.R$
 ^example2\.R$

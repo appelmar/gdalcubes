@@ -232,29 +232,20 @@ gdalcubes_set_gdal_config <- function(key, value) {
 #' .default_chunk_size(12, 1000, 1000)
 #' @noRd
 .default_chunk_size <- function(nt, ny, nx) {
-  
-  nparallel = .pkgenv$nparallel
-  
-  ct = 1
-  target_pixels_per_chunk = ny * nx * nt / nparallel
-  
-  # multiples of 256
-  cy = max(floor(sqrt(target_pixels_per_chunk) / 256), 1) * 256
-  cx = cy
-  
-  #ar = ny / nx
-  #cy = ceiling(sqrt(target_pixels_per_chunk * ar))
-  #cx = ceiling(sqrt(target_pixels_per_chunk / ar))
-  
+  nparallel = .pkgenv$parallel
+  target_nchunks_space = ceiling(4*nparallel / nt)
+  cx = sqrt(nx*ny / target_nchunks_space)
+  cy = cx
+
   # apply limits
-  cx = min(cx, 2048)
-  cy = min(cy, 2048)
-  cx = max(cx, 256)
-  cy = max(cy, 256)
+  cx = min(cx, 1024)
+  cy = min(cy, 1024)
+  cx = max(cx, 128)
+  cy = max(cy, 128)
   cx = min(nx, cx)
   cy = min(ny, cy)
   
-  return(c(ct, cy, cx))
+  return(c(1, ceiling(cy), ceiling(cx)))
 }
 
 
