@@ -70,8 +70,6 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 write_ncdf(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".nc"))
 }
 \seealso{
-\url{https://docs.unidata.ucar.edu/netcdf-c/current/}
-
 \code{\link{gdalcubes_options}}
 
 \code{\link{pack_minmax}}

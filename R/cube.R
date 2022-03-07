@@ -829,7 +829,6 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 #' This function will read chunks of a data cube and write them to a single (the default) or multitple (if \code{chunked = TRUE}) netCDF file(s). The resulting
 #' file(s) uses the enhanced netCDF-4 format, supporting chunking and compression.
 #' 
-#' @seealso \url{https://docs.unidata.ucar.edu/netcdf-c/current/}
 #' @seealso \code{\link{gdalcubes_options}} 
 #' @param x a data cube proxy object (class cube)
 #' @param fname output file name
