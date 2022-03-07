@@ -24,6 +24,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     throw std::string("Directory '" + work_dir + "' for storing intermediate chunk data already exists");
   }
   filesystem::mkdir(work_dir);
+  GCBS_DEBUG("Using '" + work_dir + "' as working directory for child processes");
 
   std::string json_path =filesystem::join(work_dir,"cube.json");
   std::ofstream jsonfile(json_path);
@@ -106,7 +107,7 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
     // because there may be remaining chunks
     std::vector<std::pair<std::string, chunkid_t>> chunk_queue;
     filesystem::iterate_directory(work_dir, [&chunk_queue](const std::string& f) {
-
+      
       // Consider files with name X.nc, where X is an integer number
       // Temporary files will start with a dot and are NOT considered here
       std::regex r("^([0-9]+)\\.nc$");
@@ -118,13 +119,11 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
             int chunkid = std::stoi(match[1].str());
             chunk_queue.push_back(std::make_pair<>(f, chunkid));
           }
-          catch (...) {
-            return;
-          }
+          catch (...) {}
         }
       }
     });
-
+  
     // add finished chunks to output
     for (auto it = chunk_queue.begin(); it != chunk_queue.end(); ++it) {
       try {
@@ -227,7 +226,6 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   if(_interrupted) {
     _interrupted = false;
     Rcpp::stop("computations have been interrupted by the user");
-    
   }
   else if (any_failed) {
     Rcpp::stop("one or more worker processes failed to compute data cube chunks");
