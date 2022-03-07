@@ -1,4 +1,4 @@
-# gdalcubes 0.6.0 (under development)
+# gdalcubes 0.6.0 (2022-03-07)
 
 * major stability improvements:
   * fix unexpected stack overflows due to to GDAL error handler from `sf` calling `Rf_warning()`
