@@ -46,13 +46,13 @@ expect_true(all(y == 1))
 
 # TODO: count reducer might lead to NA instead of 0 on
 # some platforms, avoid test for now
-# gdalcubes:::.raster_cube_empty(v, 1, 1.0) |>
+# gdalcubes:::.raster_cube_empty(v, 1) |>
 #   aggregate_time(dt = "P1M", method = "count") |>
 #   as_array() -> x
 # expect_true(all(x == 0))
 
 
-gdalcubes:::.raster_cube_empty(v, 1, 1.0) |>
+gdalcubes:::.raster_cube_empty(v, 1) |>
   aggregate_time(dt = "P1M", method = "sum") |>
   as_array() -> x
 expect_true(all(is.na(x)))
