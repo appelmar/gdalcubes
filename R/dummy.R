@@ -27,6 +27,7 @@
   if (is.function(chunking)) {
     chunking = chunking(view$time$nt, view$space$ny, view$space$nx)
   }
+  chunking = as.integer(chunking)
   x = gc_create_dummy_cube(view, nbands, fill, chunking)
   class(x) <- c("dummy_cube", "cube", "xptr")
   return(x)
@@ -61,6 +62,7 @@
   if (is.function(chunking)) {
     chunking = chunking(view$time$nt, view$space$ny, view$space$nx)
   }
+  chunking = as.integer(chunking)
   x = gc_create_empty_cube(view, nbands, chunking)
   class(x) <- c("empty_cube", "cube", "xptr")
   return(x)
