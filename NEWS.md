@@ -1,3 +1,9 @@
+# gdalcubes 0.6.1 (2022-03-22)
+
+* fix gcc-12 builds on CRAN
+* fix automatic reprojection in `extract_geom()`
+* update GDAL on Windows 
+
 # gdalcubes 0.6.0 (2022-03-07)
 
 * major stability improvements:
