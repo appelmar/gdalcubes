@@ -89,52 +89,126 @@ cube_view cube_view_from_list(SEXP v) {
   Rcpp::List view = Rcpp::as<Rcpp::List>(v);
   cube_view cv;
   
-  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
+  // x
+  Rcpp::RObject dx = Rcpp::as<Rcpp::List>(view["space"])["dx"];
+  Rcpp::RObject nx = Rcpp::as<Rcpp::List>(view["space"])["nx"];
+  Rcpp::RObject left = Rcpp::as<Rcpp::List>(view["space"])["left"];
+  Rcpp::RObject right = Rcpp::as<Rcpp::List>(view["space"])["right"];
+  if (!left.isNULL() && !right.isNULL() && !dx.isNULL() && !nx.isNULL()) {
+    //GCBS_WARN("Expected only three out of [left, right, dx, nx], ignoring dx");
+    cv.set_x_axis(double(Rcpp::as<Rcpp::NumericVector>(left)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(right)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(nx)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
+  else if (!left.isNULL() && !right.isNULL() && !dx.isNULL() && nx.isNULL()) {  
+    cv.set_x_axis(double(Rcpp::as<Rcpp::NumericVector>(left)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(right)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dx)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
+  else if (!left.isNULL()  && !right.isNULL() && dx.isNULL() && !nx.isNULL()) {
+    cv.set_x_axis(double(Rcpp::as<Rcpp::NumericVector>(left)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(right)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(nx)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
+  else if (!left.isNULL()  && right.isNULL() && !dx.isNULL() && !nx.isNULL()) {
+    cv.set_x_axis(double(Rcpp::as<Rcpp::NumericVector>(left)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(nx)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dx)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-    cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
+  else if (left.isNULL()  && !right.isNULL() && !dx.isNULL() && !nx.isNULL()) {
+    cv.set_x_axis(uint32_t(Rcpp::as<Rcpp::IntegerVector>(nx)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(right)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dx)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
+  else {
+    GCBS_ERROR("Specification of x dimension is incomplete");
+    throw std::string("Specification of x dimension is incomplete");
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-    cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
+  
+  
+  // y
+  Rcpp::RObject dy = Rcpp::as<Rcpp::List>(view["space"])["dy"];
+  Rcpp::RObject ny = Rcpp::as<Rcpp::List>(view["space"])["ny"];
+  Rcpp::RObject bottom = Rcpp::as<Rcpp::List>(view["space"])["bottom"];
+  Rcpp::RObject top = Rcpp::as<Rcpp::List>(view["space"])["top"];
+  if (!bottom.isNULL() && !top.isNULL() && !dy.isNULL() && !ny.isNULL()) {
+    //GCBS_WARN("Expected only three out of [bottom, top, ny, dy], ignoring dy");
+    cv.set_y_axis(double(Rcpp::as<Rcpp::NumericVector>(bottom)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(top)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(ny)[0]));
   }
-  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
+  else if (!bottom.isNULL() && !top.isNULL() && !dy.isNULL() && ny.isNULL()) {  
+    cv.set_y_axis(double(Rcpp::as<Rcpp::NumericVector>(bottom)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(top)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dy)[0]));
   }
+  else if (!bottom.isNULL()  && !top.isNULL() && dy.isNULL() && !ny.isNULL()) {
+    cv.set_y_axis(double(Rcpp::as<Rcpp::NumericVector>(bottom)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(top)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(ny)[0]));
+  }
+  else if (!bottom.isNULL()  && top.isNULL() && !dy.isNULL() && !ny.isNULL()) {
+    cv.set_y_axis(double(Rcpp::as<Rcpp::NumericVector>(bottom)[0]), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(ny)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dy)[0]));
+  }
+  else if (bottom.isNULL()  && !top.isNULL() && !dy.isNULL() && !ny.isNULL()) {
+    cv.set_y_axis(uint32_t(Rcpp::as<Rcpp::IntegerVector>(ny)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(top)[0]), 
+                  double(Rcpp::as<Rcpp::NumericVector>(dy)[0]));
+  }
+  else {
+    GCBS_ERROR("Specification of y dimension is incomplete");
+    throw std::string("Specification of y dimension is incomplete");
+  }
+  
+  
+  // t
+  Rcpp::RObject t0 = Rcpp::as<Rcpp::List>(view["time"])["t0"];
+  Rcpp::RObject t1 = Rcpp::as<Rcpp::List>(view["time"])["t1"];
+  Rcpp::RObject nt = Rcpp::as<Rcpp::List>(view["time"])["nt"];
+  Rcpp::RObject dt = Rcpp::as<Rcpp::List>(view["time"])["dt"];
+  
+  if (!t0.isNULL() && !t1.isNULL() && !dt.isNULL() && !nt.isNULL()) {
+    //GCBS_WARN("Expected only three out of [t0, t1, nt, dt], ignoring nt");
+    cv.set_t_axis(datetime::from_string(Rcpp::as<Rcpp::String>(t0)), 
+                  datetime::from_string(Rcpp::as<Rcpp::String>(t1)), 
+                  duration::from_string(Rcpp::as<Rcpp::String>(dt)));
+  }
+  else if (!t0.isNULL() && !t1.isNULL() && !dt.isNULL() && nt.isNULL()) {  
+    cv.set_t_axis(datetime::from_string(Rcpp::as<Rcpp::String>(t0)), 
+                  datetime::from_string(Rcpp::as<Rcpp::String>(t1)), 
+                  duration::from_string(Rcpp::as<Rcpp::String>(dt)));
+  }
+  else if (!t0.isNULL()  && !t1.isNULL() && dt.isNULL() && !nt.isNULL()) {
+    cv.set_t_axis(datetime::from_string(Rcpp::as<Rcpp::String>(t0)), 
+                  datetime::from_string(Rcpp::as<Rcpp::String>(t1)), 
+                  uint32_t(Rcpp::as<Rcpp::IntegerVector>(nt)[0]));
+  }
+  // else if (!t0.isNULL()  && t1.isNULL() && !dt.isNULL() && !nt.isNULL()) {
+  //   cv.set_t_axis(double(Rcpp::as<Rcpp::NumericVector>(t0)[0]), 
+  //                 uint32_t(Rcpp::as<Rcpp::IntegerVector>(nt)[0]), 
+  //                 double(Rcpp::as<Rcpp::NumericVector>(dt)[0]));
+  // }
+  // else if (t0.isNULL()  && !t1.isNULL() && !dt.isNULL() && !nt.isNULL()) {
+  //   cv.set_t_axis(uint32_t(Rcpp::as<Rcpp::IntegerVector>(nt)[0]), 
+  //                 double(Rcpp::as<Rcpp::NumericVector>(t1)[0]), 
+  //                 double(Rcpp::as<Rcpp::NumericVector>(dt)[0]));
+  // }
+  else {
+    GCBS_ERROR("Specification of t dimension is incomplete");
+    throw std::string("Specification of t dimension is incomplete");
+  }
+  
+  
   if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
     std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
     cv.srs(srs);  
   }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    cv.t0(datetime::from_string(tmp));
+  else {
+    GCBS_ERROR("Missing spatial reference system");
+    throw std::string("Missing spatial reference system");
   }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    cv.t1(datetime::from_string(tmp));
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-    cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-    cv.dt(duration::from_string(tmp));
-    cv.t0().unit(cv.dt().dt_unit); 
-    cv.t1().unit(cv.dt().dt_unit); 
-  }
-  
   if (view["aggregation"] != R_NilValue) {
     std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
     cv.aggregation_method() = aggregation::from_string(tmp);
@@ -349,62 +423,7 @@ Rcpp::List gc_cube_info( SEXP pin) {
 // [[Rcpp::export]]
 Rcpp::List gc_dimension_values_from_view(Rcpp::List view, std::string dt_unit="") {
   
-  cube_view cv;
-  
-  if (Rcpp::as<Rcpp::List>(view["space"])["right"] != R_NilValue) {
-    cv.right(Rcpp::as<Rcpp::List>(view["space"])["right"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["left"] != R_NilValue) {
-    cv.left(Rcpp::as<Rcpp::List>(view["space"])["left"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["top"] != R_NilValue) {
-    cv.top(Rcpp::as<Rcpp::List>(view["space"])["top"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["bottom"] != R_NilValue) {
-    cv.bottom(Rcpp::as<Rcpp::List>(view["space"])["bottom"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dx"] != R_NilValue) {
-    cv.dx(Rcpp::as<Rcpp::List>(view["space"])["dx"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["nx"] != R_NilValue) {
-    cv.nx(Rcpp::as<Rcpp::List>(view["space"])["nx"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["dy"] != R_NilValue) {
-    cv.dy(Rcpp::as<Rcpp::List>(view["space"])["dy"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["ny"] != R_NilValue) {
-    cv.ny(Rcpp::as<Rcpp::List>(view["space"])["ny"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["space"])["srs"] != R_NilValue) {
-      std::string srs = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["space"])["srs"]);
-      cv.srs(srs);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t0"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t0"]);
-    cv.t0(datetime::from_string(tmp));
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["t1"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["t1"]);
-    cv.t1(datetime::from_string(tmp));
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["nt"] != R_NilValue) {
-    cv.nt(Rcpp::as<Rcpp::List>(view["time"])["nt"]);
-  }
-  if (Rcpp::as<Rcpp::List>(view["time"])["dt"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(Rcpp::as<Rcpp::List>(view["time"])["dt"]);
-    cv.dt(duration::from_string(tmp));
-    cv.t0().unit(cv.dt().dt_unit); 
-    cv.t1().unit(cv.dt().dt_unit); 
-  }
-  
-  if (view["aggregation"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(view["aggregation"]);
-    cv.aggregation_method() = aggregation::from_string(tmp);
-  }
-  if (view["resampling"] != R_NilValue) {
-    std::string tmp = Rcpp::as<Rcpp::String>(view["resampling"]);
-    cv.resampling_method() = resampling::from_string(tmp);
-  }
+  cube_view cv = cube_view_from_list(view);
   
   Rcpp::CharacterVector dimt(cv.nt());
   Rcpp::NumericVector dimx(cv.nx());
@@ -799,7 +818,6 @@ SEXP gc_list_collection_formats() {
 // [[Rcpp::export]]
 SEXP gc_create_view(SEXP v) {
   cube_view cv = cube_view_from_list(v);
-  
   return Rcpp::List::create(
     Rcpp::Named("space") = Rcpp::List::create(
       Rcpp::Named("right") = cv.right(),
@@ -812,12 +830,12 @@ SEXP gc_create_view(SEXP v) {
       Rcpp::Named("dx") = cv.dx(),
       Rcpp::Named("dy") = cv.dy()
     ),
-    Rcpp::Named("time") = Rcpp::List::create(
-      Rcpp::Named("t0") = cv.t0().to_string(),
-      Rcpp::Named("t1") = cv.t1().to_string(),
-      Rcpp::Named("dt") = cv.dt().to_string(),
-      Rcpp::Named("nt") = cv.nt()
-    ),
+     Rcpp::Named("time") = Rcpp::List::create(
+       Rcpp::Named("t0") = cv.t0().to_string(),
+       Rcpp::Named("t1") = cv.t1().to_string(),
+       Rcpp::Named("dt") = cv.dt().to_string(),
+       Rcpp::Named("nt") = cv.nt()
+     ),
     Rcpp::Named("aggregation") = aggregation::to_string(cv.aggregation_method()) ,
     Rcpp::Named("resampling") = resampling::to_string(cv.resampling_method())
   );

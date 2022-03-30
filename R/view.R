@@ -370,8 +370,6 @@ cube_view <- function(view, extent, srs, nx, ny, nt, dx, dy, dt, aggregation, re
     
   }
   
-  
-  # 
   xx = gc_create_view(xx)
   
   class(xx) <- c("cube_view", class(xx))
