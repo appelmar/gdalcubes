@@ -151,9 +151,24 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       }
     }
     if (img_has_bands) {
+    
+      
+      # fixes #60
+      proj = s[[i]]$properties$"proj:epsg"
+      if (is.null(proj)) {
+        proj = s[[i]]$properties$"proj:wkt2"
+      }
+      if (is.null(proj)) {
+        proj = s[[i]]$properties$"proj:projjson"
+      }
+      if (is.null(proj)) {
+        warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
+        proj = ""
+      }
+      
       images_id = c(images_id, i)
       images_name = c(images_name, s[[i]]$id)
-      images_proj =  c(images_proj, paste0("EPSG:",s[[i]]$properties$"proj:epsg"))
+      images_proj =  c(images_proj, proj)
       images_datetime = c(images_datetime, s[[i]]$properties$datetime)
       
       # BBOX
