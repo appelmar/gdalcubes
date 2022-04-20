@@ -155,6 +155,11 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       
       # fixes #60
       proj = s[[i]]$properties$"proj:epsg"
+      if (!is.null(proj)) {
+        if (!startsWith(toupper(proj), "EPSG:")) {
+          proj = paste0("EPSG:", proj)
+        }
+      }
       if (is.null(proj)) {
         proj = s[[i]]$properties$"proj:wkt2"
       }
@@ -163,7 +168,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       }
       if (is.null(proj)) {
         warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
-        proj = ""
+        proj = "" # TODO: better ignore image
       }
       
       images_id = c(images_id, i)
