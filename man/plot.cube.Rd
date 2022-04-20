@@ -21,6 +21,7 @@
   axes = TRUE,
   ncol = NULL,
   nrow = NULL,
+  downsample = TRUE,
   na.color = "#AAAAAA"
 )
 }
@@ -57,6 +58,8 @@
 
 \item{nrow}{number of rows for arranging plots with  \code{layout()}, see Details}
 
+\item{downsample}{length-one integer or logical value used to select only every i-th pixel (in space only) for faster plots; by default (TRUE), downsampling will be determined automatically based on the resolution of the graphics device; set to FALSE to avoid downsampling.}
+
 \item{na.color}{color used to plot NA pixels}
 }
 \description{
@@ -64,10 +67,15 @@ Plot a gdalcubes data cube
 }
 \details{
 The style of the plot depends on provided parameters and on the shape of the cube, i.e., whether it is a pure time series and whether it contains multiple bands or not.
-Multi-band, multi-temporal images will be arranged with \code{layout()} such that bands are represented by the x axis and time is represented by the y axis.
-Time series plots can be combined to a single plot by setting \code{join.timeseries = TRUE}. For other cases, a default arrangement of the plots is derived, trying to reach
-a square overall plot. The layout can be controlled with \code{ncol} and \code{nrow}, which define the number of rows and columns in the plot layout. Typically, only one of 
+Multi-band, multi-temporal images will be arranged with \code{layout()} such that bands are represented by columns and time is represented by rows.
+Time series plots can be combined to a single plot by setting \code{join.timeseries = TRUE}. The layout can be controlled with \code{ncol} and \code{nrow}, which define the number of rows and columns in the plot layout. Typically, only one of 
 \code{ncol} and \code{nrow} is provided. For multi-band, multi-temporal plots, the actual number of rows or columns can be less if the input cube has less bands or time slices.
+
+The \code{downsample} argument is used to speed-up plotting if the cube has much more pixels than the graphics device. 
+If set to a scalar integer value > 1, the value is used to skip pixels in the spatial dimensions. For example, setting \code{downsample = 4} means
+that every fourth pixel is used in the spatial dimensions. If TRUE (the default) \code{downsample} is derived automatically based on the 
+sizes of the cube and the graphics device. If 1 or FALSE, no additional downsampling is performed. Notice that downsampling is only used for plotting.
+The size of the data cube (and hence the computation time to process the data cube) is not modified.
 }
 \note{
 If caching is enabled for the package (see \code{\link{gdalcubes_options}}), repeated calls of plot
