@@ -4,20 +4,18 @@
 \alias{gdalcubes_selection}
 \alias{$.cube}
 \alias{[.cube}
-\title{Select a data cube band by name}
+\title{Subsetting data cubes}
 \usage{
 \method{$}{cube}(x, name)
 
-\method{[}{cube}(cube, ib = TRUE, it = TRUE, iy = TRUE, ix = TRUE, ...)
+\method{[}{cube}(x, ib = TRUE, it = TRUE, iy = TRUE, ix = TRUE, ...)
 }
 \arguments{
 \item{x}{source data cube}
 
 \item{name}{character; name of selected band}
 
-\item{cube}{source data cube}
-
-\item{ib}{first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}), or \link[sf]{st_sfc}), see Details and examples}
+\item{ib}{first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}, or \link[sf]{st_sfc}, see Details and examples}
 
 \item{it}{second selector (optional), see \code{ib}}
 
@@ -28,22 +26,18 @@
 \item{...}{further arguments, not used}
 }
 \description{
-Select a data cube band by name
-
-Extract a subset of a data cube
+Subset data cube dimensions and bands / variables.
 }
 \details{
 The \code{[]} operator allows for flexible subsetting of data cubes by date, datetime,  
-bounding box, spatial points, and band names. Depending on the arguments, it supports slicing (
-selecting one element of a dimension) and cropping (selecting a subinterval of a dimension) and combinations
+bounding box, spatial points, and band names. Depending on the arguments, it supports slicing
+(selecting one element of a dimension), cropping (selecting a subinterval of a dimension) and combinations
 thereof (e.g., selecting a spatial window and a temporal slice). Dimension subsets can 
 be specified by integer indexes or coordinates / datetime values. Arguments are matched by type and order.
-For example, if the first argument is a length-two vector of type Date, the function will realize that this 
-is for subsetting the time dimension. If needed, arguments are treated in the order band, time, y, x.
+For example, if the first argument is a length-two vector of type Date, the function will understand to 
+subset the time dimension. Otherwise, arguments are treated in the order band, time, y, x.
 }
 \note{
-This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }
 \examples{
@@ -64,18 +58,6 @@ L8.red = L8.cube$B04
 \donttest{
 plot(L8.red)
 }
-# create image collection from example Landsat data only 
-# if not already done in other examples
-if (!file.exists(file.path(tempdir(), "L8.db"))) {
-  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-                         ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
-}
-L8.col = image_collection(file.path(tempdir(), "L8.db"))
-v = cube_view(extent=list(left=388941.2, right=766552.4,
-                          bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-31"),
-              srs="EPSG:32618", nx = 497, ny=526, dt="P1D", aggregation = "median")
-L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
 
 L8.cube[c("B05","B04")] # select bands
 L8.cube[as.Date(c("2018-01-10", "2018-01-20"))] # crop by time
@@ -90,7 +72,7 @@ L8.cube[,,c(1,100), c(1,100)]
 
 L8.cube[,c(1,2),,] # crop by time (integer indexes)
 
-# select by spatial point or bounding box
+# subset by spatial point or bounding box
 if (requireNamespace("sf", quietly = TRUE)) {
   s = sf::st_sfc(sf::st_point(c(500000, 4500000)), crs = "EPSG:32618")
   L8.cube[s]

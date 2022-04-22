@@ -1,6 +1,7 @@
-#' Select a data cube band by name
+#' Subsetting data cubes
 #' 
-#' Select a data cube band by name
+#' Subset data cube dimensions and bands / variables.
+#'   
 #' @name gdalcubes_selection
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -31,32 +32,17 @@
 }
 
 
-#' Extract a subset of a data cube
-#' 
-#' Extract a subset of a data cube
 #' @name gdalcubes_selection
 #' @details 
 #' The \code{[]} operator allows for flexible subsetting of data cubes by date, datetime,  
-#' bounding box, spatial points, and band names. Depending on the arguments, it supports slicing (
-#' selecting one element of a dimension) and cropping (selecting a subinterval of a dimension) and combinations
+#' bounding box, spatial points, and band names. Depending on the arguments, it supports slicing
+#' (selecting one element of a dimension), cropping (selecting a subinterval of a dimension) and combinations
 #' thereof (e.g., selecting a spatial window and a temporal slice). Dimension subsets can 
 #' be specified by integer indexes or coordinates / datetime values. Arguments are matched by type and order.
-#' For example, if the first argument is a length-two vector of type Date, the function will realize that this 
-#' is for subsetting the time dimension. If needed, arguments are treated in the order band, time, y, x. 
+#' For example, if the first argument is a length-two vector of type Date, the function will understand to 
+#' subset the time dimension. Otherwise, arguments are treated in the order band, time, y, x. 
 #' 
 #' @examples 
-#' # create image collection from example Landsat data only 
-#' # if not already done in other examples
-#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
-#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-#'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"))
-#' }
-#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(extent=list(left=388941.2, right=766552.4,
-#'                           bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-31"),
-#'               srs="EPSG:32618", nx = 497, ny=526, dt="P1D", aggregation = "median")
-#' L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
 #' 
 #' L8.cube[c("B05","B04")] # select bands
 #' L8.cube[as.Date(c("2018-01-10", "2018-01-20"))] # crop by time
@@ -71,7 +57,7 @@
 #' 
 #' L8.cube[,c(1,2),,] # crop by time (integer indexes)
 #' 
-#' # select by spatial point or bounding box
+#' # subset by spatial point or bounding box
 #' if (requireNamespace("sf", quietly = TRUE)) {
 #'   s = sf::st_sfc(sf::st_point(c(500000, 4500000)), crs = "EPSG:32618")
 #'   L8.cube[s]
@@ -81,18 +67,15 @@
 #'   L8.cube[bbox]
 #' }
 #' 
-#' @param cube source data cube
-#' @param ib first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}), or \link[sf]{st_sfc}), see Details and examples
+#' @param ib first selector (optional), object of type character, list, Date, POSIXt, numeric, \link[sf]{st_bbox}, or \link[sf]{st_sfc}, see Details and examples
 #' @param it second selector (optional), see \code{ib}
 #' @param iy third selector (optional), see \code{ib}
 #' @param ix fourth selector (optional), see \code{ib}
 #' @param ... further arguments, not used
 #' 
-#' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' 
 #' @export
-"[.cube" = function(cube, ib=TRUE, it=TRUE, iy=TRUE, ix=TRUE, ...) {
-  stopifnot(is.cube(cube))
+"[.cube" = function(x, ib=TRUE, it=TRUE, iy=TRUE, ix=TRUE, ...) {
+  stopifnot(is.cube(x))
   
   args <- list(...)
   args = c(list(ib), list(it), list(iy), list(ix), args)
@@ -113,7 +96,7 @@
     }
     if (is.numeric(X)) {
       if (all(X %% 1 == 0)) {
-        X = names(cube)[X]
+        X = names(x)[X]
       }
     }
     if (!is.character(X)) {
@@ -162,7 +145,7 @@
       if (!requireNamespace("sf", quietly = TRUE)) {
         stop("package sf required for subsetting by spatial point; please install sf first")
       }
-      sf::st_bbox(sf::st_transform(sf::st_as_sfc(X), srs(cube)))
+      sf::st_bbox(sf::st_transform(sf::st_as_sfc(X), srs(x)))
       has_x = c( X["xmin"], X["xmax"])
       has_y = c( X["ymin"], X["ymax"])
     }
@@ -172,7 +155,7 @@
       }
       if (length(X) == 1) {
         if (sf::st_is(X, "POINT")) {
-          X = sf::st_transform(X, srs(cube))
+          X = sf::st_transform(X, srs(x))
           has_x = sf::st_coordinates(X)[1]
           has_y = sf::st_coordinates(X)[2]
         }
@@ -236,7 +219,7 @@
       warning(paste("x dimension subset defined by more than two values, using range() to extract minimum and maximum as crop limits"))
       X = range(X)
     }
-    if (all((X %% 1 == 0) & (X >= 1) & (X < dim(cube)[3]))) {
+    if (all((X %% 1 == 0) & (X >= 1) & (X < dim(x)[3]))) {
       # assume integer indexes
       x_is_int = TRUE
     }
@@ -254,7 +237,7 @@
       warning(paste("y dimension subset defined by more than two values, using range() to extract minimum and maximum as crop limits"))
       X = range(X)
     }
-    if (all((X %% 1 == 0) & (X >= 1) & (X < dim(cube)[2]))) {
+    if (all((X %% 1 == 0) & (X >= 1) & (X < dim(x)[2]))) {
       # assume integer indexes
       y_is_int = TRUE
     }
@@ -387,7 +370,7 @@
   }
   
   # now, derive corresponding gdalcubes operation(s)
-  out = cube
+  out = x
   if (!is.null(has_bands)) {
     out = .copy_cube(out)
     out = select_bands(out, has_bands)
