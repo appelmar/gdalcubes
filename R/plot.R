@@ -375,8 +375,9 @@ plot.cube  <-
           icol = ceiling(size[2] / nrow)
         }
         else {
-          icol = min(5, size[2])
-          irow = ceiling(size[2] / icol)
+          # find a good (close to square) layout
+          irow <- round(sqrt(size[2]))
+          icol <- ceiling(size[2] / irow)
         }
         layout(matrix(c(1:size[2], rep(
           0, irow * icol - size[2]
