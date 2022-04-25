@@ -59,6 +59,11 @@ L8.red = L8.cube$B04
 plot(L8.red)
 }
 
+v = cube_view(extent=list(left=388941.2, right=766552.4,
+                          bottom=4345299, top=4744931, t0="2018-01-01", t1="2018-12-31"),
+              srs="EPSG:32618", nx = 497, ny=526, dt="P1D", aggregation = "median")
+L8.cube = raster_cube(L8.col, v, mask=image_mask("BQA", bits=4, values=16))
+
 L8.cube[c("B05","B04")] # select bands
 L8.cube[as.Date(c("2018-01-10", "2018-01-20"))] # crop by time
 L8.cube[as.Date("2018-01-10")] # slice by time

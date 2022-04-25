@@ -1,6 +1,6 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
-Version: 0.6.1
+Version: 0.6.1.9999
 Date: 2022-03-22
 Authors@R: c(
     person(given = "Marius",

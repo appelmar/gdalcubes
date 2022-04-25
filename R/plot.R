@@ -295,6 +295,7 @@ plot.cube  <-
       else {
         bands <- 1:size[1]
       }
+    
       if (!is.null(rgb)) {
         stopifnot(length(rgb) == 3)
         stopifnot(size[1] >= 3)
@@ -328,68 +329,9 @@ plot.cube  <-
       else {
         t <- 1:size[2]
       }
-      if (is.null(rgb) & size[1] > 1 & size[2] > 1) {
-        maxbands = ifelse(is.null(ncol), 5, ncol)
-        maxt = ifelse(is.null(nrow), 5, nrow)
-        if (size[1] > maxbands)
-        {
-          warning(paste("too many bands, plotting only bands 1 to", maxbands))
-          bands = bands[1:maxbands]
-          size[1] = maxbands
-        }
-        if (size[2] > maxt) {
-          warning(paste("too many time instances, plotting only times 1 to", maxt))
-          t = t[1:maxt]
-          size[2] = maxt
-        }
-      }
       
-      else {
-        if (is.null(rgb)) {
-          if (!is.null(ncol) && !is.null(nrow)) {
-            maxplots = ncol * nrow
-          }
-          else if (!is.null(ncol)) {
-            maxplots = size[1]*size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
-          }
-          else if (!is.null(nrow)) {
-            maxplots = size[1]*size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
-          }
-          else {
-            maxplots = 25
-          }
-            
-          if (size[1] > maxplots) {
-            warning(paste("too many bands, plotting only bands 1 to", maxplots))
-            bands = bands[1:maxplots]
-            size[1] = maxplots
-          }
-          else if (size[2] > maxplots) {
-            warning(paste("too many time instances, plotting only times 1 to", maxplots))
-            t = t[1:maxplots]
-          }
-        }
-        else {
-          if (!is.null(ncol) && !is.null(nrow)) {
-            maxplots = ncol * nrow
-          }
-          else if (!is.null(ncol)) {
-            maxplots = size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
-          } 
-          else if (!is.null(nrow)) {
-            maxplots = size[2] # if only one of ncol and nrow is passed, ignore default max number of plots
-          }
-          else {
-            maxplots = 25
-          }
-          if (size[2] > maxplots) {
-            warning(paste("too many time instances, plotting only times 1 to", maxplots))
-            t = t[1:maxplots]
-            size[2] = maxplots
-          }
-        }
-      }
-  
+      
+      
       if ("ncdf_cube" %in% class(x)) {
         fn = jsonlite::parse_json(as_json(x))$file
         if (is.null(fn)) {
@@ -442,7 +384,7 @@ plot.cube  <-
       }
       else {
         if (is.null(key.pos)) {
-          if (size[1] == 1 | size[2] == 1) {
+          if (size[1] == 1 || size[2] == 1) {
             if (!is.null(ncol) && !is.null(nrow)) {
               icol = ncol
               irow = nrow
@@ -478,26 +420,26 @@ plot.cube  <-
           ww <- 1
           wh <- 1
           
-          if (size[1] == 1 | size[2] == 1) {
-            icol = size[1]
-            irow = size[2]
-            # if (!is.null(ncol) && !is.null(nrow)) {
-            #   icol = ncol
-            #   irow = nrow
-            # }
-            # else if (!is.null(ncol)) {
-            #   icol <- ncol
-            #   irow <- ceiling(size[1] * size[2] / icol)
-            # }
-            # else if (!is.null(nrow)) {
-            #   irow <-nrow
-            #   icol <- ceiling(size[1] * size[2] / irow)
-            # }
-            # else {
-            #   # find a good (close to square) layout
-            #   irow <- round(sqrt(size[1] * size[2]))
-            #   icol <- ceiling(size[1] * size[2] / irow)
-            # }
+          if (size[1] == 1 || size[2] == 1) {
+            #icol = size[1]
+            #irow = size[2]
+            if (!is.null(ncol) && !is.null(nrow)) {
+              icol = ncol
+              irow = nrow
+            }
+            else if (!is.null(ncol)) {
+              icol <- ncol
+              irow <- ceiling(size[1] * size[2] / icol)
+            }
+            else if (!is.null(nrow)) {
+              irow <-nrow
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
+            else {
+              # find a good (close to square) layout
+              irow <- round(sqrt(size[1] * size[2]))
+              icol <- ceiling(size[1] * size[2] / irow)
+            }
             switch (
               key.pos,
               layout(
@@ -947,9 +889,5 @@ plot.cube  <-
         box()
         axis(key.pos, at = pretty(range(breaks)))
       }
-      
-      
-      layout(matrix(1))
-      par(def.par)  # reset to default
     }
   }

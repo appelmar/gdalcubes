@@ -126,11 +126,11 @@ slice_space <- function(cube, loc=NULL, i=NULL) {
   }
   
   if (!is.null(i)) {
-    if (i %% 1 != 0) {
-      stop("Invalid argument: i must be exactly two integer number")
-    }
     if (length(i) != 2) {
       stop("Invalid argument: length(i) is not equal to 2")
+    }
+    if (any(i %% 1 != 0)) {
+      stop("Invalid argument: i must be integer numbers")
     }
     x = gc_create_slice_space_cube(cube, numeric(0), as.integer(i))
   }
