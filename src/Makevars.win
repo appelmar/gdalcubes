@@ -2,6 +2,7 @@ RWINLIB_GDAL = ../windows/gdal3-3.4.1
 STATLIB = gdalcubes/libgdalcubes.a
 
 LIBGDALCUBES = gdalcubes/src/aggregate_time.o \
+			gdalcubes/src/aggregate_space.o \
 			gdalcubes/src/apply_pixel.o \
       gdalcubes/src/config.o \
       gdalcubes/src/collection_format.o \

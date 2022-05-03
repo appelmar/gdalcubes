@@ -660,6 +660,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gc_create_aggregate_space_cube
+SEXP gc_create_aggregate_space_cube(SEXP pin, double dx, double dy, std::string method, uint32_t fact);
+RcppExport SEXP _gdalcubes_gc_create_aggregate_space_cube(SEXP pinSEXP, SEXP dxSEXP, SEXP dySEXP, SEXP methodSEXP, SEXP factSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< double >::type dx(dxSEXP);
+    Rcpp::traits::input_parameter< double >::type dy(dySEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< uint32_t >::type fact(factSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_aggregate_space_cube(pin, dx, dy, method, fact));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc_create_slice_time_cube
 SEXP gc_create_slice_time_cube(SEXP pin, std::string dt, int32_t it);
 RcppExport SEXP _gdalcubes_gc_create_slice_time_cube(SEXP pinSEXP, SEXP dtSEXP, SEXP itSEXP) {
@@ -852,6 +867,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_create_simple_cube", (DL_FUNC) &_gdalcubes_gc_create_simple_cube, 7},
     {"_gdalcubes_gc_create_fill_time_cube", (DL_FUNC) &_gdalcubes_gc_create_fill_time_cube, 2},
     {"_gdalcubes_gc_create_aggregate_time_cube", (DL_FUNC) &_gdalcubes_gc_create_aggregate_time_cube, 4},
+    {"_gdalcubes_gc_create_aggregate_space_cube", (DL_FUNC) &_gdalcubes_gc_create_aggregate_space_cube, 5},
     {"_gdalcubes_gc_create_slice_time_cube", (DL_FUNC) &_gdalcubes_gc_create_slice_time_cube, 3},
     {"_gdalcubes_gc_create_slice_space_cube", (DL_FUNC) &_gdalcubes_gc_create_slice_space_cube, 3},
     {"_gdalcubes_gc_create_crop_cube", (DL_FUNC) &_gdalcubes_gc_create_crop_cube, 4},

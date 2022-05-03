@@ -1471,6 +1471,27 @@ SEXP gc_create_aggregate_time_cube(SEXP pin, std::string dt, std::string method,
 
 
 // [[Rcpp::export]]
+SEXP gc_create_aggregate_space_cube(SEXP pin, double dx, double dy, std::string method, uint32_t fact=0) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    
+    std::shared_ptr<aggregate_space_cube>* x;
+    if (fact >= 1) {
+      x = new std::shared_ptr<aggregate_space_cube>(aggregate_space_cube::create(*aa, fact, method));
+    }
+    else {
+      x = new std::shared_ptr<aggregate_space_cube>(aggregate_space_cube::create(*aa, dx, dy, method));
+    }
+    Rcpp::XPtr< std::shared_ptr<aggregate_space_cube> > p(x, true) ;
+    return p;
+  } 
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+// [[Rcpp::export]]
 SEXP gc_create_slice_time_cube(SEXP pin, std::string dt, int32_t it=0) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
