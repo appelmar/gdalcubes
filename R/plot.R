@@ -10,6 +10,7 @@
 #' @param t integer vector with time indexes to plot (this must be time indexes, not date / time)
 #' @param rgb bands used to assign RGB color channels, vector of length 3 (this must be band numbers, not band names)
 #' @param zlim vector of length 2, defining the minimum and maximum values to either derive breaks, or define black and white values in RGB plots
+#' @param gamma gamma correction value, used for RGB plots only
 #' @param periods.in.title logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string
 #' @param join.timeseries logical, for pure time-series plots, shall time series of multiple bands be plotted in a single plot (with different colors)?
 #' @param axes logical, if TRUE, plots include axes
@@ -66,6 +67,7 @@ plot.cube  <-
            t = NULL,
            rgb = NULL,
            zlim = NULL,
+           gamma = 1,
            periods.in.title = TRUE,
            join.timeseries = FALSE,
            axes = TRUE,
@@ -330,6 +332,8 @@ plot.cube  <-
         t <- 1:size[2]
       }
       
+      stopifnot(is.numeric(gamma))
+      stopifnot(gamma > 0)
       
       
       if ("ncdf_cube" %in% class(x)) {
@@ -655,6 +659,12 @@ plot.cube  <-
         dat_G <- (dat_G - offset) / scale
         dat_B <- (dat_B - offset) / scale
         
+        if (gamma != 1) {
+          dat_R = dat_R^gamma
+          dat_G = dat_G^gamma
+          dat_B = dat_B^gamma
+        }
+        
         dat_R[which(is.na(dat_R) , arr.ind = T)] <- col2rgb(na.color)[1] / 255
         dat_G[which(is.na(dat_G) , arr.ind = T)] <- col2rgb(na.color)[2] / 255
         dat_B[which(is.na(dat_B) , arr.ind = T)] <- col2rgb(na.color)[3] / 255
@@ -768,6 +778,7 @@ plot.cube  <-
                 breaks = breaks,
                 xlim = xlim,
                 ylim = ylim,
+                useRaster = dev.capabilities("rasterImage")$rasterImage == "yes",
                 ...
               )
               title(paste(b, " | ",  dtvalues[ti], sep = ""))
@@ -794,6 +805,7 @@ plot.cube  <-
                 breaks = breaks,
                 xlim = xlim,
                 ylim = ylim,
+                useRaster = dev.capabilities("rasterImage")$rasterImage == "yes",
                 ...
               )
               title(paste(b, " | ",  dtvalues[ti], sep = ""))
