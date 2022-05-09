@@ -16,6 +16,7 @@
   t = NULL,
   rgb = NULL,
   zlim = NULL,
+  gamma = 1,
   periods.in.title = TRUE,
   join.timeseries = FALSE,
   axes = TRUE,
@@ -47,6 +48,8 @@
 \item{rgb}{bands used to assign RGB color channels, vector of length 3 (this must be band numbers, not band names)}
 
 \item{zlim}{vector of length 2, defining the minimum and maximum values to either derive breaks, or define black and white values in RGB plots}
+
+\item{gamma}{gamma correction value, used for RGB plots only}
 
 \item{periods.in.title}{logical value, if TRUE, the title of plots includes the datetime period length as ISO 8601 string}
 
@@ -89,7 +92,7 @@ Some parts of the function have been copied from the stars package (c) Edzer Peb
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 }
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))

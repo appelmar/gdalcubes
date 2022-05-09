@@ -24,7 +24,7 @@
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -198,7 +198,7 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -330,7 +330,7 @@ is.cube <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -382,7 +382,7 @@ print.cube <- function(x, ...) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -410,7 +410,7 @@ size <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -434,7 +434,7 @@ dim.cube <- function(x) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -465,7 +465,7 @@ names.cube <- function(x) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -493,7 +493,7 @@ dimensions <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -521,7 +521,7 @@ bands <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -547,7 +547,7 @@ srs <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -575,7 +575,7 @@ proj4 <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -615,7 +615,7 @@ memsize <- function(obj, unit="MiB") {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -641,7 +641,7 @@ nbands <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -667,7 +667,7 @@ nt <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -693,7 +693,7 @@ ny <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -710,21 +710,21 @@ nx <- function(obj) {
 
 #' Query data cube properties 
 #' 
-#' gdalcubes uses a graph (currently a tree) to serialize data cubes (including chains of cubes). This function gives a JSON
-#' representation, which will be communicated to gdalcubes_server instances to create identical cube instances 
-#' remotely.
+#' gdalcubes internally uses a graph to serialize data cubes (including chained operations on cubes). This function derives a JSON
+#' representation, which can be used to save data cube objects without pixel data to disk.
 #' 
-#' @return A JSON string representing a graph (currently a tree) that can be used to create the same
-#' chain of gdalcubes operations.
+#' @return If file is NULL, the function returns a JSON string representing a graph that can be used to recreate the same
+#' chain of gdalcubes operations even in a different R sessions.
 #' 
 #' @param obj a data cube proxy object (class cube)
+#' @param file optional output file 
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -733,10 +733,15 @@ nx <- function(obj) {
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
 #' cat(as_json(select_bands(raster_cube(L8.col, v), c("B04", "B05"))))
 #' @export
-as_json <- function(obj) {
+as_json <- function(obj, file = NULL) {
   stopifnot(is.cube(obj))
   x = gc_cube_info(obj)
-  return(jsonlite::prettify(x$graph))
+  g = jsonlite::prettify(x$graph)
+  if (!is.null(file)) {
+    writeLines(g, file)
+    return(invisible())
+  }
+  return(g)
 }
 
       
@@ -865,7 +870,7 @@ pack_minmax <- function(type="int16", min, max, simplify=FALSE) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -978,7 +983,7 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -1055,7 +1060,7 @@ write_tif <- function(x, dir = tempfile(pattern=""), prefix = basename(tempfile(
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -1097,7 +1102,7 @@ dimension_values <- function(obj, datetime_unit=NULL) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))

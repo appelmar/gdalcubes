@@ -12,7 +12,8 @@ create_image_collection(
   band_names = NULL,
   use_subdatasets = FALSE,
   unroll_archives = TRUE,
-  quiet = FALSE
+  quiet = FALSE,
+  one_band_per_file = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ create_image_collection(
 \item{unroll_archives}{automatically convert .zip, .tar archives and .gz compressed files to GDAL virtual file system dataset identifiers (e.g. by prepending /vsizip/) and add contained files to the list of considered files}
 
 \item{quiet}{logical; if TRUE, do not print resulting image collection if return value is not assigned to a variable}
+
+\item{one_band_per_file}{logical; if TRUE, assume that band_names are given for all files (argument is only applicable for image collections without collection format, see Details)}
 }
 \value{
 image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
@@ -40,19 +43,40 @@ This function iterates over files or GDAL dataset identifiers and extracts datet
 collection format.
 }
 \details{
-An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
+An image collection is a simple index (a SQLite database) containing references to existing image files / GDAL dataset identifiers.
 
-Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, and metadata are automatically
-extracted from provided files / GDAL datasets. Second, image collections can be created without collection format by manually specifying date/time of images 
-(argument \code{date_time}) and (optional) names of bands. In this case, however, all provided images must contain the same bands. If this is not 
-possible for a dataset, a collection format must be used.
+Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, 
+and metadata are automatically extracted from provided files. This is the most general approach but requires a collection format for
+the specific dataset. 
+
+Second, image collections can sometimes be created without collection format by manually specifying date/time of images 
+(argument \code{date_time}) and names of bands (argument \code{band_names}). This is possible if either each image file contains \emph{all} 
+bands of the collection or only a single band. In the former case \code{band_names} simply contains the names of the bands or can be NULL 
+to use default names. In the latter case (image files contain a single band only), the lengths of \code{band_names} and \code{date_time} must be identical.
+By default, the function assumes one band per file if \code{length(band_names) == length(files)}. In the unlikely situation that this is 
+not desired, it can be explicitly set using \code{one_band_per_file}.
 }
 \examples{
-# create image collection from example Landsat data only 
-# if not already done in other examples
-if (!file.exists(file.path(tempdir(), "L8.db"))) {
-  L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-                         ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
-}
+# 1. create image collection using a collection format 
+L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       ".TIF", recursive = TRUE, full.names = TRUE)
+x = create_image_collection(L8_files, "L8_L1TP")
+x 
+
+
+# 2. create image collection without format for a single band
+L8_files_B4 <- list.files(system.file("L8NY18", package = "gdalcubes"),
+                       "_B4.TIF", recursive = TRUE, full.names = TRUE)
+d = as.Date(substr(basename(L8_files_B4), 18, 25), "\%Y\%m\%d")
+y = create_image_collection(L8_files_B4, date_time = d, band_names = "B4")
+y
+
+
+# 3. create image collection without format for all bands
+d = as.Date(substr(basename(L8_files), 18, 25), "\%Y\%m\%d")
+fname = basename(tools::file_path_sans_ext(L8_files))
+b = substr(fname, 27, nchar(fname))
+z = create_image_collection(L8_files, date_time = d, band_names = b)
+z
+
 }

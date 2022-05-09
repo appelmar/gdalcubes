@@ -216,8 +216,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // gc_create_image_collection_from_datetime
-void gc_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, std::vector<std::string> date_time, bool use_subdatasets, std::vector<std::string> band_names);
-RcppExport SEXP _gdalcubes_gc_create_image_collection_from_datetime(SEXP outfileSEXP, SEXP filesSEXP, SEXP date_timeSEXP, SEXP use_subdatasetsSEXP, SEXP band_namesSEXP) {
+void gc_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, std::vector<std::string> date_time, bool use_subdatasets, std::vector<std::string> band_names, bool one_band_per_file);
+RcppExport SEXP _gdalcubes_gc_create_image_collection_from_datetime(SEXP outfileSEXP, SEXP filesSEXP, SEXP date_timeSEXP, SEXP use_subdatasetsSEXP, SEXP band_namesSEXP, SEXP one_band_per_fileSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
@@ -225,7 +225,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::vector<std::string> >::type date_time(date_timeSEXP);
     Rcpp::traits::input_parameter< bool >::type use_subdatasets(use_subdatasetsSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type band_names(band_namesSEXP);
-    gc_create_image_collection_from_datetime(outfile, files, date_time, use_subdatasets, band_names);
+    Rcpp::traits::input_parameter< bool >::type one_band_per_file(one_band_per_fileSEXP);
+    gc_create_image_collection_from_datetime(outfile, files, date_time, use_subdatasets, band_names, one_band_per_file);
     return R_NilValue;
 END_RCPP
 }
@@ -833,7 +834,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_image_collection_info", (DL_FUNC) &_gdalcubes_gc_image_collection_info, 1},
     {"_gdalcubes_gc_image_collection_extent", (DL_FUNC) &_gdalcubes_gc_image_collection_extent, 2},
     {"_gdalcubes_gc_create_image_collection_from_format", (DL_FUNC) &_gdalcubes_gc_create_image_collection_from_format, 4},
-    {"_gdalcubes_gc_create_image_collection_from_datetime", (DL_FUNC) &_gdalcubes_gc_create_image_collection_from_datetime, 5},
+    {"_gdalcubes_gc_create_image_collection_from_datetime", (DL_FUNC) &_gdalcubes_gc_create_image_collection_from_datetime, 6},
     {"_gdalcubes_gc_add_images", (DL_FUNC) &_gdalcubes_gc_add_images, 4},
     {"_gdalcubes_gc_list_collection_formats", (DL_FUNC) &_gdalcubes_gc_list_collection_formats, 0},
     {"_gdalcubes_gc_create_view", (DL_FUNC) &_gdalcubes_gc_create_view, 1},

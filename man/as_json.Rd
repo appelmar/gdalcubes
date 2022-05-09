@@ -4,19 +4,20 @@
 \alias{as_json}
 \title{Query data cube properties}
 \usage{
-as_json(obj)
+as_json(obj, file = NULL)
 }
 \arguments{
 \item{obj}{a data cube proxy object (class cube)}
+
+\item{file}{optional output file}
 }
 \value{
-A JSON string representing a graph (currently a tree) that can be used to create the same
-chain of gdalcubes operations.
+If file is NULL, the function returns a JSON string representing a graph that can be used to recreate the same
+chain of gdalcubes operations even in a different R sessions.
 }
 \description{
-gdalcubes uses a graph (currently a tree) to serialize data cubes (including chains of cubes). This function gives a JSON
-representation, which will be communicated to gdalcubes_server instances to create identical cube instances 
-remotely.
+gdalcubes internally uses a graph to serialize data cubes (including chained operations on cubes). This function derives a JSON
+representation, which can be used to save data cube objects without pixel data to disk.
 }
 \examples{
 # create image collection from example Landsat data only 
@@ -24,7 +25,7 @@ remotely.
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
                          ".TIF", recursive = TRUE, full.names = TRUE)
-  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+  create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 }
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))

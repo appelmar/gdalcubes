@@ -757,9 +757,9 @@ void gc_create_image_collection_from_format(std::vector<std::string> files, std:
 // [[Rcpp::export]]
 void gc_create_image_collection_from_datetime(std::string outfile, std::vector<std::string> files, 
                                                         std::vector<std::string> date_time, bool use_subdatasets, 
-                                                        std::vector<std::string> band_names) {
+                                                        std::vector<std::string> band_names, bool one_band_per_file) {
   try {
-    image_collection::create(files, date_time, band_names, use_subdatasets)->write(outfile);
+    image_collection::create(files, date_time, band_names, use_subdatasets, one_band_per_file)->write(outfile);
   }
   catch (std::string s) {
     Rcpp::stop(s);

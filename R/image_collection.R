@@ -11,7 +11,7 @@
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -48,7 +48,7 @@ is.image_collection <- function(obj) {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -77,7 +77,7 @@ extent <- function(x, srs="EPSG:4326") {
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
 #'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
 #'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
 #' }
 #' 
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
@@ -111,12 +111,18 @@ print.image_collection <- function(x, ..., n=6) {
 #' collection format.
 #' 
 #' @details
-#' An image collection is a simple SQLite database file that indexes and references existing image files / GDAL dataset identifiers.
+#' An image collection is a simple index (a SQLite database) containing references to existing image files / GDAL dataset identifiers.
 #' 
-#' Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, and metadata are automatically
-#' extracted from provided files / GDAL datasets. Second, image collections can be created without collection format by manually specifying date/time of images 
-#' (argument \code{date_time}) and (optional) names of bands. In this case, however, all provided images must contain the same bands. If this is not 
-#' possible for a dataset, a collection format must be used. 
+#' Collections can be created in two different ways: First, if a collection format is specified (argument \code{format}), date/time, bands, 
+#' and metadata are automatically extracted from provided files. This is the most general approach but requires a collection format for
+#' the specific dataset. 
+#' 
+#' Second, image collections can sometimes be created without collection format by manually specifying date/time of images 
+#' (argument \code{date_time}) and names of bands (argument \code{band_names}). This is possible if either each image file contains \emph{all} 
+#' bands of the collection or only a single band. In the former case \code{band_names} simply contains the names of the bands or can be NULL 
+#' to use default names. In the latter case (image files contain a single band only), the lengths of \code{band_names} and \code{date_time} must be identical.
+#' By default, the function assumes one band per file if \code{length(band_names) == length(files)}. In the unlikely situation that this is 
+#' not desired, it can be explicitly set using \code{one_band_per_file}.
 #' 
 #' @param files character vector with paths to image files on disk or any GDAL dataset identifiers (including virtual file systems and higher level drivers or GDAL subdatasets)
 #' @param out_file optional name of the output SQLite database file, defaults to a temporary file
@@ -126,17 +132,35 @@ print.image_collection <- function(x, ..., n=6) {
 #' @param date_time vector with date/ time for files; can be of class character, Date, or POSIXct (argument is only applicable for image collections without collection format)
 #' @param band_names character vector with band names, length must match the number of bands in provided files (argument is only applicable for image collections without collection format)
 #' @param use_subdatasets logical; use GDAL subdatasets of provided files (argument is only applicable for image collections without collection format)
+#' @param one_band_per_file logical; if TRUE, assume that band_names are given for all files (argument is only applicable for image collections without collection format, see Details)
 #' @return image collection proxy object, which can be used to create a data cube using \code{\link{raster_cube}}
 #' @examples 
-#' # create image collection from example Landsat data only 
-#' # if not already done in other examples
-#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
-#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
-#'                          ".TIF", recursive = TRUE, full.names = TRUE)
-#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db")) 
-#' }
+#' # 1. create image collection using a collection format 
+#' L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        ".TIF", recursive = TRUE, full.names = TRUE)
+#' x = create_image_collection(L8_files, "L8_L1TP")
+#' x 
+#' 
+#' 
+#' # 2. create image collection without format for a single band
+#' L8_files_B4 <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                        "_B4.TIF", recursive = TRUE, full.names = TRUE)
+#' d = as.Date(substr(basename(L8_files_B4), 18, 25), "%Y%m%d")
+#' y = create_image_collection(L8_files_B4, date_time = d, band_names = "B4")
+#' y
+#' 
+#' 
+#' # 3. create image collection without format for all bands
+#' d = as.Date(substr(basename(L8_files), 18, 25), "%Y%m%d")
+#' fname = basename(tools::file_path_sans_ext(L8_files))
+#' b = substr(fname, 27, nchar(fname))
+#' z = create_image_collection(L8_files, date_time = d, band_names = b)
+#' z
+#' 
 #' @export
-create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext = ".sqlite"), date_time=NULL, band_names=NULL, use_subdatasets=FALSE, unroll_archives=TRUE, quiet=FALSE)
+create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext = ".sqlite"), date_time=NULL, 
+                                   band_names=NULL, use_subdatasets=FALSE, unroll_archives=TRUE, quiet=FALSE,
+                                   one_band_per_file=NULL)
 {
   
   if (is.null(format) && is.null(date_time)) {
@@ -167,7 +191,10 @@ create_image_collection <-function(files, format=NULL, out_file=tempfile(fileext
     if (is.null(band_names)) {
       band_names=character()
     }
-      gc_create_image_collection_from_datetime(out_file, files, date_time, use_subdatasets, band_names)
+    if (is.null(one_band_per_file)) {
+      one_band_per_file = length(date_time) == length(band_names)
+    }
+    gc_create_image_collection_from_datetime(out_file, files, date_time, use_subdatasets, band_names, one_band_per_file)
   }
   
   
