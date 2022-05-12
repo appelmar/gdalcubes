@@ -178,6 +178,10 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       
       # BBOX
       bbox = s[[i]]$bbox
+      if (is.list(bbox)) {
+        bbox = unlist(bbox)
+      }
+      
       # TO CHECK IN STAC SPEC, does BBOX always exist? Is it always WGS84? 
       # TODO: transform, if bbox-crs is given
       

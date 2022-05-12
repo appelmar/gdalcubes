@@ -235,7 +235,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' L8.b02.median = reduce_space(L8.b02, "median(B02)")  
 #' L8.b02.median
 #' \donttest{
-#' plot(L8.b02.median, key.pos=1)
+#' plot(L8.b02.median)
 #' }
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.

@@ -1715,8 +1715,8 @@ void gc_create_stac_collection(Rcpp::DataFrame bands, Rcpp::DataFrame images, Rc
 
     Rcpp::IntegerVector image_id = images["id"];
     Rcpp::CharacterVector image_name = images["name"];
-    Rcpp::NumericVector image_left =images["left"];
-    Rcpp::NumericVector image_top =images["top"];
+    Rcpp::NumericVector image_left = images["left"];
+    Rcpp::NumericVector image_top = images["top"];
     Rcpp::NumericVector image_bottom =images["bottom"];
     Rcpp::NumericVector image_right =images["right"];
     Rcpp::CharacterVector image_datetime = images["datetime"];

@@ -186,13 +186,13 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' @return data cube proxy object 
 #' @details 
 #' Data cubes can be stored as JSON description files. These files do not store any data but the recipe
-#' how a data cube is consructed, i.e., the chain (or graph) of processes involved. 
+#' how a data cube is constructed, i.e., the chain (or graph) of processes involved. 
 #' 
 #' Since data cube objects (as returned from \code{\link{raster_cube}}) cannot be saved with normal R methods,
-#' the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save data cube
-#' objects across several R sessions, as in the examples.
+#' the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save virtual 
+#' data cube objects across several R sessions, as in the examples.
 #' 
-#' @examples{
+#' @examples
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
@@ -209,11 +209,11 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
 #' 
 #' # save
 #' fname = tempfile()
-#' writeLines(as_json(cube), fname)
+#' as_json(cube, fname)
 #' 
 #' # load
 #' json_cube(path = fname)  
-#' }
+#' 
 #' 
 #' @export
 json_cube <- function(json, path = NULL) {
@@ -341,10 +341,10 @@ is.cube <- function(obj) {
 #' @export
 print.cube <- function(x, ...) {
   if (gc_is_null(x)) {
-    stop("GDAL data cube proxy object is invalid")
+    stop("Data cube proxy object is invalid")
   }
   y = gc_cube_info(x)
-  cat("A GDAL data cube proxy object\n")
+  cat("A data cube proxy object\n")
   cat("\n")
   cat("Dimensions:\n")
   dimensions = data.frame(

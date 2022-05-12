@@ -52,7 +52,7 @@ L8.b02 = select_bands(L8.cube, c("B02"))
 L8.b02.median = reduce_space(L8.b02, "median(B02)")  
 L8.b02.median
 \donttest{
-plot(L8.b02.median, key.pos=1)
+plot(L8.b02.median)
 }
 
 }

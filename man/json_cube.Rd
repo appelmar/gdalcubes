@@ -19,14 +19,13 @@ Read a data cube from a json description file
 }
 \details{
 Data cubes can be stored as JSON description files. These files do not store any data but the recipe
-how a data cube is consructed, i.e., the chain (or graph) of processes involved. 
+how a data cube is constructed, i.e., the chain (or graph) of processes involved. 
 
 Since data cube objects (as returned from \code{\link{raster_cube}}) cannot be saved with normal R methods,
-the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save data cube
-objects across several R sessions, as in the examples.
+the combination of \code{\link{as_json}} and \code{\link{json_cube}} provides a cheap way to save virtual 
+data cube objects across several R sessions, as in the examples.
 }
 \examples{
-{
 # create image collection from example Landsat data only 
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
@@ -43,10 +42,10 @@ cube = raster_cube(L8.col, v)
 
 # save
 fname = tempfile()
-writeLines(as_json(cube), fname)
+as_json(cube, fname)
 
 # load
 json_cube(path = fname)  
-}
+
 
 }
