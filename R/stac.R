@@ -23,7 +23,7 @@
 #' @export
 stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"), 
                                   asset_names = NULL, asset_regex = NULL, 
-                                  url_fun = function(x) {paste0("/vsicurl/", x)},
+                                  url_fun = .default_url_fun,
                                   property_filter = NULL, skip_image_metadata = FALSE) {
   SUBBAND_SPLIT_CHAR = ":"
   if (!is.list(s)) {
@@ -239,4 +239,31 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   }
   return(image_collection(out_file))
 }
+
+
+
+
+
+
+#' Default function to convert hrefs of STAC response aassets to GDAL dataset identifiers including VSI prefixes 
+#' @param url a single URL
+#' @examples 
+#' .default_url_fun("s3://bucket/object/image.tif")
+#' @noRd
+.default_url_fun <- function(url) {
+  
+  if (startsWith(url, "s3://")) {
+    return(paste0("/vsis3/", substr(url, 6, nchar(url))))
+  }
+  else if (startsWith(url, "gs://")) {
+    return(paste0("/vsigs/", substr(url, 6, nchar(url))))
+  }
+  else if (startsWith(url, "http")) {
+    return(paste0("/vsicurl/", x))
+  }
+  
+  # default: try vsicurl
+  return(paste0("/vsicurl/", x))
+}
+
 
