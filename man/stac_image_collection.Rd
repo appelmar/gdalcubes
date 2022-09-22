@@ -9,9 +9,11 @@ stac_image_collection(
   out_file = tempfile(fileext = ".sqlite"),
   asset_names = NULL,
   asset_regex = NULL,
-  url_fun = function(x) {     paste0("/vsicurl/", x) },
+  url_fun = .default_url_fun,
   property_filter = NULL,
-  skip_image_metadata = FALSE
+  skip_image_metadata = FALSE,
+  srs = NULL,
+  srs_overwrite = FALSE
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ stac_image_collection(
 \item{property_filter}{optional function to filter STAC items (images) by their properties; see Details}
 
 \item{skip_image_metadata}{logical, if TRUE per-image metadata (STAC item properties) will not be added to the image collection}
+
+\item{srs}{character spatial reference system of images used either for images without corresponding STAC property ony or for all images}
+
+\item{srs_overwrite}{logical, if FALSE, use srs only for images with unknown srs (missing STAC metadata)}
 }
 \description{
 This function creates an image collection from a STAC API collection response. It does not
@@ -41,6 +47,4 @@ where an image will be ignored if the function returns FALSE.
 }
 \note{
 Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
-
-This function is experimental.
 }
