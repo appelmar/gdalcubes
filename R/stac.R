@@ -11,8 +11,9 @@
 #' @param out_file optional name of the output SQLite database file, defaults to a temporary file
 #' @param property_filter optional function to filter STAC items (images) by their properties; see Details
 #' @param skip_image_metadata logical, if TRUE per-image metadata (STAC item properties) will not be added to the image collection
+#' @param srs character spatial reference system of images used either for images without corresponding STAC property ony or for all images
+#' @param srs_overwrite logical, if FALSE, use srs only for images with unknown srs (missing STAC metadata)
 #' @note Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
-#' @note This function is experimental.
 #' @details 
 #' 
 #' The property_filter argument can be used to filter images by metadata such as cloud coverage. 
@@ -24,7 +25,8 @@
 stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"), 
                                   asset_names = NULL, asset_regex = NULL, 
                                   url_fun = .default_url_fun,
-                                  property_filter = NULL, skip_image_metadata = FALSE) {
+                                  property_filter = NULL, skip_image_metadata = FALSE,
+                                  srs = NULL, srs_overwrite = FALSE) {
   SUBBAND_SPLIT_CHAR = ":"
   if (!is.list(s)) {
     stop ("Input must be a list")
@@ -154,22 +156,33 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
     
       
       # fixes #60
-      proj = s[[i]]$properties$"proj:epsg"
-      if (!is.null(proj)) {
-        if (!startsWith(toupper(proj), "EPSG:")) {
-          proj = paste0("EPSG:", proj)
+      if (!is.null(srs) && srs_overwrite) {
+        proj = srs
+      }
+      else {
+        proj = s[[i]]$properties$"proj:epsg"
+        if (!is.null(proj)) {
+          if (!startsWith(toupper(proj), "EPSG:")) {
+            proj = paste0("EPSG:", proj)
+          }
+        }
+        if (is.null(proj)) {
+          proj = s[[i]]$properties$"proj:wkt2"
+        }
+        if (is.null(proj)) {
+          proj = s[[i]]$properties$"proj:projjson"
+        }
+        if (is.null(proj)) {
+          if (!is.null(srs)) {
+            proj = srs
+          }
+          else {
+            warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
+            proj = "" # TODO: better ignore image
+          }
         }
       }
-      if (is.null(proj)) {
-        proj = s[[i]]$properties$"proj:wkt2"
-      }
-      if (is.null(proj)) {
-        proj = s[[i]]$properties$"proj:projjson"
-      }
-      if (is.null(proj)) {
-        warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
-        proj = "" # TODO: better ignore image
-      }
+      
       
       images_id = c(images_id, i)
       images_name = c(images_name, s[[i]]$id)
@@ -259,11 +272,11 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
     return(paste0("/vsigs/", substr(url, 6, nchar(url))))
   }
   else if (startsWith(url, "http")) {
-    return(paste0("/vsicurl/", x))
+    return(paste0("/vsicurl/", url))
   }
   
   # default: try vsicurl
-  return(paste0("/vsicurl/", x))
+  return(paste0("/vsicurl/", url))
 }
 
 
