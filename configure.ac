@@ -37,6 +37,8 @@ AC_MSG_NOTICE([CC: ${CC}])
 AC_MSG_NOTICE([CXX: ${CXX}])
 
 
+
+
 # GDAL #########################################################################################################
 # copied from https://github.com/r-spatial/sf/blob/master/configure.ac
 
@@ -139,7 +141,7 @@ LIBS="${INLIBS} ${PKG_LIBS}"
 #ifdef __cplusplus
 extern "C" {
 #endif
-int main() {
+int main(void) {
 GDALAllRegister();
 }
 #ifdef __cplusplus
@@ -291,8 +293,13 @@ rm -fr errors.txt gdal_proj.cpp gdal_proj
 AC_MSG_NOTICE([GDAL: ${GDAL_VERSION}])
 
 
-
-
+# sqlite3
+AC_ARG_WITH([sqlite3-lib],
+    AS_HELP_STRING([--with-sqlite3-lib=LIB_PATH],[the location of sqlite3 libraries]),
+               [sqlite3_lib_path=$withval])
+if test [ -n "$sqlite3_lib_path" ] ; then
+    AC_SUBST([SQLITE3_LIBS], ["-L${sqlite3_lib_path}"])
+fi
 
 
 
@@ -398,7 +405,7 @@ if test "${PROJH}" = no; then
 #include <stdio.h>
 #include <stdlib.h>
 #include <proj_api.h>
-int main() {
+int main(void) {
     printf("%d\n", PJ_VERSION);
     exit(0);
 }
@@ -408,14 +415,14 @@ else
 #include <stdio.h>
 #include <stdlib.h>
 #include <proj.h>
-int main() {
+int main(void) {
 	proj_context_create();
     exit(0);
 }
 _EOCONF]
   #AC_CHECK_LIB(proj,proj_context_create,,proj6ok=no)
   AC_MSG_CHECKING(PROJ: checking whether PROJ and sqlite3 are available for linking:)
-  ${CXX} ${CPPFLAGS} -o proj_conf_test proj_conf_test.cpp ${LIBS} -lsqlite3 2> errors.txt
+  ${CXX} ${CPPFLAGS} -o proj_conf_test proj_conf_test.cpp ${LIBS} $SQLITE3_LIBS -lsqlite3 2> errors.txt
   if test `echo $?` -ne 0 ; then
     proj6ok=no
     AC_MSG_RESULT(no)
@@ -431,7 +438,7 @@ _EOCONF]
 #include <stdio.h>
 #include <stdlib.h>
 #include <proj.h>
-int main() {
+int main(void) {
     printf("%d.%d.%d\n", PROJ_VERSION_MAJOR, PROJ_VERSION_MINOR, PROJ_VERSION_PATCH);
     exit(0);
 }
@@ -459,7 +466,7 @@ if test ${PROJ6} = "no"; then
 #if PJ_VERSION <= 480
 FILE *pj_open_lib(projCtx, const char *, const char *);
 #endif
-int main() {
+int main(void) {
 #if PJ_VERSION <= 480
     FILE *fp;
 #else
@@ -514,7 +521,7 @@ if test "${PROJH}" = no; then
 [cat > proj_conf_test.c <<_EOCONF
 #include <stdio.h>
 #include <proj_api.h>
-int main() {
+int main(void) {
     PAFile fp;
     projCtx ctx;
     ctx = pj_get_default_ctx();
@@ -558,7 +565,7 @@ fi
 #if PJ_VERSION <= 480
 FILE *pj_open_lib(projCtx, const char *, const char *);
 #endif
-int main() {
+int main(void) {
 #if PJ_VERSION <= 480
     FILE *fp;
 #else
