@@ -69,4 +69,4 @@ Suggests:
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes
-SystemRequirements: cxx11, gdal, libgdal, libproj, netcdf4
+SystemRequirements: C++11, GDAL (>= 2.0.1), PROJ (>= 4.8.0), netcdf, sqlite3
