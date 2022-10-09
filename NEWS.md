@@ -1,3 +1,12 @@
+# gdalcubes 0.6.2 (2022-10-09)
+
+* fix clang-15 compiler warnings on CRAN
+* new operation `aggregate_space()` to reduce spatial resolution of data cubes
+* improved / faster implementation of `plot()` 
+* handle WKT strings as spatial reference systems in STAC responses
+* handle special characters in variable / band names
+
+
 # gdalcubes 0.6.1 (2022-03-22)
 
 * fix gcc-12 builds on CRAN

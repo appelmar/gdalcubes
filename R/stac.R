@@ -39,6 +39,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
     stop ("output file already exists")
   }
   
+  
   # add band metadata if available
   bands = NULL
   asset_names_exist = rep(FALSE, length(asset_names))
