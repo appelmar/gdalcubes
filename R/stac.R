@@ -13,6 +13,7 @@
 #' @param skip_image_metadata logical, if TRUE per-image metadata (STAC item properties) will not be added to the image collection
 #' @param srs character spatial reference system of images used either for images without corresponding STAC property ony or for all images
 #' @param srs_overwrite logical, if FALSE, use srs only for images with unknown srs (missing STAC metadata)
+#' @param duration character, if images represent time intervals, use either the"start" or "center" of time intervals
 #' @note Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
 #' @details 
 #' 
@@ -26,7 +27,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                                   asset_names = NULL, asset_regex = NULL, 
                                   url_fun = .default_url_fun,
                                   property_filter = NULL, skip_image_metadata = FALSE,
-                                  srs = NULL, srs_overwrite = FALSE) {
+                                  srs = NULL, srs_overwrite = FALSE, duration = c("center", "start")) {
   SUBBAND_SPLIT_CHAR = ":"
   if (!is.list(s)) {
     stop ("Input must be a list")
@@ -118,6 +119,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   image_md_key = NULL
   image_md_value = NULL
   
+  
   for (i in 1:length(s)) {
     
     if (!is.null(property_filter)) {
@@ -178,7 +180,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
             proj = srs
           }
           else {
-            warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
+            #warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
             proj = "" # TODO: better ignore image
           }
         }
@@ -188,7 +190,31 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       images_id = c(images_id, i)
       images_name = c(images_name, s[[i]]$id)
       images_proj =  c(images_proj, proj)
-      images_datetime = c(images_datetime, s[[i]]$properties$datetime)
+      temp_datetime = NULL
+      if (!is.null(s[[i]]$properties$datetime)) {
+        temp_datetime = s[[i]]$properties$datetime
+      }
+      else if (!is.null(s[[i]]$properties$start_datetime)) {
+        temp_starttime = s[[i]]$properties$start_datetime
+        temp_endtime = s[[i]]$properties$end_datetime
+        
+        m = duration[1]
+        if (m == "center") {
+          if (!requireNamespace("lubridate", quietly = TRUE)) {
+            stop("package lubridate required; please install first")
+          }
+          a = lubridate::ymd_hms(temp_starttime)
+          b = lubridate::ymd_hms(temp_endtime)
+          temp_datetime = format(a + (b-a)/2, "%Y-%M-%dT%H:%m:%S")
+        }
+        else {
+          temp_datetime = temp_starttime
+        }
+      }
+      else {
+        stop(paste0("No datetime / start_datetime property found in STAC item for image ", s[[i]]$id))
+      }
+      images_datetime = c(images_datetime, temp_datetime)
       
       # BBOX
       bbox = s[[i]]$bbox
@@ -215,8 +241,12 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
     
   }
   
+  # if (warn_datetimeintervals) {
+  #   warning("Collection contains images with datetime intervals. This in currently not supported and the start datetime will be 
+  #          used as normal datetime. Please make sure to consider this when you define the extent of a data cube based on this collection.")
+  # }
   
-  
+
   images_df = data.frame(id = images_id,
                          name = images_name,
                          left = images_left,

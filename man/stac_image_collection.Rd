@@ -13,7 +13,8 @@ stac_image_collection(
   property_filter = NULL,
   skip_image_metadata = FALSE,
   srs = NULL,
-  srs_overwrite = FALSE
+  srs_overwrite = FALSE,
+  duration = c("center", "start")
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ stac_image_collection(
 \item{srs}{character spatial reference system of images used either for images without corresponding STAC property ony or for all images}
 
 \item{srs_overwrite}{logical, if FALSE, use srs only for images with unknown srs (missing STAC metadata)}
+
+\item{duration}{character, if images represent time intervals, use either the"start" or "center" of time intervals}
 }
 \description{
 This function creates an image collection from a STAC API collection response. It does not

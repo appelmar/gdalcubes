@@ -55,7 +55,7 @@ License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes_R
 BugReports: https://github.com/appelmar/gdalcubes_R/issues/
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 LinkingTo: Rcpp
 Suggests: 
     knitr,
@@ -65,7 +65,8 @@ Suggests:
     av,
     gifski,
     sf, 
-    tinytest
+    tinytest,
+    lubridate
 VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes
