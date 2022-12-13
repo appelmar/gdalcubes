@@ -205,7 +205,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
           }
           a = lubridate::ymd_hms(temp_starttime)
           b = lubridate::ymd_hms(temp_endtime)
-          temp_datetime = format(a + (b-a)/2, "%Y-%M-%dT%H:%m:%S")
+          temp_datetime = format(a + (b-a)/2, "%Y-%m-%dT%H:%M:%S")
         }
         else {
           temp_datetime = temp_starttime
