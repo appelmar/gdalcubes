@@ -20,7 +20,7 @@
 #' of pixels with regard to the features are returned. 
 #' 
 #' Notice that feature identifiers in the \code{FID} column typically correspond to the row names / numbers 
-#' of the provided sf object. This can be used to combine the output with the original geometries, e.g., using \code{\link{base::merge}}.
+#' of the provided sf object. This can be used to combine the output with the original geometries, e.g., using \code{\link[base:merge]{merge()}}.
 #'  
 #' Pixels with missing values are automatically dropped from the result. It is hence not
 #' guaranteed that the result will contain rows for all input features.

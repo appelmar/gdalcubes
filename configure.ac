@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([gdalcubes],[0.6.2],[marius.appel@uni-muenster.de])
+AC_INIT([gdalcubes],[0.6.3],[marius.appel@uni-muenster.de])
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -108,11 +108,21 @@ AC_MSG_NOTICE([GDAL: ${GDAL_VERSION}])
 AC_MSG_CHECKING([GDAL version >= 2.0.1])
 
 GDAL_MAJ_VER=`echo $GDAL_VERSION | cut -d "." -f1`
+GDAL_MIN_VER=`echo $GDAL_VERSION | cut -d "." -f2`
+GDAL_PATCH_VER=`echo $GDAL_VERSION | cut -d "." -f3`
 if test ${GDAL_MAJ_VER} -lt 2 ; then
   AC_MSG_RESULT(no)
   AC_MSG_ERROR([gdalcubes is not compatible with GDAL versions below 2.0.1])
 else
    AC_MSG_RESULT(yes)
+fi
+
+AC_MSG_CHECKING([GDAL version != 3.6.0])
+if test ${GDAL_MAJ_VER} = 3 && test ${GDAL_MIN_VER} = 6 && test ${GDAL_PATCH_VER} = 0 ; then
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([GDAL 3.6.0 was retracted, use a subsequent version])
+else
+  AC_MSG_RESULT(yes)
 fi
 
 INLIBS="${LIBS}"
