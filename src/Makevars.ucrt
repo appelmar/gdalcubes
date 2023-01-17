@@ -38,7 +38,7 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/warp.o \
 			gdalcubes/src/external/tinyexpr/tinyexpr.o \
 			gdalcubes/src/external/tiny-process-library/process.o \
-			gdalcubes/src/external/tiny-process-library/process_unix.o \
+			gdalcubes/src/external/tiny-process-library/process_win.o \
 			gdalcubes/src/external/json11/json11.o \
 			multiprocess.o \
 			error.o \
