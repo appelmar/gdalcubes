@@ -49,15 +49,16 @@ PKG_CPPFLAGS = \
 	-DHAVE_PROJ_H -DR_PACKAGE -DGDALCUBES_NO_SWARM
 	
 PKG_LIBS = \
-	-lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
-	-ljson-c -lnetcdf -lmariadbclient -lpq -lpgport -lpgcommon \
-	-lwebp -lcurl -lssh2 -lssl \
-	-lhdf5_hl -lhdf5 -lexpat -lfreexl -lcfitsio \
-	-lmfhdf -lhdf -lxdr -lpcre \
-	-lopenjp2 -ljasper -lpng -ljpeg -ltiff -lgeotiff -lgif -lxml2 -llzma -lz -lzstd \
-	-lodbc32 -lodbccp32 -liconv -lpsapi -lwldap32 -lsecur32 -lgdi32 -lnormaliz \
-	-lcrypto -lcrypt32 -lws2_32 -lshlwapi -lbcrypt
-	
+  -fopenmp -lgdal -larmadillo -lopenblas -lgfortran -lquadmath -lpq -lpgcommon -lpgport -lodbc32 \
+  -lodbccp32 -lblosc -lkea -lhdf5_cpp -lhdf5 -lpoppler -llcms2 -lfreetype -lharfbuzz -lfreetype -llz4 \
+  -lpcre2-8 -lxml2 -lopenjp2 -lnetcdf -lmysqlclient -lspatialite -lgeos_c -lgeos -lminizip -lgeos \
+  -ljson-c -lgta -lfreexl -lexpat -lssl -lpsapi -lgif -lmfhdf -lhdf5_hl -lcrypto -lportablexdr -ldf \
+  -lhdf5 -lsz -lpng16 -lpng -lpoppler -llcms2 -lfreetype -lharfbuzz -lfreetype -llz4 -lpcre2-8 -lpcre \
+  -lcurl -lbcrypt -lrtmp -lssl -lssh2 -lidn2 -lunistring -liconv -lgcrypt -lcrypto -lgpg-error \
+  -lws2_32 -ltiff -llzma -ljpeg -lz -lcfitsio -lzstd -lwebpdecoder -lwebp -lsbml-static -lgeotiff \
+  -lproj -lsqlite3 -lbz2 -lcrypt32 -lwldap32 -lsecur32
+
+
 all: clean winlibs
 
 winlibs:
