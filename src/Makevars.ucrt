@@ -1,0 +1,75 @@
+OBJECTS = gdalcubes/src/aggregate_time.o \
+			gdalcubes/src/aggregate_space.o \
+			gdalcubes/src/apply_pixel.o \
+      gdalcubes/src/config.o \
+      gdalcubes/src/collection_format.o \
+      gdalcubes/src/crop.o \
+      gdalcubes/src/datetime.o \
+      gdalcubes/src/filesystem.o \
+      gdalcubes/src/utils.o \
+			gdalcubes/src/cube.o \
+			gdalcubes/src/cube_factory.o \
+			gdalcubes/src/error.o \
+			gdalcubes/src/extract_geom.o \
+			gdalcubes/src/image_collection.o \
+			gdalcubes/src/image_collection_cube.o \
+			gdalcubes/src/image_collection_ops.o \
+			gdalcubes/src/join_bands.o \
+			gdalcubes/src/ncdf_cube.o \
+			gdalcubes/src/select_time.o \
+			gdalcubes/src/reduce_time.o \
+			gdalcubes/src/reduce_space.o \
+			gdalcubes/src/window_time.o \
+			gdalcubes/src/select_bands.o \
+			gdalcubes/src/slice_time.o \
+			gdalcubes/src/slice_space.o \
+			gdalcubes/src/filter_pixel.o \
+			gdalcubes/src/filter_geom.o \
+			gdalcubes/src/fill_time.o \
+			gdalcubes/src/rename_bands.o \
+			gdalcubes/src/simple_cube.o \
+			gdalcubes/src/stream.o \
+			gdalcubes/src/stream_reduce_time.o \
+			gdalcubes/src/stream_reduce_space.o \
+			gdalcubes/src/stream_apply_pixel.o \
+			gdalcubes/src/stream_apply_time.o \
+			gdalcubes/src/view.o \
+			gdalcubes/src/dummy.o \
+			gdalcubes/src/warp.o \
+			gdalcubes/src/external/tinyexpr/tinyexpr.o \
+			gdalcubes/src/external/tiny-process-library/process.o \
+			gdalcubes/src/external/tiny-process-library/process_unix.o \
+			gdalcubes/src/external/json11/json11.o \
+			multiprocess.o \
+			error.o \
+			gdalcubes.o \
+			RcppExports.o
+			
+PKG_CPPFLAGS = \
+	-DHAVE_PROJ_H -DR_PACKAGE -DGDALCUBES_NO_SWARM
+	
+PKG_LIBS = \
+	-lgdal -lsqlite3 -lspatialite -lproj -lgeos_c -lgeos  \
+	-ljson-c -lnetcdf -lmariadbclient -lpq -lpgport -lpgcommon \
+	-lwebp -lcurl -lssh2 -lssl \
+	-lhdf5_hl -lhdf5 -lexpat -lfreexl -lcfitsio \
+	-lmfhdf -lhdf -lxdr -lpcre \
+	-lopenjp2 -ljasper -lpng -ljpeg -ltiff -lgeotiff -lgif -lxml2 -llzma -lz -lzstd \
+	-lodbc32 -lodbccp32 -liconv -lpsapi -lwldap32 -lsecur32 -lgdi32 -lnormaliz \
+	-lcrypto -lcrypt32 -lws2_32 -lshlwapi -lbcrypt
+	
+all: clean winlibs
+
+winlibs:
+	cp -r "$(R_TOOLS_SOFT)/share/gdal" ../inst/
+	cp -r "$(R_TOOLS_SOFT)/share/proj" ../inst/
+	
+CXX_STD = CXX11
+
+clean:
+	rm -f $(SHLIB) $(OBJECTS)
+
+.PHONY: all winlibs clean	
+	
+
+	
