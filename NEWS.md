@@ -1,3 +1,10 @@
+# gdalcubes 0.6.3 (2023-01-19)
+
+* fix gcc-13 compiler errors on CRAN
+* add datetime interval support in STAC collections
+* add support of new windows toolchain using Makevars.ucrt
+
+
 # gdalcubes 0.6.2 (2022-10-09)
 
 * fix clang-15 compiler warnings on CRAN
