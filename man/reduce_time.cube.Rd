@@ -27,7 +27,8 @@ Create a proxy data cube, which applies one or more reducer functions to selecte
 The function can either apply a built-in reducer if expr is given, or apply a custom R reducer function if FUN is provided.
 
 In the former case, notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
-more complex functions or arguments. Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", and "which_max".
+more complex functions or arguments. Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd", "which_min", "which_max",
+"Q1" (1st quartile), and "Q3" (3rd quartile).
 
 User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For 
 example, one row is the time series of a specific band. FUN should always return a numeric vector with the same number of elements, which will be interpreted
