@@ -1,12 +1,12 @@
 OBJECTS = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/aggregate_space.o \
 			gdalcubes/src/apply_pixel.o \
-      gdalcubes/src/config.o \
-      gdalcubes/src/collection_format.o \
-      gdalcubes/src/crop.o \
-      gdalcubes/src/datetime.o \
-      gdalcubes/src/filesystem.o \
-      gdalcubes/src/utils.o \
+			gdalcubes/src/config.o \
+			gdalcubes/src/collection_format.o \
+			gdalcubes/src/crop.o \
+			gdalcubes/src/datetime.o \
+			gdalcubes/src/filesystem.o \
+			gdalcubes/src/utils.o \
 			gdalcubes/src/cube.o \
 			gdalcubes/src/cube_factory.o \
 			gdalcubes/src/error.o \
@@ -47,7 +47,9 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 			
 PKG_CPPFLAGS = \
 	-DHAVE_PROJ_H -DR_PACKAGE -DGDALCUBES_NO_SWARM
-	
+
+LIBSHARPYUV = $(or $(and $(wildcard $(R_TOOLS_SOFT)/lib/libsharpyuv.a),-lsharpyuv),)
+
 PKG_LIBS = \
   -fopenmp -lgdal -larmadillo -lopenblas -lgfortran -lquadmath -lpq -lpgcommon -lpgport -lodbc32 \
   -lodbccp32 -lblosc -lkea -lhdf5_cpp -lhdf5 -lpoppler -llcms2 -lfreetype -lharfbuzz -lfreetype -llz4 \
@@ -55,7 +57,7 @@ PKG_LIBS = \
   -ljson-c -lgta -lfreexl -lexpat -lssl -lpsapi -lgif -lmfhdf -lhdf5_hl -lcrypto -lportablexdr -ldf \
   -lhdf5 -lsz -lpng16 -lpng -lpoppler -llcms2 -lfreetype -lharfbuzz -lfreetype -llz4 -lpcre2-8 -lpcre \
   -lcurl -lbcrypt -lrtmp -lssl -lssh2 -lidn2 -lunistring -liconv -lgcrypt -lcrypto -lgpg-error \
-  -lws2_32 -ltiff -llzma -ljpeg -lz -lcfitsio -lzstd -lwebpdecoder -lwebp -lsbml-static -lgeotiff \
+  -lws2_32 -ltiff -llzma -ljpeg -lz -lcfitsio -lzstd -lwebpdecoder -lwebp $(LIBSHARPYUV) -lsbml-static -lgeotiff \
   -lproj -lsqlite3 -lbz2 -lcrypt32 -lwldap32 -lsecur32
 
 
