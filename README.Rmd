@@ -10,8 +10,8 @@ knitr::opts_chunk$set(fig.path = "man/figures/")
 
 # gdalcubes <img src="man/figures/logo.svg" align="right" alt="" width="120" />
 
-[![Build Status](https://travis-ci.org/appelmar/gdalcubes_R.svg?branch=master)](https://travis-ci.org/appelmar/gdalcubes_R)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/appelmar/gdalcubes_R?branch=master&svg=true)](https://ci.appveyor.com/project/appelmar/gdalcubes-r)
+
+[![R-CMD-check](https://github.com/appelmar/gdalcubes_R/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/appelmar/gdalcubes_R/actions/workflows/R-CMD-check.yml)
 [![CRAN](https://www.r-pkg.org/badges/version/gdalcubes)](https://cran.r-project.org/package=gdalcubes)
 [![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/gdalcubes)](https://cran.r-project.org/package=gdalcubes)
 
@@ -206,7 +206,7 @@ Users can pass custom R functions to `reduce_time()` and `apply_pixel()`. Below,
 
 ```{r greenest_pixel_composite}
 v.subarea.monthly = cube_view(view = v.subarea.yearly, dt="P1M", dx = 100, dy = 100,
-                              extent = list(t0="2015-01", t0="2018-12"))
+                              extent = list(t0="2015-01", t1="2018-12"))
 raster_cube(L8.col, v.subarea.monthly) |>
   select_bands(c("B02","B03","B04","B05")) |>
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI", keep_bands=TRUE) |>
@@ -252,15 +252,15 @@ v = cube_view(srs="EPSG:32618", dy=300, dx=300, dt="P1M",
               aggregation = "median", resampling = "bilinear",
               extent=list(left=388941.2, right=766552.4,
                           bottom=4345299, top=4744931, 
-                          t0="2018-01-01", t1="2018-12-31"))
+                          t0="2018-01", t1="2018-12"))
 sf = sf::st_read(system.file("nycd.gpkg", package = "gdalcubes"), quiet = TRUE)
 
 raster_cube(create_image_collection(L8_files, "L8_L1TP"), v) |>
   select_bands(c("B04", "B05")) |>
   apply_pixel("(B05-B04)/(B05+B04)", "NDVI") |>
   extract_geom(sf, FUN = median) -> zstats
-  
-  dplyr::sample_n(zstats, 15) # print 15 random rows
+
+dplyr::sample_n(zstats, 15) # print 15 random rows
 ```
 
 We can combine the result with the original features by a table join on the FID column using `merge()`:
@@ -268,7 +268,7 @@ We can combine the result with the original features by a table join on the FID 
 ```{r}
 sf$FID = rownames(sf)
 x = merge(sf, zstats, by = "FID")
-plot(x[x$time == "2018-07", "NDVI"])
+plot(x[x$time == "2018-07-01", "NDVI"])
 ```
 
 When using input features with additional attributes / labels, the `extract_geom()` function
@@ -296,9 +296,9 @@ hence makes it easy to create training data for machine learning models.
 
 # Further reading
 
-* Introductory [tutorial](https://appelmar.github.io/opengeohub_summerschool2019/tutorial.html) presented at OpenGeoHub Summer School 2019
+* [Official R package website](https://gdalcubes.github.io)
 * [Tutorial on YouTube](https://youtu.be/Xlg__2PeTXM?t=3693) how to use gdalcubes in the cloud, streamed at OpenGeoHub Summer School 2021
 * [1st blog post on r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html) 
 * [2nd blog post on r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html) describing how to use gdalcubes in cloud-computing environments
 * [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the special issue on Earth observation data cubes of the data journal
-* [R package website](https://appelmar.github.io/gdalcubes_R/)
+
