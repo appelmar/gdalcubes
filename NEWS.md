@@ -1,7 +1,8 @@
 # gdalcubes 0.6.4 (2023-04-11)
 
-* fix r-devel UCRT win build on CRAN
 * add native quartile reducers in `reduce_time()`
+* fix r-devel UCRT win build on CRAN
+* fix parallel data cube processing when nonstandard external package locations are used
 
 # gdalcubes 0.6.3 (2023-01-19)
 
