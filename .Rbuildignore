@@ -82,3 +82,4 @@
 ^\.config$
 ^man/figures$
 ^errors.txt$
+^gdalcubes.log$

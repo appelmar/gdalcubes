@@ -9,7 +9,6 @@ on:
       - master
       - dev
 
-
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}

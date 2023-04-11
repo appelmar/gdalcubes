@@ -52,3 +52,6 @@ proj_conf_test.c
 .test
 .local
 .config
+docs
+errors.txt
+gdalcubes.log
