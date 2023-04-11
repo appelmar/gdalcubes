@@ -193,7 +193,10 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
     srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
     
-    cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
+    # support custom library paths
+    cat(paste0(".libPaths(",  paste(deparse(.libPaths()),collapse=""), ")\n"), file = srcfile2, append = FALSE) 
+
+    cat("require(gdalcubes)", "\n", file = srcfile2, append = TRUE)
     cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
     cat("write_chunk_from_array(reduce_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
@@ -308,8 +311,11 @@ reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
     cat(funstr,  file = srcfile1, append = FALSE)
     srcfile2 =  file.path(tempdir(), paste(".stream_", funhash, ".R", sep=""))
     srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
+
+    # support custom library paths
+    cat(paste0(".libPaths(",  paste(deparse(.libPaths()),collapse=""), ")\n"), file = srcfile2, append = FALSE) 
     
-    cat("require(gdalcubes)", "\n", file = srcfile2, append = FALSE)
+    cat("require(gdalcubes)", "\n", file = srcfile2, append = TRUE)
     cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
     cat("write_chunk_from_array(reduce_space(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
     cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
