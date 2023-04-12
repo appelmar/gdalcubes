@@ -40,7 +40,7 @@
 #'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE)
 #' }
 #' L8.col = image_collection(file.path(tempdir(), "L8.db"))
-#' v = cube_view(srs="EPSG:32618", dy=1000, dx=1000, dt="P1M",
+#' v = cube_view(srs="EPSG:32618", dy=1500, dx=1500, dt="P1M",
 #'               aggregation = "median", resampling = "bilinear",
 #'               extent=list(left=388941.2, right=766552.4,
 #'                           bottom=4345299, top=4744931,
@@ -53,9 +53,9 @@
 #' if (gdalcubes_gdal_has_geos()) {
 #'   if (requireNamespace("sf", quietly = TRUE)) {
 #'   
-#'     x = runif(20, v$space$left, v$space$right)
-#'     y = runif(20, v$space$bottom, v$space$top)
-#'     t = sample(seq(as.Date("2018-01-01"),as.Date("2018-04-30"), by = 1),20, replace = TRUE)
+#'     x = runif(10, v$space$left, v$space$right)
+#'     y = runif(10, v$space$bottom, v$space$top)
+#'     t = sample(seq(as.Date("2018-01-01"),as.Date("2018-04-30"), by = 1),10, replace = TRUE)
 #'     df = sf::st_as_sf(data.frame(x = x, y = y), coords = c("x", "y"), crs = v$space$srs)
 #' 
 #'     # spatiotemporal points
