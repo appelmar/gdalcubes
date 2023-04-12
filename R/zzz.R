@@ -31,7 +31,7 @@
   .pkgenv$default_chunksize = .default_chunk_size
   
   worker_script = system.file("scripts/worker.R", package = "gdalcubes")
-  cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla \"", worker_script, "\"", sep="")
+  cmd <- paste(file.path(R.home("bin"),"Rscript"), " --no-save --no-restore \"", worker_script, "\"", sep="")
   .pkgenv$worker.cmd = cmd
   gc_set_process_execution(.pkgenv$parallel, .pkgenv$worker.cmd, .pkgenv$worker.debug, .pkgenv$worker.compression_level, 
                            .pkgenv$worker.use_overview_images, .pkgenv$worker.gdal_options)
