@@ -48,4 +48,3 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 
 PKG_CPPFLAGS=@PKG_CPPFLAGS@
 PKG_LIBS=@PKG_LIBS@
-CXX_STD=CXX11

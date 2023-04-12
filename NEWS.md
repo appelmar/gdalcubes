@@ -3,6 +3,7 @@
 * add native quartile reducers in `reduce_time()`
 * fix r-devel UCRT win build on CRAN
 * fix parallel data cube processing when nonstandard external package locations are used
+* `stack_cube()` now ignores files if not accessible / invalid instead of stopping all computations
 
 # gdalcubes 0.6.3 (2023-01-19)
 
