@@ -83,3 +83,6 @@
 ^man/figures$
 ^errors.txt$
 ^gdalcubes.log$
+^.bash_history$
+^.vscode$
+^README.html$

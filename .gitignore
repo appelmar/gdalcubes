@@ -55,3 +55,6 @@ proj_conf_test.c
 docs
 errors.txt
 gdalcubes.log
+.bash_history
+.vscode
+README.html
