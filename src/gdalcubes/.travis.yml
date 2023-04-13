@@ -1,0 +1,34 @@
+language: cpp
+compiler: gcc
+sudo: required
+dist: xenial
+
+
+install:
+  - sudo add-apt-repository -y ppa:ubuntugis/ppa
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 314DF160
+  - sudo apt-get update
+  - sudo apt-get install -y libsqlite3-dev libboost-system-dev libboost-program-options-dev libnetcdf-dev libcurl4-openssl-dev libcpprest-dev doxygen graphviz libgdal-dev python-pip
+  - sudo pip install mkdocs
+
+
+script:
+  - mkdir -p build
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ../
+  - make
+  - sudo make install
+  #- src/gdalcubes_test
+  - make docs
+  - cd ..
+
+
+deploy:
+  provider: pages
+  local-dir: doxygen/html
+  skip-cleanup: true
+  github-token: $GH_TOKEN
+  keep-history: false
+  target-branch: gh-pages
+  on:
+    branch: master

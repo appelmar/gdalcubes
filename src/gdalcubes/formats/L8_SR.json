@@ -1,0 +1,80 @@
+{
+  "description" : "Collection format for Landsat 8 surface reflectance product",
+  "references" : "https://landsat.usgs.gov/sites/default/files/documents/lasrc_product_guide.pdf",
+  "tags" : ["Landsat", "USGS", "Level 2", "NASA", "surface reflectance"],
+  "pattern" : ".+\\.tif",
+  "images" : {
+    "pattern" : ".*(L[OTC]08_.{4}_.{6}_.{8}_.{8}_.{2}_.{2})[A-Za-z0-9_]+\\.tif"
+  },
+  "datetime" : {
+    "pattern" : ".*L[OTC]08_.{4}_.{6}_(.{8})_.*\\.tif",
+    "format" : "%Y%m%d"
+  },
+  "bands": {
+    "B01" : {
+      "pattern" : ".+sr_band1\\.tif",
+      "nodata" : -9999
+    },
+    "B02" : {
+      "pattern" : ".+sr_band2\\.tif",
+      "nodata" : -9999
+    },
+    "B03" : {
+      "pattern" : ".+sr_band3\\.tif",
+      "nodata" : -9999
+    },
+    "B04" : {
+      "pattern" : ".+sr_band4\\.tif",
+      "nodata" : -9999
+    },
+    "B05" : {
+      "pattern" : ".+sr_band5\\.tif",
+      "nodata" : -9999
+    },
+    "B06" : {
+      "pattern" : ".+sr_band6\\.tif",
+      "nodata" : -9999
+    },
+    "B07" : {
+      "pattern" : ".+sr_band7\\.tif",
+      "nodata" : -9999
+    },
+    "PIXEL_QA" : {
+      "pattern" : ".+_pixel_qa\\.tif"
+    },
+    "RADSAT_QA" : {
+      "pattern" : ".+_radsat_qa\\.tif"
+    },
+    "AEROSOL" : {
+      "pattern" : ".+sr_aerosol\\.tif"
+    },
+    "NDVI" : {
+      "pattern" : ".+sr_ndvi\\.tif",
+      "nodata" :-9999
+    },
+    "EVI" : {
+      "pattern" : ".+sr_evi\\.tif",
+      "nodata" :-9999
+    },
+    "SAVI" : {
+      "pattern" : ".+sr_savi\\.tif",
+      "nodata" :-9999
+    },
+    "MSAVI" : {
+      "pattern" : ".+sr_msavi\\.tif",
+      "nodata" :-9999
+    },
+    "NDMI" : {
+      "pattern" : ".+sr_ndmi\\.tif",
+      "nodata" :-9999
+    },
+    "NBR" : {
+      "pattern" : ".+sr_nbr\\.tif",
+      "nodata" :-9999
+    },
+    "NBR2" : {
+      "pattern" : ".+sr_nbr2\\.tif",
+      "nodata" :-9999
+    }
+  }
+}

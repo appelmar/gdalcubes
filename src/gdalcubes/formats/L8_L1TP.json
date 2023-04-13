@@ -1,0 +1,61 @@
+{
+  "description" : "Collection format for Landsat 8 Level 1 TP product",
+  "tags" : ["Landsat", "USGS", "Level 1", "NASA"],
+  "pattern" : ".+\\.TIF",
+  "images" : {
+    "pattern" : "(?:.*[/\\\\])?([^/\\\\]+)[/\\\\].+\\.TIF"
+  },
+  "datetime" : {
+    "pattern" : ".*LC08_L1TP_.{6}_(.+)_.*\\.TIF",
+    "format" : "%Y%m%d"
+  },
+  "bands": {
+    "B01" : {
+      "pattern" : ".+_B1\\.TIF",
+      "nodata" : 0
+    },
+    "B02" : {
+      "pattern" : ".+_B2\\.TIF",
+      "nodata" : 0
+    },
+    "B03" : {
+      "pattern" : ".+_B3\\.TIF",
+      "nodata" : 0
+    },
+    "B04" : {
+      "pattern" : ".+_B4\\.TIF",
+      "nodata" : 0
+    },
+    "B05" : {
+      "pattern" : ".+_B5\\.TIF",
+      "nodata" : 0
+    },
+    "B06" : {
+      "pattern" : ".+_B6\\.TIF",
+      "nodata" : 0
+    },
+    "B07" : {
+      "pattern" : ".+_B7\\.TIF",
+      "nodata" : 0
+    },
+    "B08" : {
+      "pattern" : ".+_B8\\.TIF",
+      "nodata" : 0
+    },
+    "B09" : {
+      "pattern" : ".+_B9\\.TIF",
+      "nodata" : 0
+    },
+    "B10" : {
+      "pattern" : ".+_B10\\.TIF",
+      "nodata" : 0
+    },
+    "B11" : {
+      "pattern" : ".+_B11\\.TIF",
+      "nodata" : 0
+    },
+    "BQA" : {
+      "pattern" : ".+_BQA\\.TIF"
+    }
+  }
+}

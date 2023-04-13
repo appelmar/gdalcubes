@@ -1,0 +1,53 @@
+{
+  "description" : "Collection format for selected bands from the MODIS MxD13Q1 (Aqua and Terra) product",
+  "tags" : ["MODIS", "VI", "NDVI", "EVI"],
+  "pattern" : ".*\\.hdf.*",
+  "subdatasets" : true,
+  "images" : {
+    "pattern" : "HDF4_EOS:EOS_GRID:\"(.+)\\.hdf.*"
+  },
+  "datetime" : {
+    "pattern" : ".*M[OY]D13Q1\\.A(.{7})[^/]*",
+    "format" : "%Y%j"
+  },
+  "bands" : {
+    "NDVI" : {
+      "pattern" : ".+NDVI.*",
+      "nodata" : -3000,
+      "scale" : 0.0001
+
+    },
+    "EVI" : {
+      "pattern" : ".+EVI.*",
+      "nodata" : -3000,
+      "scale" : 0.0001
+    },
+    "VI_Quality" : {
+      "pattern" : ".+Quality.*",
+      "nodata" : 65535
+    },
+    "red" : {
+      "pattern" : ".+red reflectance.*",
+      "nodata" : -1000,
+      "scale" : 0.0001
+    },
+    "NIR" : {
+      "pattern" : ".+NIR reflectance.*",
+      "nodata" : -1000,
+      "scale" : 0.0001
+    },
+    "blue" : {
+      "pattern" : ".+blue reflectance.*",
+      "nodata" : -1000,
+      "scale" : 0.0001
+    },
+    "MIR" : {
+      "pattern" : ".+MIR reflectance.*",
+      "nodata" : -1000,
+      "scale" : 0.0001
+    },
+    "pixel_reliability" : {
+      "pattern" : ".+pixel reliability.*"
+    }
+  }
+}

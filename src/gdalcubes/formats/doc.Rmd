@@ -1,0 +1,36 @@
+---
+title: Collection format overview
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    theme: default
+    toc_depth: 2
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+This document presents default collection format descriptions that come with gdalcubes.
+
+```{r,results='asis', echo=FALSE}
+library(jsonlite)
+for (f in list.files(pattern=".json")) {
+  cat(paste("##",f, "\n",sep=""))
+  cat(jsonlite::read_json(f)$description)
+  cat("\n")
+  cat("```\n")
+  cat(paste(readLines(f, warn = F), collapse="\n"))
+  cat("\n```\n")
+  cat("\n\n")
+}
+```
+
+

@@ -1,0 +1,60 @@
+{
+  "description" : "Image collection format for Sentinel 2 Level 2A data as downloaded from Theia.",
+  "tags" : ["Sentinel", "ESA", "Flat Reflectance", "Theia"],
+  "pattern" : ".+SENTINEL2[AB].+\\.tif",
+  "images" : {
+    "pattern" : ".*/(.+)_[A-Z]_V[0-9]-[0-9]_.*"
+  },
+  "datetime" : {
+    "pattern" : ".*/SENTINEL2[AB]_([0-9]{8}-[0-9]{6})-.*",
+    "format" : "%Y%m%d-%H%M%S"
+  },
+  "bands" : {
+    "B2" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B2\\.tif"
+    },
+    "B3" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B3\\.tif"
+    },
+    "B4" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B4\\.tif"
+    },
+    "B5" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B5\\.tif"
+    },
+    "B6" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B6\\.tif"
+    },
+    "B7" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B7\\.tif"
+    },
+    "B8" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B8\\.tif"
+    },
+    "B8A" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B8A\\.tif"
+    },
+    "B11" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B11\\.tif"
+    },
+    "B12" : {
+      "nodata" : -10000,
+      "pattern" : ".+_FRE_B12\\.tif"
+    },
+    "CLOUDS" : {
+      "pattern" : ".+_CLM_R1\\.tif"
+    },
+    "SATURATED" : {
+      "pattern" : ".+_SAT_R1\\.tif"
+    }
+  }
+}

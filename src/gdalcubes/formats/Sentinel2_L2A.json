@@ -1,0 +1,83 @@
+{
+  "description" : "Image collection format for Sentinel 2 Level 2A data as downloaded from the Copernicus Open Access Hub, expects a list of file paths as input. The format should work on original ZIP compressed as well as uncompressed imagery.",
+  "tags" : ["Sentinel", "Copernicus", "ESA", "BOA", "Surface Reflectance"],
+  "pattern" : ".+/IMG_DATA/.+\\.jp2",
+  "images" : {
+    "pattern" : ".*/(.+)\\.SAFE.*"
+  },
+  "datetime" : {
+    "pattern" : ".*MSIL2A_(.+?)_.*",
+    "format" : "%Y%m%dT%H%M%S"
+  },
+  "bands" : {
+    "B01" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B01_60m\\.jp2"
+    },
+    "B02" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B02_10m\\.jp2"
+    },
+    "B03" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B03_10m\\.jp2"
+    },
+    "B04" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B04_10m\\.jp2"
+    },
+    "B05" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B05_20m\\.jp2"
+    },
+    "B06" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B06_20m\\.jp2"
+    },
+    "B07" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B07_20m\\.jp2"
+    },
+    "B08" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B08_10m\\.jp2"
+    },
+    "B8A" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B8A_20m\\.jp2"
+    },
+    "B09" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B09_60m\\.jp2"
+    },
+    "B11" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B11_20m\\.jp2"
+    },
+    "B12" : {
+      "nodata" : 0,
+      "scale" : 0.0001,
+      "pattern" : ".+_B12_20m\\.jp2"
+    },
+    "SCL" : {
+      "pattern" : ".+_SCL_20m\\.jp2"
+    },
+    "AOT" : {
+      "pattern" : ".+_AOT_10m\\.jp2"
+    },
+    "WVP" : {
+      "pattern" : ".+_WVP_10m\\.jp2"
+    }
+  }
+}

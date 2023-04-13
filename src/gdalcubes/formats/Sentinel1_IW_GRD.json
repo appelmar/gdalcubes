@@ -1,0 +1,23 @@
+{
+  "description" : "Image collection format for Sentinel 1 Level 1 GRD data as downloaded from the Copernicus Open Access Hub, expects a list of file paths as input. The format works on original ZIP compressed as well as uncompressed imagery.",
+  "tags" : ["Sentinel", "Copernicus", "ESA", "SAR"],
+  "pattern" : ".+/measurement/.+\\.tiff",
+  "images" : {
+    "pattern" : ".*/(.+)\\.SAFE.*"
+  },
+  "datetime" : {
+    "pattern" : ".*/S1A_IW_GRDH_1SDV_(.{15})_.*\\.SAFE.*",
+    "format" : "%Y%m%dT%H%M%S"
+  },
+  "bands" : {
+    "VH" : {
+      "nodata" : 0,
+      "pattern" : ".+s1a-iw-grd-vh.*\\.tiff"
+    },
+    "VV" : {
+      "nodata" : 0,
+      "pattern" : ".+s1a-iw-grd-vv.*\\.tiff"
+    }
+  }
+
+}

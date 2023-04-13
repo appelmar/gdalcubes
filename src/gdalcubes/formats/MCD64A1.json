@@ -1,0 +1,34 @@
+{
+  "description" : "Collection format for the MODIS MCD64A1 product (burned area by day)",
+  "tags" : ["MODIS", "Fire"],
+  "pattern" : ".*\\.hdf.*",
+  "subdatasets" : true,
+  "images" : {
+    "pattern" : "HDF4_EOS:EOS_GRID:\"(.+)\\.hdf.*"
+  },
+  "datetime" : {
+    "pattern" : ".*MCD64A1\\.A(.{7})[^/]*",
+    "format" : "%Y%j"
+  },
+  "bands" : {
+    "BurnDate" : {
+      "pattern" : ".+Burn Date.*",
+      "nodata" : -1
+    },
+    "BurnDateUncertainty" : {
+      "pattern" : ".+Burn Date Uncertainty.*",
+      "nodata" : 0
+    },
+    "QA" : {
+      "pattern" : ".+QA.*"
+    },
+    "FirstDay" : {
+      "pattern" : ".+First Day.*",
+      "nodata" : -1
+    },
+    "LastDay" : {
+      "pattern" : ".+Last Day.*",
+      "nodata" : -1
+    }
+  }
+}
