@@ -110,17 +110,14 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
       
       // Consider files with name X.nc, where X is an integer number
       // Temporary files will start with a dot and are NOT considered here
-      std::regex r("^([0-9]+)\\.nc$");
-      std::smatch match;
       std::string basename  = filesystem::stem(f) + "." + filesystem::extension(f);
-      if (std::regex_search(basename, match, r)) {
-        if (match.size() == 2) {
-          try {
-            int chunkid = std::stoi(match[1].str());
+      std::size_t pos = basename.find(".nc");
+      if (pos > 0 && pos < std::string::npos) {
+        try {
+            int chunkid = std::stoi(basename.substr(0,pos));
             chunk_queue.push_back(std::make_pair<>(f, chunkid));
           }
           catch (...) {}
-        }
       }
     });
   

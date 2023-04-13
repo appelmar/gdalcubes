@@ -20,6 +20,6 @@ By default, the collection format name will be derived from the basename of the 
 \examples{
 \donttest{
 add_collection_format(
-   "https://raw.githubusercontent.com/appelmar/gdalcubes/dev/formats/Sentinel1_IW_GRD.json")
+   "https://raw.githubusercontent.com/appelmar/gdalcubes_cpp/dev/formats/Sentinel1_IW_GRD.json")
 }
 }

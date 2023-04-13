@@ -23,6 +23,8 @@
 */
 
 #include "datetime.h"
+#include <cctype>
+#include <sstream>
 
 namespace gdalcubes {
 
@@ -49,30 +51,65 @@ std::string duration::to_string() {
 }
 
 duration duration::from_string(std::string s) {
-    std::regex rexp("P(T?)([0-9]+)([YMWDHS])");
-
-    std::cmatch res;
-    if (!std::regex_match(s.c_str(), res, rexp)) {
+    duration d; // result object
+    std::size_t pos = s.find("P");
+    if (pos == std::string::npos) {
         throw std::string("ERROR in duration::from_string(): cannot derive date interval");
     }
-    duration d;
-    d.dt_interval = std::stoi(res[2]);
-    if (!res[1].str().empty()) {
-        if (res[3] == "H")
+    ++pos;
+    bool is_time = false;
+    if (s[pos] == 'T')  {
+        ++pos;
+        is_time = true;
+    }
+    std::stringstream numstr;
+    while (pos < s.length()) {
+        if (std::isdigit(s[pos])) {
+            numstr << s[pos];
+        }
+        else {
+            break;
+        }
+        ++pos;
+    }
+    if (numstr.str().empty()) {
+        throw std::string("ERROR in duration::from_string(): cannot derive date interval");
+    }
+    d.dt_interval = std::stoi(numstr.str());
+
+    if (pos >= s.length()) {
+        throw std::string("ERROR in duration::from_string(): cannot derive date interval");
+    }
+    if (is_time) {
+        if (s[pos] == 'H') {
             d.dt_unit = datetime_unit::HOUR;
-        else if (res[3] == "M")
+        }
+        else if (s[pos] == 'M') {
             d.dt_unit = datetime_unit::MINUTE;
-        else if (res[3] == "S")
+        }
+        else if (s[pos] == 'S') {
             d.dt_unit = datetime_unit::SECOND;
-    } else {
-        if (res[3] == "Y")
+        }
+        else {
+            throw std::string("ERROR in duration::from_string(): cannot derive date interval, no valid datetime unit");
+        }
+    }
+    else {
+        if (s[pos] == 'Y') {
             d.dt_unit = datetime_unit::YEAR;
-        else if (res[3] == "M")
+        }
+        else if (s[pos] == 'M') {
             d.dt_unit = datetime_unit::MONTH;
-        else if (res[3] == "W")
+        }
+        else if (s[pos] == 'W') {
             d.dt_unit = datetime_unit::WEEK;
-        else if (res[3] == "D")
+        }
+        else if (s[pos] == 'D') {
             d.dt_unit = datetime_unit::DAY;
+        }
+        else {
+            throw std::string("ERROR in duration::from_string(): cannot derive date interval, no valid datetime unit");
+        }
     }
     return d;
 }
@@ -302,46 +339,7 @@ datetime datetime::from_YmdHMS_digits(std::string s) {
 }
 
 datetime datetime::from_string(std::string s) {
-    std::istringstream is(s);
-
-    // TODO: Regex does not support ISO weeks / day of year yet
-    //std::regex regex1("([0-9]{4})(?:-?([0-9]{2})(?:-?([0-9]{2})(?:[T\\s]?([0-9]{2})(?::?([0-9]{2})(?::?([0-9]{2}))?)?)?)?)?(?:Z|(?:(?:\\+|-)[0-9]{2}(?::?[0-9]{2})?))?");
-    std::regex regex1("([0-9]{4})(?:-?([0-9]{2})(?:-?([0-9]{2})(?:[T\\s]?([0-9]{2})(?::?([0-9]{2})(?::?([0-9]{2})(?:[.,][0-9]+)?)?)?)?)?)?(?:Z|(?:(?:\\+|-)[0-9]{2}(?::?[0-9]{2})?))?");
-
-    datetime out;
-
-    std::cmatch res;
-    if (!std::regex_match(s.c_str(), res, regex1)) {
-        throw std::string("ERROR in datetime::from_string(): cannot derive datetime from string");
-    } else {
-        if (res.size() != 7) throw std::string("ERROR in datetime::from_string(): cannot derive datetime from string");
-        uint16_t i = 2;
-        while (!res[i].str().empty() && i < 7) ++i;
-        if (i == 2) {
-            //date::sys_days d = date::year(std::stoi(res[1].str()));
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(1) / date::day(1)};
-            out._unit = datetime_unit::YEAR;
-        } else if (i == 3) {
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(std::stoi(res[2].str())) / date::day(1)};
-            out._unit = datetime_unit::MONTH;
-        } else if (i == 4) {
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(std::stoi(res[2].str())) / date::day(std::stoi(res[3].str()))};
-            out._unit = datetime_unit::DAY;
-        } else if (i == 5) {
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(std::stoi(res[2].str())) / date::day(std::stoi(res[3].str()))} +
-                     std::chrono::hours{std::stoi(res[4].str())};
-            out._unit = datetime_unit::HOUR;
-        } else if (i == 6) {
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(std::stoi(res[2].str())) / date::day(std::stoi(res[3].str()))} +
-                     std::chrono::hours{std::stoi(res[4].str())} + std::chrono::minutes{std::stoi(res[5].str())};
-            out._unit = datetime_unit::MINUTE;
-        } else if (i == 7) {
-            out._p = date::sys_days{date::year(std::stoi(res[1].str())) / date::month(std::stoi(res[2].str())) / date::day(std::stoi(res[3].str()))} +
-                     std::chrono::hours{std::stoi(res[4].str())} + std::chrono::minutes{std::stoi(res[5].str())} + std::chrono::seconds{std::stoi(res[6].str())};
-            out._unit = datetime_unit::SECOND;
-        }
-    }
-    return out;
+    return from_YmdHMS_digits(s); // 0.6.4 [experimental]
 }
 
 std::string datetime::datetime_format_for_unit(gdalcubes::datetime_unit u) {
