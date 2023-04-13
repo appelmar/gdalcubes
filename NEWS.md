@@ -1,4 +1,4 @@
-# gdalcubes 0.6.4 (2023-04-11)
+# gdalcubes 0.6.4 (under development)
 
 * add native quartile reducers in `reduce_time()`
 * fix r-devel UCRT win build on CRAN

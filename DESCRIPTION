@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
 Version: 0.6.4
-Date: 2023-04-11
+Date: 2023-04-13
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -52,8 +52,8 @@ Description: Processing collections of Earth observation images as on-demand mul
 Depends: R (>= 3.4)
 Imports: Rcpp, jsonlite, ncdf4
 License: MIT + file LICENSE
-URL: https://github.com/appelmar/gdalcubes_R
-BugReports: https://github.com/appelmar/gdalcubes_R/issues/
+URL: https://github.com/appelmar/gdalcubes
+BugReports: https://github.com/appelmar/gdalcubes/issues/
 Encoding: UTF-8
 RoxygenNote: 7.2.2
 LinkingTo: Rcpp
