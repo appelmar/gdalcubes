@@ -1,9 +1,11 @@
-# gdalcubes 0.6.4 (under development)
+# gdalcubes 0.6.4 (2023-04-14)
 
 * add native quartile reducers in `reduce_time()`
 * fix r-devel UCRT win build on CRAN
+* fix crashes on Windows UCRT due to unusable std::regex()
 * fix parallel data cube processing when nonstandard external package locations are used
 * `stack_cube()` now ignores files if not accessible / invalid instead of stopping all computations
+* The codebase has been reorganized R package is now maintained under https://github.com/appelmar/gdalcubes, whereas the C++ repo will be archived. 
 
 # gdalcubes 0.6.3 (2023-01-19)
 
