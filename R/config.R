@@ -168,16 +168,6 @@ gdalcubes_options <- function(..., parallel, ncdf_compression_level, debug, cach
   }
 }
 
-#' Query gdalcubes version information
-#'
-#' @return List with gdalcubes library version information
-#' @examples 
-#' gdalcubes_version()
-#' @export
-gdalcubes_version <- function() {
-  return(gc_version())
-}
-
 #' Get available GDAL drivers
 #' @examples 
 #' gdalcubes_gdalformats()
