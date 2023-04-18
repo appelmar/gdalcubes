@@ -21,6 +21,8 @@
 #' The functions receives all properties of a STAC item (image) as input list and is expected to produce a single logical value,
 #' where an image will be ignored if the function returns FALSE.
 #' 
+#' Some STAC API endpoints may return items with duplicte IDs (image names), pointing to 
+#' identical URLs. Such items are only added once during creation of the image collection.
 #' 
 #' @export
 stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"), 
@@ -71,6 +73,15 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
           joined_names = paste0(asset_name, SUBBAND_SPLIT_CHAR, subnames)
           bands = union(bands, joined_names)
         }
+        next
+      }
+
+      # if no eo:bands metadata found, consider asset if type contains "image/*" and role equals "data"
+      sroles = s[[i]]$assets[[j]]$roles
+      stype = s[[i]]$assets[[j]]$type
+    
+      if (grepl("image/", stype, fixed=TRUE) && sroles == "data") {
+        bands = union(bands, asset_name)
       }
     }
   }
@@ -92,193 +103,161 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
   }
   
   
-  bands_df = data.frame(id = 1:length(bands),
-                        name = bands,
-                        type = "",
-                        offset = NA,
-                        scale = NA,
-                        unit = "",
-                        nodata = "",
-                        stringsAsFactors = FALSE)
-  
-  gdalrefs_image_id = NULL
-  gdalrefs_band_id = NULL
-  gdalrefs_descriptor = NULL
-  gdalrefs_band_num = NULL
-  
-  images_id = NULL
-  images_name = NULL
-  images_left = NULL
-  images_top = NULL
-  images_bottom = NULL
-  images_right = NULL
-  images_datetime = NULL
-  images_proj = NULL
-  
-  image_md_image_id = NULL
-  image_md_key = NULL
-  image_md_value = NULL
-  
+  bands_df = data.frame(id = 1:length(bands), name = bands, type = "", offset = NA,
+                        scale = NA, unit = "", nodata = "", stringsAsFactors = FALSE)
+
+  images_df = data.frame(id = integer(), name = character(), left = numeric(), 
+                         top = numeric(), bottom = numeric(), right = numeric(), 
+                         datetime = character(), proj = character())
+  gdalrefs_df = data.frame(image_id = integer(), band_id = integer(), 
+                           descriptor = character(),band_num = integer())
+  image_md_df = data.frame(image_id = integer(),key = character(), value = character())
+ 
   
   for (i in 1:length(s)) {
     
-    if (!is.null(property_filter)) {
-      if (!property_filter(s[[i]]$properties)) {
-        next
-      }
-    }
-    
-    
-    # bands
-    img_has_bands = FALSE
-    for (j in 1:nrow(bands_df)) {
-      if (bands_df$name[j] %in% names(s[[i]]$assets)) {
-        gdalrefs_image_id = c(gdalrefs_image_id, i)
-        gdalrefs_band_id = c(gdalrefs_band_id, j)
-        gdalrefs_descriptor = c(gdalrefs_descriptor, url_fun(s[[i]]$assets[[bands_df$name[j]]]$href))
-        gdalrefs_band_num = c(gdalrefs_band_num, 1)
-        img_has_bands = TRUE
-      }
-      else {
-        spl = strsplit(bands_df$name[j], SUBBAND_SPLIT_CHAR)[[1]]
-        if (length(spl) == 2) {
-          asset_name = spl[1]
-          band_num = which(which(startsWith(bands_df$name, paste0(asset_name, SUBBAND_SPLIT_CHAR))) == j)
-          
-          if (length(band_num) == 1) {
-            gdalrefs_image_id = c(gdalrefs_image_id, i)
-            gdalrefs_band_id = c(gdalrefs_band_id, j)
-            gdalrefs_descriptor = c(gdalrefs_descriptor, url_fun(s[[i]]$assets[[asset_name]]$href))
-            gdalrefs_band_num = c(gdalrefs_band_num, band_num)
+    tryCatch(
+      expr = {
+          images_df_temp = data.frame(id = integer(), name = character(), left = numeric(), 
+                                top = numeric(), bottom = numeric(), right = numeric(), 
+                                datetime = character(), proj = character())
+          gdalrefs_df_temp = data.frame(image_id = integer(), band_id = integer(), 
+                                  descriptor = character(),band_num = integer())
+          image_md_df_temp = data.frame(image_id = integer(),key = character(), value = character())
+        if (!is.null(property_filter)) {
+          if (!property_filter(s[[i]]$properties)) {
+            next
+          }
+        }
+
+        # bands
+        img_has_bands = FALSE
+        for (j in 1:nrow(bands_df)) {
+          if (bands_df$name[j] %in% names(s[[i]]$assets)) {
+            gdalrefs_df_temp = rbind(gdalrefs_df_temp, data.frame(image_id = i, band_id = j, 
+                                    descriptor = url_fun(s[[i]]$assets[[bands_df$name[j]]]$href),
+                                    band_num = 1, stringsAsFactors = FALSE))
             img_has_bands = TRUE
           }
-        }
-      }
-    }
-    if (img_has_bands) {
-    
-      
-      # fixes #60
-      if (!is.null(srs) && srs_overwrite) {
-        proj = srs
-      }
-      else {
-        proj = s[[i]]$properties$"proj:epsg"
-        if (!is.null(proj)) {
-          if (!startsWith(toupper(proj), "EPSG:")) {
-            proj = paste0("EPSG:", proj)
+          else {
+            spl = strsplit(bands_df$name[j], SUBBAND_SPLIT_CHAR)[[1]]
+            if (length(spl) == 2) {
+              asset_name = spl[1]
+              band_num = which(which(startsWith(bands_df$name, paste0(asset_name, SUBBAND_SPLIT_CHAR))) == j)
+              
+              if (length(band_num) == 1) {
+                 gdalrefs_df_temp = rbind(gdalrefs_df_temp, data.frame(image_id = i, band_id = j, 
+                                    descriptor = url_fun(s[[i]]$assets[[asset_name]]$href),
+                                    band_num = band_num, stringsAsFactors = FALSE))
+                img_has_bands = TRUE
+              }
+            }
           }
         }
-        if (is.null(proj)) {
-          proj = s[[i]]$properties$"proj:wkt2"
-        }
-        if (is.null(proj)) {
-          proj = s[[i]]$properties$"proj:projjson"
-        }
-        if (is.null(proj)) {
-          if (!is.null(srs)) {
+        if (img_has_bands) {
+          # fixes #60
+          if (!is.null(srs) && srs_overwrite) {
             proj = srs
           }
           else {
-            #warning(paste0("No projection info found in STAC item for image ", s[[i]]$id))
-            proj = "" # TODO: better ignore image
+            proj = s[[i]]$properties$"proj:epsg"
+            if (!is.null(proj)) {
+              if (!startsWith(toupper(proj), "EPSG:")) {
+                proj = paste0("EPSG:", proj)
+              }
+            }
+            if (is.null(proj)) {
+              proj = s[[i]]$properties$"proj:wkt2"
+            }
+            if (is.null(proj)) {
+              proj = s[[i]]$properties$"proj:projjson"
+            }
+            if (is.null(proj)) {
+              if (!is.null(srs)) {
+                proj = srs
+              }
+              else {
+                stop(paste0("No projection info found in STAC item for image ", s[[i]]$id))
+              }
+            }
           }
-        }
-      }
-      
-      
-      images_id = c(images_id, i)
-      images_name = c(images_name, s[[i]]$id)
-      images_proj =  c(images_proj, proj)
-      temp_datetime = NULL
-      if (!is.null(s[[i]]$properties$datetime)) {
-        temp_datetime = s[[i]]$properties$datetime
-      }
-      else if (!is.null(s[[i]]$properties$start_datetime)) {
-        temp_starttime = s[[i]]$properties$start_datetime
-        temp_endtime = s[[i]]$properties$end_datetime
-        
-        m = duration[1]
-        if (m == "center") {
-          if (!requireNamespace("lubridate", quietly = TRUE)) {
-            stop("package lubridate required; please install first")
+          
+          
+          temp_datetime = NULL
+          if (!is.null(s[[i]]$properties$datetime)) {
+            temp_datetime = s[[i]]$properties$datetime
           }
-          a = lubridate::ymd_hms(temp_starttime)
-          b = lubridate::ymd_hms(temp_endtime)
-          temp_datetime = format(a + (b-a)/2, "%Y-%m-%dT%H:%M:%S")
+          else if (!is.null(s[[i]]$properties$start_datetime)) {
+            temp_starttime = s[[i]]$properties$start_datetime
+            temp_endtime = s[[i]]$properties$end_datetime
+            
+            m = duration[1]
+            if (m == "center") {
+              if (!requireNamespace("lubridate", quietly = TRUE)) {
+                stop("package lubridate required; please install first")
+              }
+              a = lubridate::ymd_hms(temp_starttime)
+              b = lubridate::ymd_hms(temp_endtime)
+              temp_datetime = format(a + (b-a)/2, "%Y-%m-%dT%H:%M:%S")
+            }
+            else {
+              temp_datetime = temp_starttime
+            }
+          }
+          else {
+             stop(paste0("No datetime / start_datetime property found in STAC item for image ", s[[i]]$id))
+          }
+          
+          # BBOX
+          bbox = s[[i]]$bbox
+          if (is.list(bbox)) {
+            bbox = unlist(bbox)
+          }
+          
+          # TO CHECK IN STAC SPEC, does BBOX always exist? Is it always WGS84? 
+          # TODO: transform, if bbox-crs is given
+          images_df_temp = data.frame(id = i, name = s[[i]]$id, left = bbox[1], top = bbox[4], bottom = bbox[2],
+                                    right = bbox[3], datetime = temp_datetime, proj = proj, stringsAsFactors = FALSE)
+
+          # Duplicate image name check
+          if (s[[i]]$id %in% images_df$name) {
+            if (.pkgenv$debug) {
+              message(paste0("Skipping STAC item ", s[[i]]$id) , " due to duplicate id (image with identical name already exists)")
+            }
+            next
+          }
+
+          # image metadata
+          if (!skip_image_metadata) {
+            image_md_df_temp = data.frame(image_id = rep(i, length(s[[i]]$properties)),  
+                                          key = names(s[[i]]$properties),
+                                          value = as.character(s[[i]]$properties))
+          }
+
+          # add to result tables
+          images_df = rbind(images_df, images_df_temp)
+          gdalrefs_df = rbind(gdalrefs_df, gdalrefs_df_temp)
+          if (!skip_image_metadata) {
+            image_md_df = rbind(image_md_df, image_md_df_temp)
+          }
+          
         }
-        else {
-          temp_datetime = temp_starttime
-        }
-      }
-      else {
-        stop(paste0("No datetime / start_datetime property found in STAC item for image ", s[[i]]$id))
-      }
-      images_datetime = c(images_datetime, temp_datetime)
-      
-      # BBOX
-      bbox = s[[i]]$bbox
-      if (is.list(bbox)) {
-        bbox = unlist(bbox)
-      }
-      
-      # TO CHECK IN STAC SPEC, does BBOX always exist? Is it always WGS84? 
-      # TODO: transform, if bbox-crs is given
-      
-      images_left = c(images_left, bbox[1])
-      images_right = c(images_right, bbox[3])
-      images_top = c(images_top, bbox[4])
-      images_bottom = c(images_bottom, bbox[2])
-      
-      # image metadata
-      if (!skip_image_metadata) {
-        image_md_image_id = c(image_md_image_id, rep(i, length(s[[i]]$properties)))
-        image_md_key = c(image_md_key, names(s[[i]]$properties))
-        image_md_value = c(image_md_value, as.character(s[[i]]$properties))
-      }
-      
-    }
-    
+      },
+      error = function(e){
+        warning(paste0("Skipping STAC item ", i, " due to the following error: ", e))
+      })
   }
   
-  # if (warn_datetimeintervals) {
-  #   warning("Collection contains images with datetime intervals. This in currently not supported and the start datetime will be 
-  #          used as normal datetime. Please make sure to consider this when you define the extent of a data cube based on this collection.")
-  # }
-  
-
-  images_df = data.frame(id = images_id,
-                         name = images_name,
-                         left = images_left,
-                         top = images_top,
-                         bottom = images_bottom,
-                         right = images_right,
-                         datetime = images_datetime,
-                         proj = images_proj, stringsAsFactors = FALSE)
   
   if (nrow(images_df) == 0) {
     stop("Collection does not contain any images")
   }
   
   
-  gdalrefs_df = data.frame(
-    image_id = gdalrefs_image_id,
-    band_id = gdalrefs_band_id,
-    descriptor = gdalrefs_descriptor,
-    band_num = gdalrefs_band_num,
-    stringsAsFactors = FALSE
-  )
-  
   if (skip_image_metadata) {
     gc_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), data.frame())
   }
   else {
-    image_md_df = data.frame(
-      image_id = image_md_image_id,
-      key = image_md_key,
-      value = image_md_value,
-      stringsAsFactors = FALSE
-    )
     gc_create_stac_collection(bands_df, images_df, gdalrefs_df, path.expand(out_file), image_md_df)
   }
   return(image_collection(out_file))

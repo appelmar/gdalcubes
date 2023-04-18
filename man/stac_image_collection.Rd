@@ -47,6 +47,9 @@ readable for GDAL.
 The property_filter argument can be used to filter images by metadata such as cloud coverage. 
 The functions receives all properties of a STAC item (image) as input list and is expected to produce a single logical value,
 where an image will be ignored if the function returns FALSE.
+
+Some STAC API endpoints may return items with duplicte IDs (image names), pointing to 
+identical URLs. Such items are only added once during creation of the image collection.
 }
 \note{
 Currently, bbox results are expected to be WGS84 coordinates, even if bbox-crs is given in the STAC response.
