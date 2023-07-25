@@ -43,7 +43,7 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$defa
   stopifnot(is.image_collection(image_collection))
   if (is.function(chunking)) {
     if (missing(view)) {
-      warning("Function to derive chunk sizes is not supprted when data cube is missing, using fixed chunk size (1, 512, 512)")
+      warning("Function to derive chunk sizes is not supported when data cube is missing, using fixed chunk size (1, 512, 512)")
       chunking = c(1, 512, 512)
     }
     else {

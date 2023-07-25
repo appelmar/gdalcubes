@@ -481,7 +481,7 @@ Rcpp::List gc_dimension_bounds(SEXP pin, std::string dt_unit="") {
   Rcpp::NumericVector dimy(2*x->st_reference()->ny());
   
   if (!x->st_reference()->has_regular_space()) {
-    Rcpp::stop("Irregular spatial dimensions are currently not supprted");
+    Rcpp::stop("Irregular spatial dimensions are currently not supported");
   }
   
   // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
@@ -538,7 +538,7 @@ Rcpp::List gc_dimension_values(SEXP pin, std::string dt_unit="") {
   Rcpp::NumericVector dimy(x->st_reference()->ny());
   
   if (!x->st_reference()->has_regular_space()) {
-    Rcpp::stop("Irregular spatial dimensions are currently not supprted");
+    Rcpp::stop("Irregular spatial dimensions are currently not supported");
   }
   
   // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
