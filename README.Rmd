@@ -83,7 +83,7 @@ brew install sqlite
 ## Download example data
 ```{r download}
 if (!dir.exists("L8_Amazon")) {
-  download.file("https://uni-muenster.sciebo.de/s/e5yUZmYGX0bo4u9/download", destfile = "L8_Amazon.zip")
+  download.file("http://data.gdalcubes.org/L8_Amazon.zip", destfile = "L8_Amazon.zip",mode = "wb")
   unzip("L8_Amazon.zip", exdir = "L8_Amazon")
 }
 ```

@@ -35,7 +35,7 @@ We will use 8-daily land surface temperature from the MODIS product [MOD11A2](ht
 ```{r data_download, echo=TRUE, results='hide'}
 options(timeout = max(1800, getOption("timeout")))
 dest_dir = tempdir()
-download.file("https://uni-muenster.sciebo.de/s/eP9E6OIkQbXrmsY/download", destfile=file.path(dest_dir, "MOD11A2.zip"),mode = "wb")
+download.file("https://hs-bochum.sciebo.de/s/8mKf1Ye1z9SRUr8/download", destfile=file.path(dest_dir, "MOD11A2.zip"),mode = "wb")
 unzip(file.path(dest_dir, "MOD11A2.zip"), exdir = file.path(dest_dir,"MOD11A2"))
 unlink(file.path(dest_dir, "MOD11A2.zip"))
 ```
@@ -112,13 +112,12 @@ Notice that no data is actually read until we call `plot()`, i.e. all operations
 Operations on data cubes are designed such that they can be used with the native pipe operator `|>` (or `%>%` from the `magrittr` package). The following code for example derives monthly differences of land surface temperature, from June to September 2018. The `window_time` function here applies the simple time series kernel difference filter $T_t - T_{t-1}$.
 
 ```{r, fig.dim=c(7,3.5),fig.align="center"}
-library(magrittr) # get the pipe
 # update v by changing temporal extent only
 v1 = cube_view(view=v, extent=list(t0="2018-06", t1="2018-09")) 
-raster_cube(MODIS.collection, v1)  %>%
-  select_bands(c("LST_DAY")) %>%
-  apply_pixel("LST_DAY * 0.02") %>% # apply scale
-  window_time(kernel=c(-1,1), window=c(1,0)) %>%
+raster_cube(MODIS.collection, v1)  |>
+  select_bands(c("LST_DAY")) |>
+  apply_pixel("LST_DAY * 0.02") |> # apply scale
+  window_time(kernel=c(-1,1), window=c(1,0)) |>
   plot(col=terrain.colors, key.pos=1, zlim=c(-25,25), t = 2:4, ncol = 3)
 ```
 

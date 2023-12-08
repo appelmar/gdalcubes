@@ -33,6 +33,7 @@ vignettes/*.pdf
 *.obj
 # winlibs
 windows
+inst
 # vignette files
 vignettes/*
 !vignettes/*.Rmd

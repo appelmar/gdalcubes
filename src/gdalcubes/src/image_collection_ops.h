@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Marius Appel <marius.appel@uni-muenster.de>
+   Copyright 2019 Marius Appel <marius.appel@hs-bochum.de>
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

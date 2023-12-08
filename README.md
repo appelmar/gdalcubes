@@ -90,7 +90,7 @@ Use [Homebrew](https://brew.sh) to install system libraries with
 
 ``` r
 if (!dir.exists("L8_Amazon")) {
-  download.file("https://uni-muenster.sciebo.de/s/e5yUZmYGX0bo4u9/download", destfile = "L8_Amazon.zip")
+  download.file("https://hs-bochum.sciebo.de/s/8XcKAmPfPGp2CYh/download", destfile = "L8_Amazon.zip")
   unzip("L8_Amazon.zip", exdir = "L8_Amazon")
 }
 ```

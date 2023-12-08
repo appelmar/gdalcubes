@@ -79,9 +79,11 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       # if no eo:bands metadata found, consider asset if type contains "image/*" and role equals "data"
       sroles = s[[i]]$assets[[j]]$roles
       stype = s[[i]]$assets[[j]]$type
-    
-      if (grepl("image/", stype, fixed=TRUE) && sroles == "data") {
-        bands = union(bands, asset_name)
+      
+      if (is.character(sroles) && is.character(stype)) {  
+        if (grepl("image/", stype, fixed=TRUE) && sroles == "data") {
+          bands = union(bands, asset_name)
+        }
       }
     }
   }
