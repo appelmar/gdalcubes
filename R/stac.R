@@ -31,8 +31,11 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
                                   property_filter = NULL, skip_image_metadata = FALSE,
                                   srs = NULL, srs_overwrite = FALSE, duration = c("center", "start")) {
   SUBBAND_SPLIT_CHAR = ":"
+  if ("STACItemCollection" %in% class(s)) {
+    s = s$features
+  }
   if (!is.list(s)) {
-    stop ("Input must be a list")
+    stop ("Input must be either a list or a STACItemCollection")
   }
   if (length(s) == 0) {
     stop ("Input does not include any STAC items")
