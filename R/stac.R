@@ -25,7 +25,7 @@
 #' identical URLs. Such items are only added once during creation of the image collection.
 #' 
 #' @export
-stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"), 
+stac_image_collection <- function(s, out_file = tempfile(fileext = ".db"), 
                                   asset_names = NULL, asset_regex = NULL, 
                                   url_fun = .default_url_fun,
                                   property_filter = NULL, skip_image_metadata = FALSE,
@@ -84,7 +84,7 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".sqlite"),
       stype = s[[i]]$assets[[j]]$type
       
       if (is.character(sroles) && is.character(stype)) {  
-        if (grepl("image/", stype, fixed=TRUE) && sroles == "data") {
+        if (grepl("image/", stype, fixed=TRUE) && "data" %in% sroles) {
           bands = union(bands, asset_name)
         }
       }
