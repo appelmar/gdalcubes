@@ -69,8 +69,11 @@ apply_time <- function(x, ...) {
 #' @return a proxy data cube object
 #' @details 
 #' FUN receives a single (multi-band) pixel time series as a matrix with rows corresponding to bands and columns corresponding to time.
-#' In general, the function must return a matrix with the same number of columns. If re result contains only a single band, it may alternatively return a vector 
+#' In general, the function must return a matrix with the same number of columns. If the result contains only a single band, it may alternatively return a vector 
 #' with length identical to the length of the input time series (number of columns of the input).
+#' 
+#' For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
+#' at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 

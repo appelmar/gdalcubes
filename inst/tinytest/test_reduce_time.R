@@ -17,7 +17,9 @@ expect_true(all(x[4,,,] == 1))
 expect_true(all(x[5,,,] == 1))
 expect_true(all(x[6,,,] == 0))
 
-
+gdalcubes:::.raster_cube_dummy(v, 3, 1.0) |>
+  reduce_time(c("sum(band1)", "median(band2)"), names=c("A","B")) -> x
+expect_true(all(names(x) == c("A","B")))
 
 gdalcubes:::.raster_cube_empty(v, 3) |>
   reduce_time(c("sum(band1)", "median(band2)", "mean(band3)", "min(band1)","max(band2)", "var(band3)")) |>

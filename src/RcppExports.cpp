@@ -365,15 +365,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // gc_create_reduce_time_cube
-SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands);
-RcppExport SEXP _gdalcubes_gc_create_reduce_time_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
+SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, SEXP names);
+RcppExport SEXP _gdalcubes_gc_create_reduce_time_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP, SEXP namesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type reducers(reducersSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type bands(bandsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gc_create_reduce_time_cube(pin, reducers, bands));
+    Rcpp::traits::input_parameter< SEXP >::type names(namesSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_reduce_time_cube(pin, reducers, bands, names));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -406,15 +407,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // gc_create_reduce_space_cube
-SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands);
-RcppExport SEXP _gdalcubes_gc_create_reduce_space_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP) {
+SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, SEXP names);
+RcppExport SEXP _gdalcubes_gc_create_reduce_space_cube(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP, SEXP namesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type reducers(reducersSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type bands(bandsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gc_create_reduce_space_cube(pin, reducers, bands));
+    Rcpp::traits::input_parameter< SEXP >::type names(namesSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_reduce_space_cube(pin, reducers, bands, names));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -846,10 +848,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_from_json_file", (DL_FUNC) &_gdalcubes_gc_from_json_file, 1},
     {"_gdalcubes_gc_from_json_string", (DL_FUNC) &_gdalcubes_gc_from_json_string, 1},
     {"_gdalcubes_gc_create_rename_bands_cube", (DL_FUNC) &_gdalcubes_gc_create_rename_bands_cube, 3},
-    {"_gdalcubes_gc_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_gc_create_reduce_time_cube, 3},
+    {"_gdalcubes_gc_create_reduce_time_cube", (DL_FUNC) &_gdalcubes_gc_create_reduce_time_cube, 4},
     {"_gdalcubes_gc_create_stream_reduce_time_cube", (DL_FUNC) &_gdalcubes_gc_create_stream_reduce_time_cube, 4},
     {"_gdalcubes_gc_create_stream_reduce_space_cube", (DL_FUNC) &_gdalcubes_gc_create_stream_reduce_space_cube, 4},
-    {"_gdalcubes_gc_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_gc_create_reduce_space_cube, 3},
+    {"_gdalcubes_gc_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_gc_create_reduce_space_cube, 4},
     {"_gdalcubes_gc_create_window_time_cube_reduce", (DL_FUNC) &_gdalcubes_gc_create_window_time_cube_reduce, 4},
     {"_gdalcubes_gc_create_window_time_cube_kernel", (DL_FUNC) &_gdalcubes_gc_create_window_time_cube_kernel, 3},
     {"_gdalcubes_gc_create_join_bands_cube", (DL_FUNC) &_gdalcubes_gc_create_join_bands_cube, 2},

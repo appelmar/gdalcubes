@@ -56,10 +56,14 @@ apply_pixel <- function(x, ...) {
 #' The function can either apply simple arithmetic C expressions given as a character vector (expr argument), or apply a custom R reducer function if FUN is provided.
 #' 
 #' In the former case, gdalcubes uses the \href{https://github.com/codeplea/tinyexpr}{tinyexpr library} to evaluate expressions in C / C++, you can look at the \href{https://github.com/codeplea/tinyexpr#functions-supported}{library documentation}
-#' to see what kind of expressions you can execute. Pixel band values can be accessed by name.
-#' 
+#' to see what kind of expressions you can execute. Pixel band values can be accessed by name. Predefined variables that can be used within the expression include integer pixel indexes (\code{ix}, \code{iy}, \code{it}), and 
+#' pixel coordinates (\code{left}, \code{right}, \code{top}, \code{bottom}), \code{t0}, \code{t1}), where the last two values are provided seconds since epoch time.
+#'  
 #' FUN receives values of the bands from one pixel as a (named) vector and should return a numeric vector with identical length for all pixels. Elements of the
-#' result vectors will be interpreted as bands in the result data cube.  
+#' result vectors will be interpreted as bands in the result data cube. 
+#' 
+#' For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
+#' at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.
 #' 
 #' @examples 
 #' # create image collection from example Landsat data only 
@@ -90,6 +94,7 @@ apply_pixel <- function(x, ...) {
 #'        rnorm(1, 0, 0.1) + (x["B05"]-x["B04"])/(x["B05"]+x["B04"])
 #'    })
 #' L8.ndvi.noisy
+#' 
 #' 
 #' \donttest{
 #' plot(L8.ndvi.noisy)

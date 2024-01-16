@@ -27,6 +27,9 @@ expect_true(all(is.na(x)))
 
 
 
+gdalcubes:::.raster_cube_dummy(v, 3, 1.0) |>
+  reduce_space(c("sum(band1)", "median(band2)"), names=c("A","B")) -> x
+expect_true(all(names(x) == c("A","B")))
 
 
 gdalcubes:::.raster_cube_dummy(v, 1, 1.0) |>

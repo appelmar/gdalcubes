@@ -1025,7 +1025,7 @@ SEXP gc_create_rename_bands_cube(SEXP pin, std::vector<std::string> names_old, s
 
 
 // [[Rcpp::export]]
-SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands,SEXP names = R_NilValue) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1034,8 +1034,12 @@ SEXP gc_create_reduce_time_cube(SEXP pin, std::vector<std::string> reducers, std
       // assuming reducers.size() == bands.size(), this is checked in R code calling this function
       reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
     }
+    std::shared_ptr<reduce_time_cube>* x;
+    if (names != R_NilValue)
+      x = new std::shared_ptr<reduce_time_cube>(reduce_time_cube::create(*aa, reducer_bands, Rcpp::as<std::vector<std::string>>(names)));
+    else
+      x = new std::shared_ptr<reduce_time_cube>(reduce_time_cube::create(*aa, reducer_bands));
     
-    std::shared_ptr<reduce_time_cube>* x = new std::shared_ptr<reduce_time_cube>(reduce_time_cube::create(*aa, reducer_bands));
     Rcpp::XPtr< std::shared_ptr<reduce_time_cube> > p(x, true) ;
     
     return p;
@@ -1075,7 +1079,7 @@ SEXP gc_create_stream_reduce_space_cube(SEXP pin, std::string cmd, uint16_t nban
 
 
 // [[Rcpp::export]]
-SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands) {
+SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, SEXP names = R_NilValue) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1085,7 +1089,12 @@ SEXP gc_create_reduce_space_cube(SEXP pin, std::vector<std::string> reducers, st
       reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
     }
     
-    std::shared_ptr<reduce_space_cube>* x = new std::shared_ptr<reduce_space_cube>(reduce_space_cube::create(*aa, reducer_bands));
+    std::shared_ptr<reduce_space_cube>* x;
+    if (names != R_NilValue)
+      x = new std::shared_ptr<reduce_space_cube>(reduce_space_cube::create(*aa, reducer_bands, Rcpp::as<std::vector<std::string>>(names)));
+    else
+      x = new std::shared_ptr<reduce_space_cube>(reduce_space_cube::create(*aa, reducer_bands));
+    
     Rcpp::XPtr< std::shared_ptr<reduce_space_cube> > p(x, true) ;
     
     return p;

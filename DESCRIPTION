@@ -55,7 +55,7 @@ License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes
 BugReports: https://github.com/appelmar/gdalcubes/issues/
 Encoding: UTF-8
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 LinkingTo: Rcpp, BH
 Suggests: 
     knitr,

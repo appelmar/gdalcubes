@@ -40,17 +40,25 @@ class reduce_space_cube : public cube {
      * the constructors will not set connections between cubes properly.
      * @param in input data cube
      * @param reducer reducer function
+     * @param names names for new bands
      * @return a shared pointer to the created data cube instance
      */
-    static std::shared_ptr<reduce_space_cube> create(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands) {
-        std::shared_ptr<reduce_space_cube> out = std::make_shared<reduce_space_cube>(in, reducer_bands);
+    static std::shared_ptr<reduce_space_cube> create(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands, std::vector<std::string> names) {
+        std::shared_ptr<reduce_space_cube> out = std::make_shared<reduce_space_cube>(in, reducer_bands, names);
         in->add_child_cube(out);
         out->add_parent_cube(in);
         return out;
     }
+     
+    static std::shared_ptr<reduce_space_cube> create(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands) {
+       std::shared_ptr<reduce_space_cube> out = std::make_shared<reduce_space_cube>(in, reducer_bands, std::vector<std::string>());
+       in->add_child_cube(out);
+       out->add_parent_cube(in);
+       return out;
+     }
 
    public:
-    reduce_space_cube(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands) : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(reducer_bands) {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
+    reduce_space_cube(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands, std::vector<std::string> names) : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(reducer_bands), _names(names) {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
         if (cube_stref::type_string(_st_ref) == "cube_stref_regular") {
             std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>(_st_ref);
             stref->set_x_axis(_st_ref->left(), _st_ref->right(), (uint32_t)1);
@@ -68,6 +76,10 @@ class reduce_space_cube : public cube {
 
         // TODO: check for duplicate band, reducer pairs?
 
+        if (!names.empty()) {
+          if (names.size() != reducer_bands.size())
+            throw std::string("ERROR in reduce_space_cube::reduce_space_cube(): The number of provided names must match the number of expressions");
+        }
         for (uint16_t i = 0; i < reducer_bands.size(); ++i) {
             std::string reducerstr = reducer_bands[i].first;
             std::string bandstr = reducer_bands[i].second;
@@ -87,8 +99,13 @@ class reduce_space_cube : public cube {
             }
 
             band b = in->bands().get(bandstr);
-            if (in->size_x() > 1 || in->size_y() > 1) {
-                b.name = b.name + "_" + reducerstr;  // Change name only if input is not yet reduced
+            if (names.empty()) {
+              if (in->size_x() > 1 || in->size_y() > 1) {
+                  b.name = b.name + "_" + reducerstr;  // Change name only if input is not yet reduced
+              }
+            }
+            else {
+              b.name = names[i];
             }
             _bands.add(b);
         }
@@ -114,6 +131,13 @@ class reduce_space_cube : public cube {
         for (uint16_t i = 0; i < _reducer_bands.size(); ++i) {
             rb.push_back(json11::Json::array({_reducer_bands[i].first, _reducer_bands[i].second}));
         }
+        if (!_names.empty()) {
+          json11::Json::array rn;
+          for (uint16_t i = 0; i < _names.size(); ++i) {
+            rn.push_back(_names[i]);
+          }
+          out["names"] = rn;
+        }
         out["reducer_bands"] = rb;
         out["in_cube"] = _in_cube->make_constructible_json();
         return out;
@@ -122,6 +146,7 @@ class reduce_space_cube : public cube {
    private:
     std::shared_ptr<cube> _in_cube;
     std::vector<std::pair<std::string, std::string>> _reducer_bands;
+    std::vector<std::string> _names;
 };
 
 }  // namespace gdalcubes

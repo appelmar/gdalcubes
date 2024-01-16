@@ -6,7 +6,7 @@
 \usage{
 stac_image_collection(
   s,
-  out_file = tempfile(fileext = ".sqlite"),
+  out_file = tempfile(fileext = ".db"),
   asset_names = NULL,
   asset_regex = NULL,
   url_fun = .default_url_fun,

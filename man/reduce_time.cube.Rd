@@ -15,7 +15,7 @@
 
 \item{FUN}{a user-defined R function applied over pixel time series (see Details)}
 
-\item{names}{character vector; if FUN is provided, names can be used to define the number and name of output bands}
+\item{names}{character vector; names of the output bands, if FUN is provided, the length of names is used as the expected number of output bands}
 }
 \value{
 proxy data cube object
@@ -33,7 +33,10 @@ more complex functions or arguments. Possible reducers currently are "min", "max
 User-defined R reducer functions receive a two-dimensional array as input where rows correspond to the band and columns represent the time dimension. For 
 example, one row is the time series of a specific band. FUN should always return a numeric vector with the same number of elements, which will be interpreted
 as bands in the result cube. Notice that it is recommended to specify the names of the output bands as a character vector. If names are missing,
-the number and names of output bands is tried to be derived automatically, which may fail in some cases.
+the number and names of output bands is tried to be derived automatically, which may fail in some cases. 
+
+For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
+at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.
 }
 \note{
 Implemented reducers will ignore any NAN values (as na.rm=TRUE does)

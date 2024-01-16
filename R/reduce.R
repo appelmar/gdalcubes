@@ -77,7 +77,7 @@ reduce_space <- function(x, ...) {
 #' @param expr either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube
 #' @param ... optional additional expressions (if \code{expr} is not a vector)
 #' @param FUN a user-defined R function applied over pixel time series (see Details)
-#' @param names character vector; if FUN is provided, names can be used to define the number and name of output bands
+#' @param names character vector; names of the output bands, if FUN is provided, the length of names is used as the expected number of output bands
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does)
 #' @examples 
@@ -127,6 +127,9 @@ reduce_space <- function(x, ...) {
 #' as bands in the result cube. Notice that it is recommended to specify the names of the output bands as a character vector. If names are missing,
 #' the number and names of output bands is tried to be derived automatically, which may fail in some cases. 
 #' 
+#' For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
+#' at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.
+#' 
 #' @export
 reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
   stopifnot(is.cube(x))
@@ -153,7 +156,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = gc_create_reduce_time_cube(x, reducers, bands)
+    x = gc_create_reduce_time_cube(x, reducers, bands, names)
     class(x) <- c("reduce_time_cube", "cube", "xptr")
     return(x)
   }
@@ -218,7 +221,7 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' @param expr either a single string, or a vector of strings defining which reducers will be applied over which bands of the input cube
 #' @param ... optional additional expressions (if \code{expr} is not a vector)
 #' @param FUN a user-defined R function applied over pixel time series (see Details)
-#' @param names character vector; if FUN is provided, names can be used to define the number and name of output bands
+#' @param names character vector; names of the output bands, if FUN is provided, the length of names is used as the expected number of output bands
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as na.rm=TRUE does).
 #' @examples 
@@ -243,10 +246,15 @@ reduce_time.cube <- function(x, expr, ..., FUN, names=NULL) {
 #' }
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
-#' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
+#' @details Notice that expressions have a very simple format: the reducer is followed by the name of a band in parentheses. You cannot add
 #' more complex functions or arguments.
 #' 
-#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median", "var", "sd".
+#' Possible reducers currently include "min", "max", "sum", "prod", "count", "mean", "median", "var", and "sd".
+#' 
+#' For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
+#' at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.
+#' 
+#' 
 #' @export
 reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
   stopifnot(is.cube(x))
@@ -273,7 +281,7 @@ reduce_space.cube <- function(x, expr, ..., FUN, names=NULL) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = gc_create_reduce_space_cube(x, reducers, bands)
+    x = gc_create_reduce_space_cube(x, reducers, bands, names)
     class(x) <- c("reduce_space_cube", "cube", "xptr")
     return(x)
   }
