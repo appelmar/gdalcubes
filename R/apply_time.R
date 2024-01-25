@@ -65,6 +65,8 @@ apply_time <- function(x, ...) {
 #' @param names optional character vector to specify band names for the output cube
 #' @param keep_bands logical; keep bands of input data cube, defaults to FALSE, i.e., original bands will be dropped
 #' @param FUN user-defined R function that is applied on all pixel time series (see Details)
+#' @param load_pkgs logical or character; if TRUE, all currently attached packages will be attached automatically before executing FUN in spawned R processes, specific packages can alternatively be provided as a character vector.
+#' @param load_env logical or environment; if TRUE, the current global environment will be restored automatically before executing FUN in spawned R processes, can be set to a custom environment.
 #' @param ... not used
 #' @return a proxy data cube object
 #' @details 
@@ -110,7 +112,7 @@ apply_time <- function(x, ...) {
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, ...) {
+apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, load_pkgs=FALSE, load_env=FALSE, ...) {
   stopifnot(is.cube(x))
   
   if (!is.function(FUN)) {
@@ -140,6 +142,35 @@ apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, ...) {
       stop("Failed to derive the length of the output from FUN automatically, please specify output band names with the correct size.")
     })
   }
+  
+  if (is.logical(load_env)) {
+    if (load_env) {
+      load_env = .GlobalEnv
+    }
+    else
+      load_env = NULL
+  }
+  if (!is.null(load_env)) {
+    if (!is.environment(load_env)) {
+      warning("Expected either FALSE/TRUE or environment for load_env; parameter will be set to FALSE.")
+      load_env = NULL
+    }
+  }
+  
+  if (is.logical(load_pkgs)) {
+    if (load_pkgs) {
+      load_pkgs = .packages()
+    }
+    else {
+      load_pkgs = NULL
+    }
+  }
+  if (!is.null(load_pkgs)) {
+    if (!is.character(load_pkgs)) {
+      warning("Expected either FALSE/TRUE or character vector for load_pkgs; parameter will be set to FALSE.")
+      load_pkgs = NULL
+    }
+  }
     
   # create src file
   # TODO: load the same packages as in the current workspace? see (.packages())
@@ -156,6 +187,17 @@ apply_time.cube <- function(x, names=NULL, keep_bands=FALSE, FUN, ...) {
   cat(paste0(".libPaths(",  paste(deparse(.libPaths()),collapse=""), ")\n"), file = srcfile2, append = FALSE) 
   
   cat("require(gdalcubes)", "\n", file = srcfile2, append = TRUE)
+  if (!is.null(load_pkgs)) {
+    cat(paste0("require(", load_pkgs,")",collapse  = "\n"), "\n", file = srcfile2, append = TRUE) 
+  }
+  if (!is.null(load_env)) {
+    if (sum(sapply(ls(envir = load_env), FUN = function(x) {object.size(get(x, envir = load_env))})) > 100*1024^2) {
+      warning("The current environment seems to be rather large (> 100 Mb), if this results in reduced performance, please consider setting load_env = FALSE.")
+    }
+    envfile = tempfile(pattern="renv_", fileext = ".rda")
+    save(list = ls(envir = load_env),file = envfile, envir = load_env)
+    cat(paste0("load(\"", envfile, "\")"), "\n", file = srcfile2, append = TRUE)
+  }
   cat(paste("assign(\"f\", eval(parse(\"", srcfile1, "\")))", sep=""), "\n", file = srcfile2, append = TRUE)
   cat("write_chunk_from_array(apply_time(read_chunk_as_array(), f))", "\n", file = srcfile2, append = TRUE)
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")

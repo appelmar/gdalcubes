@@ -4,7 +4,15 @@
 \alias{reduce_space.cube}
 \title{Reduce a data cube over spatial (x,y or lat,lon) dimensions}
 \usage{
-\method{reduce_space}{cube}(x, expr, ..., FUN, names = NULL)
+\method{reduce_space}{cube}(
+  x,
+  expr,
+  ...,
+  FUN,
+  names = NULL,
+  load_pkgs = FALSE,
+  load_env = FALSE
+)
 }
 \arguments{
 \item{x}{source data cube}
@@ -16,6 +24,10 @@
 \item{FUN}{a user-defined R function applied over pixel time series (see Details)}
 
 \item{names}{character vector; names of the output bands, if FUN is provided, the length of names is used as the expected number of output bands}
+
+\item{load_pkgs}{logical or character; if TRUE, all currently attached packages will be attached automatically before executing FUN in spawned R processes, specific packages can alternatively be provided as a character vector.}
+
+\item{load_env}{logical or environment; if TRUE, the current global environment will be restored automatically before executing FUN in spawned R processes, can be set to a custom environment.}
 }
 \value{
 proxy data cube object

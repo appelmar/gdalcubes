@@ -125,8 +125,8 @@ gc_create_rename_bands_cube <- function(pin, names_old, names_new) {
     .Call('_gdalcubes_gc_create_rename_bands_cube', PACKAGE = 'gdalcubes', pin, names_old, names_new)
 }
 
-gc_create_reduce_time_cube <- function(pin, reducers, bands) {
-    .Call('_gdalcubes_gc_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
+gc_create_reduce_time_cube <- function(pin, reducers, bands, names = NULL) {
+    .Call('_gdalcubes_gc_create_reduce_time_cube', PACKAGE = 'gdalcubes', pin, reducers, bands, names)
 }
 
 gc_create_stream_reduce_time_cube <- function(pin, cmd, nbands, names) {
@@ -137,8 +137,8 @@ gc_create_stream_reduce_space_cube <- function(pin, cmd, nbands, names) {
     .Call('_gdalcubes_gc_create_stream_reduce_space_cube', PACKAGE = 'gdalcubes', pin, cmd, nbands, names)
 }
 
-gc_create_reduce_space_cube <- function(pin, reducers, bands) {
-    .Call('_gdalcubes_gc_create_reduce_space_cube', PACKAGE = 'gdalcubes', pin, reducers, bands)
+gc_create_reduce_space_cube <- function(pin, reducers, bands, names = NULL) {
+    .Call('_gdalcubes_gc_create_reduce_space_cube', PACKAGE = 'gdalcubes', pin, reducers, bands, names)
 }
 
 gc_create_window_time_cube_reduce <- function(pin, window, reducers, bands) {

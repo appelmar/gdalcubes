@@ -4,7 +4,16 @@
 \alias{apply_pixel.cube}
 \title{Apply arithmetic expressions over all pixels of a data cube}
 \usage{
-\method{apply_pixel}{cube}(x, expr, names = NULL, keep_bands = FALSE, ..., FUN)
+\method{apply_pixel}{cube}(
+  x,
+  expr,
+  names = NULL,
+  keep_bands = FALSE,
+  ...,
+  FUN,
+  load_pkgs = FALSE,
+  load_env = FALSE
+)
 }
 \arguments{
 \item{x}{source data cube}
@@ -18,6 +27,10 @@
 \item{...}{not used}
 
 \item{FUN}{user-defined R function that is applied on all pixels (see Details)}
+
+\item{load_pkgs}{logical or character; if TRUE, all currently attached packages will be attached automatically before executing FUN in spawned R processes, specific packages can alternatively be provided as a character vector.}
+
+\item{load_env}{logical or environment; if TRUE, the current global environment will be restored automatically before executing FUN in spawned R processes, can be set to a custom environment.}
 }
 \value{
 a proxy data cube object
@@ -33,7 +46,9 @@ to see what kind of expressions you can execute. Pixel band values can be access
 pixel coordinates (\code{left}, \code{right}, \code{top}, \code{bottom}), \code{t0}, \code{t1}), where the last two values are provided seconds since epoch time.
  
 FUN receives values of the bands from one pixel as a (named) vector and should return a numeric vector with identical length for all pixels. Elements of the
-result vectors will be interpreted as bands in the result data cube. 
+result vectors will be interpreted as bands in the result data cube. Notice that by default, since FUN is executed in a separate
+R process, it cannot access any variables from outside and required packages must be loaded within FUN. To restore the current environment and
+automatically load packages, set \code{load_env} and/or \code{load_pkgs} to \code{TRUE}.
 
 For more details and examples on how to write user-defined functions, please refer to the gdalcubes website 
 at \url{https://gdalcubes.github.io/source/concepts/udfs.html}.

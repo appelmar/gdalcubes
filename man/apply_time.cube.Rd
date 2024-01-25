@@ -4,7 +4,15 @@
 \alias{apply_time.cube}
 \title{Apply a user-defined R function over (multi-band) pixel time series}
 \usage{
-\method{apply_time}{cube}(x, names = NULL, keep_bands = FALSE, FUN, ...)
+\method{apply_time}{cube}(
+  x,
+  names = NULL,
+  keep_bands = FALSE,
+  FUN,
+  load_pkgs = FALSE,
+  load_env = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{source data cube}
@@ -14,6 +22,10 @@
 \item{keep_bands}{logical; keep bands of input data cube, defaults to FALSE, i.e., original bands will be dropped}
 
 \item{FUN}{user-defined R function that is applied on all pixel time series (see Details)}
+
+\item{load_pkgs}{logical or character; if TRUE, all currently attached packages will be attached automatically before executing FUN in spawned R processes, specific packages can alternatively be provided as a character vector.}
+
+\item{load_env}{logical or environment; if TRUE, the current global environment will be restored automatically before executing FUN in spawned R processes, can be set to a custom environment.}
 
 \item{...}{not used}
 }
