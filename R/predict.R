@@ -71,6 +71,7 @@ predict.cube <- function(object, model, ...) {
   #   warning("The current environment seems to be rather large (> 100 Mb), this may result in reduced performance.")
   # }
   envfile = tempfile(pattern="renv_", fileext = ".rda")
+  envfile = gsub("\\\\", "/", envfile) # Windows fix
   save(list = ls(envir = load_env),file = envfile, envir = load_env)
   cat(paste0("load(\"", envfile, "\")"), "\n", file = srcfile2, append = TRUE)
   script = system.file("scripts/f_predict.R",package = "gdalcubes")
