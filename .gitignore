@@ -33,7 +33,8 @@ vignettes/*.pdf
 *.obj
 # winlibs
 windows
-inst
+inst/proj
+inst/gdal
 # vignette files
 vignettes/*
 !vignettes/*.Rmd
@@ -59,3 +60,4 @@ gdalcubes.log
 .bash_history
 .vscode
 README.html
+*.aux.xml
