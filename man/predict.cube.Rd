@@ -52,6 +52,6 @@ log_model <- glm(iswater ~ B02 + B03 + B04 + B05, data = train, family = "binomi
 raster_cube(L8.col, v) |>
   select_bands(c("B02","B03","B04","B05")) |>
   predict(model=log_model, type="response") |>
-  plot(col=viridis::viridis, key.pos=1)
+  plot(key.pos=1)
 }
 }

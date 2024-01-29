@@ -15,8 +15,8 @@
 #' 
 #' @importFrom grDevices grey rainbow dev.off dev.size png col2rgb dev.capabilities
 #' @importFrom graphics axis box image.default layout lcm par plot rasterImage rect title legend lines
-#' @importFrom stats quantile rnorm
-#' @importFrom utils head download.file
+#' @importFrom stats quantile rnorm complete.cases
+#' @importFrom utils head download.file object.size
 #' @import jsonlite ncdf4 
 #' 
 #' 
