@@ -137,3 +137,69 @@ as_array <- function(x) {
 
 
 
+
+
+#' Convert a data cube to a data.frame
+#' 
+#' @param x data cube object
+#' @param ... not used
+#' @param complete_only logical; if TRUE, remove rows with one or more missing values
+#' @return A data.frame with bands / variables of the cube as columns and pixels as rows
+#' @examples 
+#' \donttest{
+#' # create image collection from example Landsat data only 
+#' # if not already done in other examples
+#' if (!file.exists(file.path(tempdir(), "L8.db"))) {
+#'   L8_files <- list.files(system.file("L8NY18", package = "gdalcubes"),
+#'                          ".TIF", recursive = TRUE, full.names = TRUE)
+#'   create_image_collection(L8_files, "L8_L1TP", file.path(tempdir(), "L8.db"), quiet = TRUE) 
+#' }
+#' 
+#' L8.col = image_collection(file.path(tempdir(), "L8.db"))
+#' v = cube_view(extent=list(left=388941.2, right=766552.4, 
+#'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-05"),
+#'               srs="EPSG:32618", nx = 100, ny=100, dt="P1M")
+#' x = select_bands(raster_cube(L8.col, v), c("B04", "B05"))
+#' df = as.data.frame(x, complete_only = TRUE)
+#' head(df)
+#' }
+#' @export
+as.data.frame.cube<- function(x, ..., complete_only = FALSE) {
+  stopifnot(is.cube(x))
+  d = c(nbands(x), dim(x))
+  nb=d[1]
+  nobs = prod(d[2:4])
+  
+  if ("ncdf_cube" %in% class(x)) {
+    fn = jsonlite::parse_json(as_json(x))$file
+    if (is.null(fn)) {
+      stop("Invalid ncdf cube; missing file reference")
+    }
+  }
+  else {
+    fn = tempfile(fileext = ".nc")
+    write_ncdf(x, fn)
+  }
+  
+  f <- ncdf4::nc_open(fn)
+  # derive name of variables but ignore non three-dimensional variables (e.g. crs)
+  vars <- names(which(sapply(f$var, function(v) {
+    if (v$ndims == 3)
+      return(v$name)
+    return("")
+  }) != ""))
+  
+  out = data.frame(matrix(numeric(nobs*nb), nrow=nobs, ncol=nb))
+  colnames(out) = vars
+  
+  for (b in 1:length(vars)) {
+    out[b] = as.vector(ncdf4::ncvar_get(f, vars[b])) #, collapse_degen=FALSE)
+  }
+  ncdf4::nc_close(f)
+  
+  if (complete_only) {
+    out = out[complete.cases(out),]
+  }
+  return(out)
+}
+
