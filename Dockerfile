@@ -1,11 +1,16 @@
 FROM rocker/rstudio
-LABEL maintainer="marius.appel@uni-muenster.de" 
+LABEL maintainer="marius.appel@hs-bochum.de" 
 
 RUN apt update
 RUN apt install -y libgdal-dev libcurl4-openssl-dev libnetcdf-dev libudunits2-dev gdal-bin libmagick++-dev pandoc
 
 USER rstudio 
-RUN Rscript -e 'install.packages(c("stars","sf","magick","knitr", "rmarkdown", "tinytest", "av","lubridate","gifski", "gdalcubes"))'
+RUN Rscript -e 'install.packages(c("stars","sf","magick","knitr", "rmarkdown", "tinytest", "av","lubridate","gifski", "BH", "ncdf4"))'
+
+COPY --chown=rstudio:rstudio . /home/rstudio/gdalcubes
+
+WORKDIR /home/rstudio/gdalcubes
+RUN R CMD INSTALL .
 
 USER root
 # run e.g. with 

@@ -4,7 +4,7 @@
 \alias{predict.cube}
 \title{Predict values based on a trained model to all pixels of a data cube.}
 \usage{
-\method{predict}{cube}(object, model, ...)
+\method{predict}{cube}(object, model, ..., output_names = c("pred"), keep_bands = FALSE)
 }
 \arguments{
 \item{object}{a data cube proxy object (class cube)}
@@ -12,14 +12,28 @@
 \item{model}{model used for prediction (e.g. from \code{caret})}
 
 \item{...}{further arguments passed to predict}
+
+\item{output_names}{optional character vector for output variable(s)}
+
+\item{keep_bands}{logical; keep bands of input data cube, defaults to FALSE, i.e. original bands will be dropped}
 }
 \description{
 Predict values based on a trained model to all pixels of a data cube.
 }
 \details{
-The predict method used will be automatically chosen based on the model class. It should support models from the \code{caret} 
-package and simple models as from \code{lm} or \code{glm} . However, it  currently works only for a single output variable and 
-requires a \code{data.frame} input.
+The predict method will be automatically chosen based on the class of the provided model. It aims at supporting models from the packages
+\code{tidymodels}, \code{caret}, and simple models as from \code{lm} or \code{glm}. 
+
+For multiple output variables and/or output in list or data.frame form, \code{output_names} must be provided and match 
+names of the columns / items of the result object returned from the underlying predict method. For example, 
+predictions using \code{tidymodels} return a tibble (data.frame) with columns like \code{.pred_class} (lassification case).
+This must be explicitly provided as \code{output_names}. Similarly, \code{predict.lm} and the like produce lists
+if the standard error is requested by the user and  \code{output_names} hence should be set to \code{c("fit","se.fit")}.
+
+For more complex cases or when predict expects something else than a \code{data.frame}, this function may not work at all.
+}
+\note{
+This function returns a proxy object, i.e., it will not immediately start any computations.
 }
 \examples{
 \donttest{

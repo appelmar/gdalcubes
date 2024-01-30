@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([gdalcubes],[0.6.4],[marius.appel@hs-bochum.de])
+AC_INIT([gdalcubes],[0.6.9999],[marius.appel@hs-bochum.de])
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -766,4 +766,3 @@ AC_MSG_NOTICE([Package LIBS: ${PKG_LIBS}])
 
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
-

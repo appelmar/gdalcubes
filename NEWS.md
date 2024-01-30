@@ -1,3 +1,9 @@
+# gdalcubes 0.6.9999 (under development)
+
+* add `as.data.frame()` to easily convert data cubes to data frames
+* add `predict.cube()` to predict pixel values based on models (lm, glm, caret, tidymodels, and similar)
+
+
 # gdalcubes 0.6.4 (2023-04-14)
 
 * add native quartile reducers in `reduce_time()`

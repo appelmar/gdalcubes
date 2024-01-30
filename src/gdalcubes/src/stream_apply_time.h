@@ -67,6 +67,12 @@ class stream_apply_time_cube : public cube {
                 name = _names[i];
             else
                 name = "x" + std::to_string(i + 1);
+            
+            if (!std::isalnum(name[0])) {
+              GCBS_WARN("Variable name '" + name  + "' is not compatible with netCDF format; replacing with 'X" + name + "'");
+              name = "X" + name;
+            }
+            
             _bands.add(band(name));
         }
     }

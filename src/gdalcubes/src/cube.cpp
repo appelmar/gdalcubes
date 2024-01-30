@@ -1001,6 +1001,10 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
 
     for (uint16_t i = 0; i < bands().count(); ++i) {
         int v;
+        if (!std::isalnum(bands().get(i).name[0])) {
+          GCBS_WARN("Invalid netCDF variable name '" + bands().get(i).name  + "'; replacing with 'X" + bands().get(i).name + "'");
+          bands().get(i).name = "X" + bands().get(i).name;
+        }
         nc_def_var(ncout, bands().get(i).name.c_str(), ot, 3, d_all, &v);
         std::size_t csize[3] = {_chunk_size[0], _chunk_size[1], _chunk_size[2]};
 #if USE_NCDF4 == 1
@@ -1414,6 +1418,10 @@ void cube::write_single_chunk_netcdf(gdalcubes::chunkid_t id, std::string path, 
 
     for (uint16_t i = 0; i < bands().count(); ++i) {
         int v;
+        if (!std::isalnum(bands().get(i).name[0])) {
+          GCBS_WARN("Invalid netCDF variable name '" + bands().get(i).name  + "'; replacing with 'X" + bands().get(i).name + "'");
+          bands().get(i).name = "X" + bands().get(i).name;
+        }
         nc_def_var(ncout, bands().get(i).name.c_str(), NC_DOUBLE, 3, d_all, &v);
         std::size_t csize[3] = {_chunk_size[0], _chunk_size[1], _chunk_size[2]};
 #if USE_NCDF4 == 1
@@ -1645,6 +1653,10 @@ void cube::write_chunks_netcdf(std::string dir, std::string name, uint8_t compre
 
             for (uint16_t i = 0; i < bands().count(); ++i) {
                 int v;
+                if (!std::isalnum(bands().get(i).name[0])) {
+                  GCBS_WARN("Invalid netCDF variable name '" + bands().get(i).name  + "'; replacing with 'X" + bands().get(i).name + "'");
+                  bands().get(i).name = "X" + bands().get(i).name;
+                }
                 nc_def_var(ncout, bands().get(i).name.c_str(), NC_DOUBLE, 3, d_all, &v);
                 std::size_t csize[3] = {_chunk_size[0], _chunk_size[1], _chunk_size[2]};
 #if USE_NCDF4 == 1

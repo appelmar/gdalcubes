@@ -3,10 +3,20 @@
 #' @param object a data cube proxy object (class cube)
 #' @param model model used for prediction (e.g. from \code{caret})
 #' @param ... further arguments passed to predict
+#' @param output_names optional character vector for output variable(s)
+#' @param keep_bands logical; keep bands of input data cube, defaults to FALSE, i.e. original bands will be dropped
 #' @details 
-#' The predict method used will be automatically chosen based on the model class. It should support models from the \code{caret} 
-#' package and simple models as from \code{lm} or \code{glm} . However, it  currently works only for a single output variable and 
-#' requires a \code{data.frame} input. 
+#' The predict method will be automatically chosen based on the class of the provided model. It aims at supporting models from the packages
+#' \code{tidymodels}, \code{caret}, and simple models as from \code{lm} or \code{glm}. 
+#' 
+#' For multiple output variables and/or output in list or data.frame form, \code{output_names} must be provided and match 
+#' names of the columns / items of the result object returned from the underlying predict method. For example, 
+#' predictions using \code{tidymodels} return a tibble (data.frame) with columns like \code{.pred_class} (lassification case).
+#' This must be explicitly provided as \code{output_names}. Similarly, \code{predict.lm} and the like produce lists
+#' if the standard error is requested by the user and  \code{output_names} hence should be set to \code{c("fit","se.fit")}.
+#' 
+#' For more complex cases or when predict expects something else than a \code{data.frame}, this function may not work at all. 
+#' @note This function returns a proxy object, i.e., it will not immediately start any computations. 
 #' @examples 
 #' \donttest{
 #' # create image collection from example Landsat data only
@@ -41,17 +51,12 @@
 #'   plot(key.pos=1)
 #' }
 #' @export
-predict.cube <- function(object, model, ...) {
+predict.cube <- function(object, model, ..., output_names=c("pred"), keep_bands=FALSE) {
   
   arguments <- list(...)
-  paste(arguments)
   
   srcfile2 =  tempfile(pattern=".stream_", fileext = ".R")
   srcfile2 = gsub("\\\\", "/", srcfile2) # Windows fix
-  
-  # Create new script, starting with conditional initialization in order to
-  # avoid reloading packages / environment for every chunk processed in the current process
-  cat("if(!exists(\"IS_INITIALIZED\") || IS_INITIALIZED==FALSE) {", "\n", file = srcfile2, append = FALSE) # if
   
   # support custom library paths
   cat(paste0(".libPaths(",  paste(deparse(.libPaths()),collapse=""), ")\n"), file = srcfile2, append = TRUE) 
@@ -64,6 +69,7 @@ predict.cube <- function(object, model, ...) {
   env = new.env(parent = .GlobalEnv)
   env$model = model
   env$args = arguments
+  env$output_names = output_names
   
   load_env = env
   
@@ -75,15 +81,18 @@ predict.cube <- function(object, model, ...) {
   save(list = ls(envir = load_env),file = envfile, envir = load_env)
   cat(paste0("load(\"", envfile, "\")"), "\n", file = srcfile2, append = TRUE)
   script = system.file("scripts/f_predict.R",package = "gdalcubes")
-  cat("IS_INITIALIZED=TRUE","\n", "}", "\n", file = srcfile2, append = TRUE) # end if
   cat(paste("eval(parse(\"", script, "\"))", sep=""), "\n", file = srcfile2, append = TRUE)
   cmd <- paste(file.path(R.home("bin"),"Rscript"), " --vanilla ", srcfile2, sep="")
   
-  keep_bands = FALSE
-  names = "prediction"
-  nb = 1
-
-  x = gc_create_stream_apply_pixel_cube(object, cmd, nb, names, keep_bands)
+  # for tidymodels, support .pred columns without warning
+  output_names = sapply(output_names, function(s) {
+    if (!grepl("^[[:alnum:]].*", s)) {
+      return(paste0("X",s))
+    }
+    return(s)
+  })
+  
+  x = gc_create_stream_apply_pixel_cube(object, cmd, length(output_names), output_names, keep_bands)
   class(x) <- c("apply_pixel_cube", "cube", "xptr")
   return(x)
   
