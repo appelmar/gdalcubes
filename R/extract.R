@@ -12,6 +12,8 @@
 #' @param FUN optional function to compute per feature summary statistics
 #' @param ... additional arguments passed to \code{FUN}
 #' @param reduce_time logical; if TRUE, time is ignored when \code{FUN} is applied
+#' @param merge; logical; return a combined data.frame with data cube values and labels, defaults to FALSE
+#' @param drop_geom; remove geometries from output, only applicable if merge is TRUE, defaults to FALSE
 #' @return A data.frame with columns FID, time, and data cube bands / variables, see Details 
 #' @details 
 #' The geometry in \code{sf} can be of any simple feature type supported by GDAL, including 
@@ -21,6 +23,7 @@
 #' 
 #' Notice that feature identifiers in the \code{FID} column typically correspond to the row names / numbers 
 #' of the provided sf object. This can be used to combine the output with the original geometries, e.g., using \code{\link[base:merge]{merge()}}.
+#' with gdalcubes > 0.6.4, this can be done automatically by setting \code{merge=TRUE}. In this case, the \code{FID} column is dropped from the result. 
 #'  
 #' Pixels with missing values are automatically dropped from the result. It is hence not
 #' guaranteed that the result will contain rows for all input features.
@@ -68,18 +71,14 @@
 #'   
 #'     # 3. summary statistics over polygons
 #'     x = sf::st_read(system.file("nycd.gpkg", package = "gdalcubes"))
-#'     zstats = extract_geom(L8.ndvi,x, FUN=median, reduce_time = TRUE)
+#'     zstats = extract_geom(L8.ndvi,x, FUN=median, reduce_time = TRUE, merge = TRUE)
 #'     zstats
-#'     # combine with original sf object
-#'     x$FID = rownames(x)
-#'     x = merge(x, zstats, by = "FID")
-#'     x
-#'     plot(x["NDVI"])
+#'     plot(zstats["NDVI"])
 #'     }
 #'   }
 #' }
 #' @export
-extract_geom = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, ..., reduce_time = FALSE) {
+extract_geom = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NULL, merge = FALSE, drop_geom = FALSE, ..., reduce_time = FALSE) {
   
   stopifnot(is.cube(cube))
   if (!is.null(datetime) && !is.null(time_column)) {
@@ -133,6 +132,20 @@ extract_geom = function(cube, sf, datetime = NULL, time_column = NULL, FUN = NUL
     file.remove(ogrfile)
   }
   
+  if (merge) {
+    fid_fieldname = basename(tempfile(pattern="FID_"))
+    sf[[fid_fieldname]] = rownames(sf)
+    colnames(out)[colnames(out) == "FID"] = fid_fieldname
+    if (drop_geom) {
+      out = merge(sf::st_drop_geometry(sf), out, by = fid_fieldname)
+    }
+    else {
+      out = merge(sf, out, by = fid_fieldname)
+    }
+    #colnames(out)[colnames(out) == fid_fieldname] = "FID"
+    icol = which(colnames(out) == fid_fieldname)
+    out = out[,-icol, drop = FALSE] # drop FID column
+  }
   return(out)
 }
 
