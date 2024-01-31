@@ -20,7 +20,7 @@ out = array(NA, dim=c(length(output_names),nobs))
 if (is.list(p)) {
   for (i in 1:length(output_names)) {
     z = p[[output_names[i]]]
-    if (!is.numeric(z) && is.factor(z)) {
+    if (!is.numeric(z) && !is.factor(z)) {
       stop("Unexpected output from predict().")
     }
     out[i,idx] = as.numeric(z)
