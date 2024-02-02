@@ -422,7 +422,12 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
             std::string bandsel_vrt_name = "";
             GDALDataset *g = (GDALDataset *)GDALOpen(it->first.c_str(), GA_ReadOnly);
             if (!g) {
-                GCBS_WARN("GDAL cannot open '" + it->first + "', image will be ignored");
+                GCBS_WARN("GDAL cannot open '" + it->first + "', image will be ignored.");
+                continue;
+            }
+
+            if (g->GetRasterCount() == 0) {
+                GCBS_WARN("GDAL dataset'" + it->first + "' does not contain any raster bands and will be ignored.");
                 continue;
             }
 
