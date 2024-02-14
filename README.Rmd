@@ -44,7 +44,7 @@ install.packages("gdalcubes")
 Installation from sources is easiest with
 
 ```{r, eval=FALSE}
-remotes::install_git("https://github.com/appelmar/gdalcubes_R")
+remotes::install_git("https://github.com/appelmar/gdalcubes")
 ```
 
 Please make sure that the [git command line client](https://git-scm.com/downloads) is available on your system. Otherwise, the above command might not clone the gdalcubes C++ library as a submodule under src/gdalcubes.
@@ -76,6 +76,9 @@ brew install libgit2
 brew install udunits
 brew install curl
 brew install sqlite
+brew install libtiff
+brew install hdf5
+brew install protobuf
 ```
 
 # Getting started
