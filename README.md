@@ -41,7 +41,7 @@ install.packages("gdalcubes")
 Installation from sources is easiest with
 
 ``` r
-remotes::install_git("https://github.com/appelmar/gdalcubes_R")
+remotes::install_git("https://github.com/appelmar/gdalcubes")
 ```
 
 Please make sure that the [git command line
@@ -83,6 +83,9 @@ Use [Homebrew](https://brew.sh) to install system libraries with
     brew install udunits
     brew install curl
     brew install sqlite
+    brew install libtiff
+    brew install hdf5
+    brew install protobuf
 
 # Getting started
 
