@@ -447,6 +447,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gc_create_window_space_cube_reduce
+SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, int win_size_y, int win_size_x, bool keep_bands);
+RcppExport SEXP _gdalcubes_gc_create_window_space_cube_reduce(SEXP pinSEXP, SEXP reducersSEXP, SEXP bandsSEXP, SEXP win_size_ySEXP, SEXP win_size_xSEXP, SEXP keep_bandsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type reducers(reducersSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type bands(bandsSEXP);
+    Rcpp::traits::input_parameter< int >::type win_size_y(win_size_ySEXP);
+    Rcpp::traits::input_parameter< int >::type win_size_x(win_size_xSEXP);
+    Rcpp::traits::input_parameter< bool >::type keep_bands(keep_bandsSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_window_space_cube_reduce(pin, reducers, bands, win_size_y, win_size_x, keep_bands));
+    return rcpp_result_gen;
+END_RCPP
+}
+// gc_create_window_space_cube_kernel
+SEXP gc_create_window_space_cube_kernel(SEXP pin, std::vector<double> kernel, int win_size_y, int win_size_x, bool keep_bands);
+RcppExport SEXP _gdalcubes_gc_create_window_space_cube_kernel(SEXP pinSEXP, SEXP kernelSEXP, SEXP win_size_ySEXP, SEXP win_size_xSEXP, SEXP keep_bandsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type kernel(kernelSEXP);
+    Rcpp::traits::input_parameter< int >::type win_size_y(win_size_ySEXP);
+    Rcpp::traits::input_parameter< int >::type win_size_x(win_size_xSEXP);
+    Rcpp::traits::input_parameter< bool >::type keep_bands(keep_bandsSEXP);
+    rcpp_result_gen = Rcpp::wrap(gc_create_window_space_cube_kernel(pin, kernel, win_size_y, win_size_x, keep_bands));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc_create_join_bands_cube
 SEXP gc_create_join_bands_cube(Rcpp::List pin_list, std::vector<std::string> cube_names);
 RcppExport SEXP _gdalcubes_gc_create_join_bands_cube(SEXP pin_listSEXP, SEXP cube_namesSEXP) {
@@ -854,6 +885,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_create_reduce_space_cube", (DL_FUNC) &_gdalcubes_gc_create_reduce_space_cube, 4},
     {"_gdalcubes_gc_create_window_time_cube_reduce", (DL_FUNC) &_gdalcubes_gc_create_window_time_cube_reduce, 4},
     {"_gdalcubes_gc_create_window_time_cube_kernel", (DL_FUNC) &_gdalcubes_gc_create_window_time_cube_kernel, 3},
+    {"_gdalcubes_gc_create_window_space_cube_reduce", (DL_FUNC) &_gdalcubes_gc_create_window_space_cube_reduce, 6},
+    {"_gdalcubes_gc_create_window_space_cube_kernel", (DL_FUNC) &_gdalcubes_gc_create_window_space_cube_kernel, 5},
     {"_gdalcubes_gc_create_join_bands_cube", (DL_FUNC) &_gdalcubes_gc_create_join_bands_cube, 2},
     {"_gdalcubes_gc_create_select_bands_cube", (DL_FUNC) &_gdalcubes_gc_create_select_bands_cube, 2},
     {"_gdalcubes_gc_create_select_time_cube", (DL_FUNC) &_gdalcubes_gc_create_select_time_cube, 2},

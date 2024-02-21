@@ -53,6 +53,7 @@
 #include "stream_apply_time.h"
 #include "stream_reduce_space.h"
 #include "stream_reduce_time.h"
+#include "window_space.h"
 #include "window_time.h"
 
 namespace gdalcubes {
@@ -141,6 +142,27 @@ void cube_factory::register_default() {
                 }
                 return window_time_cube::create(instance()->create_from_json(j["in_cube"]), band_reducers,
                                                 j["win_size_l"].int_value(), j["win_size_r"].int_value());
+            }
+        }));
+    cube_generators.insert(std::make_pair<std::string, std::function<std::shared_ptr<cube>(json11::Json&)>>(
+        "window_space", [](json11::Json& j) {
+            if (!j["kernel"].is_null()) {
+                std::vector<double> kernel;
+                for (uint16_t i = 0; i < j["kernel"].array_items().size(); ++i) {
+                    kernel.push_back(j["kernel"][i].number_value());
+                }
+                return window_space_cube::create(instance()->create_from_json(j["in_cube"]), kernel,
+                                                j["win_size_y"].int_value(), j["win_size_x"].int_value(), 
+                                                j["keep_bands"].bool_value());
+            }
+            else {
+                std::vector<std::pair<std::string, std::string>> band_reducers;
+                for (uint16_t i = 0; i < j["reducer_bands"].array_items().size(); ++i) {
+                    band_reducers.push_back(std::make_pair(j["reducer_bands"][i][0].string_value(), j["reducer_bands"][i][1].string_value()));
+                }
+                return window_space_cube::create(instance()->create_from_json(j["in_cube"]), band_reducers,
+                                                j["win_size_y"].int_value(), j["win_size_x"].int_value(),
+                                                j["keep_bands"].bool_value());
             }
         }));
     cube_generators.insert(std::make_pair<std::string, std::function<std::shared_ptr<cube>(json11::Json&)>>(

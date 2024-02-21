@@ -760,6 +760,23 @@ class cube : public std::enable_shared_from_this<cube> {
      */
     virtual std::shared_ptr<chunk_data> read_chunk(chunkid_t id) = 0;
 
+
+    /**
+     * @brief Read a window subset of a data cube to a buffer
+     * 
+     * This funtion guarantees that the output buffer has size prod(upper - lower + 1).
+     * It can work with negative cube coordinates.
+     * 
+     * Areas outside the cube are always filled with NAN. 
+     * Padding must be explicitly implemented in upstram code, if needed (e.g. window_space)
+     * 
+     * 
+     * @param lower coordinates of the lower pixel (cube coordinates)
+     * @param upper coordinates of the upper point (cube coordinates)
+     * @return a smart pointer to chunk data
+     */
+    std::shared_ptr<chunk_data> read_window(std::array<int32_t, 3> lower, std::array<int32_t, 3> upper);
+
     /**
      * @brief Write a data cube as a set of GeoTIFF files under a given directory
      *
