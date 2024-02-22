@@ -127,11 +127,11 @@ is.window_time_cube  <- function(obj) {
 #' @param expr either a single string, or a vector of strings, defining which reducers will be applied over which bands of the input cube
 #' @param window integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]
 #' @param keep_bands logical; if FALSE (the default), original data cube bands will be dropped. 
+#' @param pad Padding method applied to the borders; use NULL for no padding, a numeric a fill value, or one of "REPLICATE", "REFLECT", "REFLECT_PIXEL"
 #' @param ... optional additional expressions (if expr is not a vector)
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as \code{na.rm = TRUE} does).
-#' @note THIS FUNCTION IS STILL EXPERIMENTAL: The current implementation does not yet support any special edge handling. 
-#' @note THIS FUNCTION IS STILL EXPERIMENTAL: The current implementation will simply ignore NA values during the convolution, i.e. the sum will not be updated for NA pixels.
+#' @note THIS FUNCTION IS STILL EXPERIMENTAL.
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
@@ -165,8 +165,38 @@ is.window_time_cube  <- function(obj) {
 #' more complex functions or arguments. Possible reducers currently include "min", "max", "sum", "prod", "count", "mean", "median", "var", and "sd".
 #'
 #' @export
-window_space <- function(x, expr,  ..., kernel, window, keep_bands = FALSE) {
+window_space <- function(x, expr,  ..., kernel, window, keep_bands = FALSE, pad = NA) {
   stopifnot(is.cube(x))
+  
+  
+  pad_fill = as.numeric(0)
+  pad_mode = ""
+  if (is.na(pad)) {
+    pad_mode = ""
+  }
+  else if (is.numeric(pad)) {
+    pad_fill = pad[1]
+    pad_mode = "CONSTANT"
+  }
+  else if (is.character(pad)) {
+    if (any(c("REPLICATE","replicate","edge") %in% pad)){
+      pad_mode = "REPLICATE"
+    }
+    else if (any(c("REFLECT","reflect","symmetric") %in% pad)){
+      pad_mode = "REFLECT"
+    }
+    else if (any(c("REFLECT_PIXEL","reflect_pixel") %in% pad)){
+      pad_mode = "REFLECT_PIXEL"
+    }
+    else {
+      warning("Unknown padding method (argument pad) provided: falling back to default method (no padding)")
+      pad_mode = ""
+    }
+  }
+  else {
+    warning("Invalid padding method (argument pad) provided: falling back to default method (no padding)")
+    pad_mode = ""
+  }
   
   if (!missing(kernel)) {
     if (!missing(expr)) {
@@ -178,7 +208,7 @@ window_space <- function(x, expr,  ..., kernel, window, keep_bands = FALSE) {
     if (!is.matrix(kernel)) {
       stop("Kernel must be provided as a matrix")
     }
-    x = gc_create_window_space_cube_kernel(x, as.double(kernel), as.integer(nrow(kernel)), as.integer(ncol(kernel)), keep_bands)
+    x = gc_create_window_space_cube_kernel(x, as.double(kernel), as.integer(nrow(kernel)), as.integer(ncol(kernel)), keep_bands, as.character(pad_mode), as.double(pad_fill))
   }
   else {
     stopifnot(is.character(expr))
@@ -198,7 +228,7 @@ window_space <- function(x, expr,  ..., kernel, window, keep_bands = FALSE) {
     reducers = gsub("\\(.*\\)", "", expr)
     bands =  gsub("[\\(\\)]", "", regmatches(expr, gregexpr("\\(.*?\\)", expr)))
     stopifnot(length(reducers) == length(bands))
-    x = gc_create_window_space_cube_reduce(x, reducers, bands, as.integer(window[1]), as.integer(window[2]), keep_bands)
+    x = gc_create_window_space_cube_reduce(x, reducers, bands, as.integer(window[1]), as.integer(window[2]), keep_bands, as.character(pad_mode), as.double(pad_fill))
   }
   class(x) <- c("window_space_cube", "cube", "xptr")
   return(x)

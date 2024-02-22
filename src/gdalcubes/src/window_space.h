@@ -29,6 +29,11 @@
 
 namespace gdalcubes {
 
+
+
+
+
+
 // TODO: add custom reducer function
 // TODO: add boundary fill options (e.g. NA, wrap, repeat, mirror, ...)
 /**
@@ -36,6 +41,14 @@ namespace gdalcubes {
  */
 class window_space_cube : public cube {
    public:
+
+
+    struct padding {
+        enum MODE {NONE, CONSTANT, REPLICATE, REFLECT, REFLECT_PIXEL, WRAP}; // see https://processes.openeo.org/#apply_kernel 
+        MODE mode;
+        double constant_value;
+        padding() : mode(NONE), constant_value(NAN) {}
+    };
    
     /**
      * @brief Create a data cube that applies a reducer function on a given input data cube over time
@@ -47,8 +60,8 @@ class window_space_cube : public cube {
      */
     static std::shared_ptr<window_space_cube>
     create(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands,
-           uint16_t win_size_y, uint16_t win_size_x, bool keep_bands) {
-        std::shared_ptr<window_space_cube> out = std::make_shared<window_space_cube>(in, reducer_bands, win_size_y, win_size_x, keep_bands);
+           uint16_t win_size_y, uint16_t win_size_x, bool keep_bands, std::string pad_str, double pad_fill=0.0) {
+        std::shared_ptr<window_space_cube> out = std::make_shared<window_space_cube>(in, reducer_bands, win_size_y, win_size_x, keep_bands, pad_str, pad_fill);
         in->add_child_cube(out);
         out->add_parent_cube(in);
         return out;
@@ -63,8 +76,8 @@ class window_space_cube : public cube {
     * @return a shared pointer to the created data cube instance
     */
     static std::shared_ptr<window_space_cube>
-    create(std::shared_ptr<cube> in, std::vector<double> kernel, uint16_t win_size_y, uint16_t win_size_x, bool keep_bands) {
-        std::shared_ptr<window_space_cube> out = std::make_shared<window_space_cube>(in, kernel, win_size_y, win_size_x, keep_bands);
+    create(std::shared_ptr<cube> in, std::vector<double> kernel, uint16_t win_size_y, uint16_t win_size_x, bool keep_bands, std::string pad_str, double pad_fill=0.0) {
+        std::shared_ptr<window_space_cube> out = std::make_shared<window_space_cube>(in, kernel, win_size_y, win_size_x, keep_bands, pad_str, pad_fill);
         in->add_child_cube(out);
         out->add_parent_cube(in);
         return out;
@@ -73,7 +86,7 @@ class window_space_cube : public cube {
    public:
 
    window_space_cube(std::shared_ptr<cube> in, std::vector<std::pair<std::string, std::string>> reducer_bands,
-                     uint16_t win_size_y, uint16_t win_size_x, bool keep_bands) : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(reducer_bands), _win_size_y(win_size_y), _win_size_x(win_size_x), _band_idx_in(), _kernel(), _keep_bands(keep_bands) {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
+                     uint16_t win_size_y, uint16_t win_size_x, bool keep_bands, std::string pad_str, double pad_fill=0.0) : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(reducer_bands), _win_size_y(win_size_y), _win_size_x(win_size_x), _band_idx_in(), _kernel(), _keep_bands(keep_bands), _pad_str(pad_str), _pad_fill(pad_fill), _pad() {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
         _chunk_size[0] = _in_cube->chunk_size()[0];
         _chunk_size[1] = _in_cube->chunk_size()[1];
         _chunk_size[2] = _in_cube->chunk_size()[2];
@@ -100,11 +113,30 @@ class window_space_cube : public cube {
 
             _band_idx_in.push_back(in->bands().get_index(bandstr));
         }
+
+        if (pad_str == "CONSTANT") {
+            _pad.mode = padding::MODE::CONSTANT;
+            _pad.constant_value = pad_fill;
+        }
+        else if (pad_str == "REPLICATE") {
+            _pad.mode = padding::MODE::REPLICATE;
+        }
+        else if (pad_str == "REFLECT") {
+            _pad.mode = padding::MODE::REFLECT;
+        }
+        else if (pad_str == "REFLECT_PIXEL") {
+            _pad.mode = padding::MODE::REFLECT_PIXEL;
+        }
+        else {
+            if (!pad_str.empty())
+                GCBS_WARN("Unknown padding method defined: falling back to default method (no padding)");
+            _pad.mode = padding::MODE::NONE;
+        }
     }
 
     
-    window_space_cube(std::shared_ptr<cube> in, std::vector<double> kernel, uint16_t win_size_y, uint16_t win_size_x, bool keep_bands)
-        : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(), _win_size_y(win_size_y), _win_size_x(win_size_x), _band_idx_in(), _kernel(kernel), _keep_bands(keep_bands) {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
+    window_space_cube(std::shared_ptr<cube> in, std::vector<double> kernel, uint16_t win_size_y, uint16_t win_size_x, bool keep_bands, std::string pad_str, double pad_fill=0.0)
+        : cube(in->st_reference()->copy()), _in_cube(in), _reducer_bands(), _win_size_y(win_size_y), _win_size_x(win_size_x), _band_idx_in(), _kernel(kernel), _keep_bands(keep_bands), _pad_str(pad_str), _pad_fill(pad_fill), _pad() {  // it is important to duplicate st reference here, otherwise changes will affect input cube as well
         _chunk_size[0] = _in_cube->chunk_size()[0];
         _chunk_size[1] = _in_cube->chunk_size()[1];
         _chunk_size[2] = _in_cube->chunk_size()[2];
@@ -124,6 +156,25 @@ class window_space_cube : public cube {
         for (uint16_t i = 0; i < in->bands().count(); ++i) {
             band b = in->bands().get(i);
             _bands.add(b);
+        }
+
+        if (pad_str == "CONSTANT") {
+            _pad.mode = padding::MODE::CONSTANT;
+            _pad.constant_value = pad_fill;
+        }
+        else if (pad_str == "REPLICATE") {
+            _pad.mode = padding::MODE::REPLICATE;
+        }
+        else if (pad_str == "REFLECT") {
+            _pad.mode = padding::MODE::REFLECT;
+        }
+        else if (pad_str == "REFLECT_PIXEL") {
+            _pad.mode = padding::MODE::REFLECT_PIXEL;
+        }
+        else {
+            if (!pad_str.empty())
+                GCBS_WARN("Unknown padding method defined: falling back to default method (no padding)");
+            _pad.mode = padding::MODE::NONE;
         }
     }
 
@@ -147,6 +198,8 @@ class window_space_cube : public cube {
         }
         out["win_size_y"] = _win_size_y;
         out["win_size_x"] = _win_size_x;
+        out["pad_str"] = _pad_str;
+        out["pad_fill"] = _pad_fill;
         out["keep_bands"] = _keep_bands;
         out["in_cube"] = _in_cube->make_constructible_json();
         return out;
@@ -160,6 +213,9 @@ class window_space_cube : public cube {
     std::vector<uint16_t> _band_idx_in;
     std::vector<double> _kernel;
     bool _keep_bands;
+    std::string _pad_str;
+    double _pad_fill;
+    padding _pad; // TODO
 };
 
 }  // namespace gdalcubes

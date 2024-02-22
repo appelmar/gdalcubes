@@ -153,7 +153,7 @@ void cube_factory::register_default() {
                 }
                 return window_space_cube::create(instance()->create_from_json(j["in_cube"]), kernel,
                                                 j["win_size_y"].int_value(), j["win_size_x"].int_value(), 
-                                                j["keep_bands"].bool_value());
+                                                j["keep_bands"].bool_value(), j["pad_str"].string_value(), j["pad_fill"].number_value());
             }
             else {
                 std::vector<std::pair<std::string, std::string>> band_reducers;
@@ -162,7 +162,7 @@ void cube_factory::register_default() {
                 }
                 return window_space_cube::create(instance()->create_from_json(j["in_cube"]), band_reducers,
                                                 j["win_size_y"].int_value(), j["win_size_x"].int_value(),
-                                                j["keep_bands"].bool_value());
+                                                j["keep_bands"].bool_value(), j["pad_str"].string_value(), j["pad_fill"].number_value());
             }
         }));
     cube_generators.insert(std::make_pair<std::string, std::function<std::shared_ptr<cube>(json11::Json&)>>(

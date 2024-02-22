@@ -149,12 +149,12 @@ gc_create_window_time_cube_kernel <- function(pin, window, kernel) {
     .Call('_gdalcubes_gc_create_window_time_cube_kernel', PACKAGE = 'gdalcubes', pin, window, kernel)
 }
 
-gc_create_window_space_cube_reduce <- function(pin, reducers, bands, win_size_y, win_size_x, keep_bands) {
-    .Call('_gdalcubes_gc_create_window_space_cube_reduce', PACKAGE = 'gdalcubes', pin, reducers, bands, win_size_y, win_size_x, keep_bands)
+gc_create_window_space_cube_reduce <- function(pin, reducers, bands, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill) {
+    .Call('_gdalcubes_gc_create_window_space_cube_reduce', PACKAGE = 'gdalcubes', pin, reducers, bands, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill)
 }
 
-gc_create_window_space_cube_kernel <- function(pin, kernel, win_size_y, win_size_x, keep_bands) {
-    .Call('_gdalcubes_gc_create_window_space_cube_kernel', PACKAGE = 'gdalcubes', pin, kernel, win_size_y, win_size_x, keep_bands)
+gc_create_window_space_cube_kernel <- function(pin, kernel, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill) {
+    .Call('_gdalcubes_gc_create_window_space_cube_kernel', PACKAGE = 'gdalcubes', pin, kernel, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill)
 }
 
 gc_create_join_bands_cube <- function(pin_list, cube_names) {

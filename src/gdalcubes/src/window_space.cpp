@@ -183,7 +183,6 @@ struct window_reducer_sd : public window_reducer_var {
 
 
 
-
 std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
     GCBS_TRACE("window_space_cube::read_chunk(" + std::to_string(id) + ")");
     std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
@@ -202,8 +201,7 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
     std::fill(begin, end, NAN);
 
 
-    // 1. Extract "subwindow" from input chunks --> function
-    // size: (winsize[0] + chunk_size[0] + winsize[2]) x (winsize[1] + chunk_size[1] + winsize[3])
+    // 1. Extract "subwindow" from input chunks
     auto ccoords = chunk_coords_from_id(id);
     std::array<int32_t, 3> lower = {int32_t(ccoords[0] * _chunk_size[0]), 
                                     int32_t(ccoords[1] * _chunk_size[1] - ((_win_size_y - 1) / 2)), 
@@ -215,12 +213,373 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
     auto cwin = _in_cube->read_window(lower, upper);
 
 
+
+
+
+    // 2. Apply padding (if needed)
+    if (_pad.mode != padding::MODE::NONE) {
+
+        double v;
+        if (_pad.mode == padding::MODE::CONSTANT) {
+            v = _pad.constant_value;
+        }
+
+
+        // lower y side
+        if (lower[1] < 0) {
+            int32_t wy = -lower[1];
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t ix=0; ix < int32_t(cwin->size()[3]); ++ix) {
+                        for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                            int32_t tx = ix;
+                            int32_t ty = wy - off_y; 
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx;
+                                sy = ty + off_y; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx;
+                                sy = ty + off_y + off_y - 1; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx;
+                                sy = ty + off_y + off_y; 
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }
+                }  
+            }
+        }
+
+        // upper y side
+        if (upper[1] >= int32_t(size_y())) {
+            int32_t wy = upper[1] - size_y() + 1;
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t ix=0; ix < int32_t(cwin->size()[3]); ++ix) {
+                        for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                            int32_t tx = ix;
+                            int32_t ty = cwin->size()[2] - wy - 1 + off_y;  
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx;
+                                sy = ty - off_y; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx;
+                                sy = ty - off_y - off_y + 1; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx;
+                                sy = ty - off_y - off_y;  
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                   
+                }
+            }
+        }
+        
+        
+
+        // lower x side
+        if (lower[2] < 0) {
+            int32_t wx = -lower[2];
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {      
+                    for (int32_t iy=0; iy < int32_t(cwin->size()[2]); ++iy) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            
+                            int32_t tx = wx - off_x;
+                            int32_t ty = iy; 
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sy = ty;
+                                sx = tx + off_x;
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx + off_x + off_x - 1;
+                                sy = ty; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx + off_x + off_x;
+                                sy = ty;
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }
+                }  
+            }
+        }
+
+        // upper x side
+        if (upper[2] >= int32_t(size_x())) {
+            int32_t wx = upper[2] - size_x() + 1;
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t iy=0; iy < int32_t(cwin->size()[2]); ++iy) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            int32_t tx = cwin->size()[3] - wx - 1 + off_x; 
+                            int32_t ty = iy;  
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx - off_x;
+                                sy = ty;
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx - off_x - off_x + 1;
+                                sy = ty;
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx - off_x - off_x;
+                                sy = ty;  
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                      
+                }
+            }
+        }
+
+        // lower y, lower x side
+        if (lower[1] < 0 && lower[2] < 0) {
+            int32_t wx = -lower[2];
+            int32_t wy = -lower[1];
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            int32_t tx = wx - off_x;
+                            int32_t ty = wy - off_y; 
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx + off_y;
+                                sy = ty + off_y; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx + off_x + off_x - 1;
+                                sy = ty + off_y + off_y - 1; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx + off_x + off_x;
+                                sy = ty + off_y + off_y; 
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                      
+                }
+            }    
+        }
+        // upper y, lower x side
+        if (upper[1] >= int32_t(size_y()) && lower[2] < 0) {
+            int32_t wx = -lower[2];
+            int32_t wy = upper[1] - size_y() + 1;
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            int32_t tx = wx - off_x;
+                            int32_t ty = cwin->size()[2] - wy - 1 + off_y;
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx + off_y;
+                                sy = ty - off_y; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx + off_x + off_x - 1;
+                                sy = ty - off_y - off_y + 1; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx + off_x + off_x;
+                                sy = ty - off_y - off_y;  
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                      
+                }
+            }    
+        }
+        // upper y, upper x side
+        if (upper[1] >= int32_t(size_y()) && upper[2] >= int32_t(size_x())) {
+            int32_t wx = upper[2] - size_x() + 1;
+            int32_t wy = upper[1] - size_y() + 1;
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            int32_t tx = cwin->size()[3] - wx - 1 + off_x;
+                            int32_t ty = cwin->size()[2] - wy - 1 + off_y;
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx - off_x;
+                                sy = ty - off_y; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx - off_x - off_x + 1;
+                                sy = ty - off_y - off_y + 1; 
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx - off_x - off_x;
+                                sy = ty - off_y - off_y;  
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                      
+                }
+            }    
+        }
+        // lower y, upper x side
+        if (upper[1] >= int32_t(size_y()) && upper[2] >= int32_t(size_x())) {
+            int32_t wx = upper[2] - size_x() + 1;
+            int32_t wy = -lower[1];
+            for (uint16_t ib=0; ib < cwin->size()[0]; ++ib) {
+                for (uint16_t it=0; it < cwin->size()[1]; ++it) {
+                    for (int32_t off_y=1; off_y <= wy; ++off_y) {
+                        for (int32_t off_x=1; off_x <= wx; ++off_x) {
+                            int32_t tx = cwin->size()[3] - wx - 1 + off_x;
+                            int32_t ty = wy - off_y; 
+                            int32_t sx = tx; 
+                            int32_t sy = ty; 
+                            if (_pad.mode == padding::MODE::REPLICATE) {
+                                sx = tx - off_x;
+                                sy = ty + off_y;  
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT) {
+                                sx = tx - off_x - off_x + 1;
+                                sy = ty + off_y + off_y - 1;
+                            }
+                            else if (_pad.mode == padding::MODE::REFLECT_PIXEL) {
+                                sx = tx - off_x - off_x;
+                                sy = ty + off_y + off_y;  
+                            }
+                            if (_pad.mode != padding::MODE::CONSTANT) {
+                                v = ((double*)(cwin->buf()))[
+                                    ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                    it * cwin->size()[2] * cwin->size()[3] +
+                                    sy * cwin->size()[3] +
+                                    sx];
+                            }
+                            ((double*)(cwin->buf()))[
+                                ib * cwin->size()[1] * cwin->size()[2] * cwin->size()[3] +
+                                it * cwin->size()[2] * cwin->size()[3] +
+                                ty * cwin->size()[3] +
+                                tx ] = v;
+                        }
+                    }                      
+                }
+            }    
+        }
+    } // end padding
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // 3. Apply kernel or aggregation
     
-
+    // CASE 1: Convolution using a provided kernel
     if (!_kernel.empty()) {
-        // TODO: Apply padding
-
-        // 2. Iterate over target buffer and apply kernel.
+        
+        // Iterate over target buffer and apply kernel.
         for (uint32_t ib = 0; ib < size_btyx[0]; ++ib) {
             for (uint32_t it = 0; it < size_btyx[1]; ++it) {
                 for (uint32_t iy = 0; iy < size_btyx[2]; ++iy) {
@@ -256,6 +615,12 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
             }
         }
     }
+
+
+
+
+
+    // CASE 2: Aggregation of selected bands using built-in aggregation functions (see top of file)
     else {
         std::vector<window_reducer_singleband *> reducers;
         for (uint16_t i = 0; i < _reducer_bands.size(); ++i) {
@@ -350,5 +715,6 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
     }
     return out;
 }
+
 
 }  // namespace gdalcubes

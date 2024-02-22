@@ -4,7 +4,7 @@
 \alias{window_space}
 \title{Apply a moving window operation or convolution kernel over the spatial dimensions of a data cube}
 \usage{
-window_space(x, expr, ..., kernel, window, keep_bands = FALSE)
+window_space(x, expr, ..., kernel, window, keep_bands = FALSE, pad = NA)
 }
 \arguments{
 \item{x}{source data cube}
@@ -18,6 +18,8 @@ window_space(x, expr, ..., kernel, window, keep_bands = FALSE)
 \item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]}
 
 \item{keep_bands}{logical; if FALSE (the default), original data cube bands will be dropped.}
+
+\item{pad}{Padding method applied to the borders; use NULL for no padding, a numeric a fill value, or one of "REPLICATE", "REFLECT", "REFLECT_PIXEL"}
 }
 \value{
 proxy data cube object
@@ -41,9 +43,7 @@ more complex functions or arguments. Possible reducers currently include "min", 
 \note{
 Implemented reducers will ignore any NAN values (as \code{na.rm = TRUE} does).
 
-THIS FUNCTION IS STILL EXPERIMENTAL: The current implementation does not yet support any special edge handling.
-
-THIS FUNCTION IS STILL EXPERIMENTAL: The current implementation will simply ignore NA values during the convolution, i.e. the sum will not be updated for NA pixels.
+THIS FUNCTION IS STILL EXPERIMENTAL.
 
 This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 }

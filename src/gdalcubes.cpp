@@ -1144,7 +1144,7 @@ SEXP gc_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::v
 }
 
 // [[Rcpp::export]]
-SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, int win_size_y, int win_size_x, bool keep_bands) {
+SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, int win_size_y, int win_size_x, bool keep_bands, std::string pad_mode, double pad_fill) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
@@ -1154,7 +1154,7 @@ SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reduc
       reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
     }
     
-    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, reducer_bands, win_size_y, win_size_x, keep_bands));
+    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, reducer_bands, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill));
     Rcpp::XPtr< std::shared_ptr<window_space_cube> > p(x, true) ;
     
     return p;
@@ -1166,11 +1166,11 @@ SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reduc
 }
 
 // [[Rcpp::export]]
-SEXP gc_create_window_space_cube_kernel(SEXP pin, std::vector<double> kernel, int win_size_y, int win_size_x, bool keep_bands) {
+SEXP gc_create_window_space_cube_kernel(SEXP pin, std::vector<double> kernel, int win_size_y, int win_size_x, bool keep_bands, std::string pad_mode, double pad_fill) {
   try {
     Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
     
-    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, kernel, win_size_y, win_size_x, keep_bands));
+    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, kernel, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill));
     Rcpp::XPtr< std::shared_ptr<window_space_cube> > p(x, true) ;
     return p;
     
