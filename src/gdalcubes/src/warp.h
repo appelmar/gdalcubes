@@ -96,6 +96,13 @@ class gdalwarp_client {
      */
     static GDALDataset *warp(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left, double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y, std::string resampling, std::vector<double> srcnodata);
 
+    
+    // See above, only for cases where source dataset has a GeoTransform (affine transformation)
+    static GDALDataset *warp_simple(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left, double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y, std::string resampling, std::vector<double> srcnodata);
+
+    // See above, but also working for source images with spatial reference by GCPs, RPCs, or GeoLocation arrays
+    static GDALDataset *warp_complex(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left, double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y, std::string resampling, std::vector<double> srcnodata);
+
     static gdalcubes_transform_info *create_transform(GDALDataset *in, GDALDataset *out, std::string srs_in_str, std::string srs_out_str);
     static void destroy_transform(gdalcubes_transform_info *transform);
 
@@ -111,6 +118,38 @@ class gdalwarp_client {
     static int reproject(void *pTransformerArg,
                          int bDstToSrc, int nPointCount,
                          double *x, double *y, double *z = nullptr, int *panSuccess = nullptr);
+
+
+    private:
+
+    // see https://github.com/OSGeo/gdal/blob/64cf9b4e889c93e34177237665fe842186d1f581/alg/gdaltransformer.cpp#L84
+    typedef struct
+    {
+
+        GDALTransformerInfo sTI;
+
+        double adfSrcGeoTransform[6];
+        double adfSrcInvGeoTransform[6];
+
+        void *pSrcTransformArg;
+        GDALTransformerFunc pSrcTransformer;
+
+        void *pReprojectArg;
+        GDALTransformerFunc pReproject;
+
+        double adfDstGeoTransform[6];
+        double adfDstInvGeoTransform[6];
+
+        void *pDstTransformArg;
+        GDALTransformerFunc pDstTransformer;
+
+        // Memorize the value of the CHECK_WITH_INVERT_PROJ at the time we
+        // instantiated the object, to be able to decide if
+        // GDALRefreshGenImgProjTransformer() must do something or not.
+        bool bCheckWithInvertPROJ;
+
+    } GDALGenImgProjTransformInfo;
+
 };
 
 }  // namespace gdalcubes

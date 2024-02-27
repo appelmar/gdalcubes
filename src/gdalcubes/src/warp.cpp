@@ -54,7 +54,23 @@ gdalwarp_client::gdal_transformation_cache::~gdal_transformation_cache() {
     }
 }
 
+
 GDALDataset *gdalwarp_client::warp(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left,
+                                   double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y,
+                                   std::string resampling, std::vector<double> srcnodata) {
+    double temp[6];                                
+    if (in->GetGeoTransform(temp) == CE_None) {
+        return warp_simple(in, s_srs, t_srs, te_left, te_right, te_top, te_bottom, ts_x, ts_y, resampling, srcnodata);
+    }
+    else  { // GCPs, RCPs, or GeolocationArrays
+        return warp_complex(in, s_srs, t_srs, te_left, te_right, te_top, te_bottom, ts_x, ts_y, resampling, srcnodata);
+    }
+}
+
+
+
+
+GDALDataset *gdalwarp_client::warp_simple(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left,
                                    double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y,
                                    std::string resampling, std::vector<double> srcnodata) {
     char *wkt_out = NULL;
@@ -87,6 +103,9 @@ GDALDataset *gdalwarp_client::warp(GDALDataset *in, std::string s_srs, std::stri
     if (s_srs.empty()) {
         // try reading from dataset
         s_srs = std::string(in->GetProjectionRef());
+        if (s_srs.empty()) {
+            GCBS_DEBUG("Failed to read input crs.");
+        }
     }
     //    if (std::string(in->GetProjectionRef()).empty()) {
     //        if (in->SetProjection(s_srs.c_str()) != CE_None) {
@@ -234,9 +253,7 @@ GDALDataset *gdalwarp_client::warp(GDALDataset *in, std::string s_srs, std::stri
     if (oOperation.Initialize(psWarpOptions) != CE_None) {
         GCBS_ERROR("Initialization of gdalwarp failed");
     }
-    oOperation.ChunkAndWarpImage(0, 0,
-                                 GDALGetRasterXSize(out),
-                                 GDALGetRasterYSize(out));
+    oOperation.ChunkAndWarpImage(0, 0, GDALGetRasterXSize(out), GDALGetRasterYSize(out));
 
     destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
     GDALDestroyWarpOptions(psWarpOptions);
@@ -416,4 +433,242 @@ void gdalwarp_client::destroy_reprojection(gdalcubes_reprojection_info *reprojec
     }
 }
 
+GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, std::string t_srs, double te_left,
+                                   double te_right, double te_top, double te_bottom, uint32_t ts_x, uint32_t ts_y,
+                                   std::string resampling, std::vector<double> srcnodata) {
+    char *wkt_out = NULL;
+
+    OGRSpatialReference srs_out;
+    srs_out.SetFromUserInput(t_srs.c_str());
+    srs_out.exportToWkt(&wkt_out);
+
+    double dst_geotransform[6];
+    dst_geotransform[0] = te_left;
+    dst_geotransform[1] = (te_right - te_left) / double(ts_x);
+    dst_geotransform[2] = 0.0;
+    dst_geotransform[3] = te_top;
+    dst_geotransform[4] = 0.0;
+    dst_geotransform[5] = (te_bottom - te_top) / double(ts_y);
+
+    GDALDriver *mem_driver = (GDALDriver *)GDALGetDriverByName("MEM");
+    if (mem_driver == NULL) {
+        GCBS_ERROR("Cannot find GDAL MEM driver");
+        throw std::string("Cannot find GDAL MEM driver");
+    }
+
+    GDALDataset *out = mem_driver->Create("", ts_x, ts_y, in->GetRasterCount(), GDT_Float64, NULL);
+
+    for (uint16_t i=0; i<in->GetRasterCount(); ++i) {
+        out->GetRasterBand(i+1)->Fill(NAN); // Avoid spurious output when warping fails.
+    }
+
+    out->SetProjection(wkt_out);
+    out->SetGeoTransform(dst_geotransform);
+
+
+    // Setup warp options.
+    GDALWarpOptions *psWarpOptions = GDALCreateWarpOptions();
+    if (s_srs.empty()) {
+        // try reading from dataset
+        s_srs = std::string(in->GetProjectionRef());
+        if (s_srs.empty()) {
+            GCBS_DEBUG("Failed to read input crs; assuming EPSG:4326");
+            s_srs = "EPSG:4326";
+        }
+    }
+    //    if (std::string(in->GetProjectionRef()).empty()) {
+    //        if (in->SetProjection(s_srs.c_str()) != CE_None) {
+    //            GCBS_DEBUG("Failed to overwrite projection for dataset.");
+    //        }
+    //    }
+    //    std::string s = (in->GetProjectionRef());
+    //    GCBS_DEBUG(s);
+    psWarpOptions->hSrcDS = in;
+    psWarpOptions->hDstDS = out;
+    psWarpOptions->pfnProgress = GDALDummyProgress;
+
+    // see https://github.com/OSGeo/gdal/blob/64cf9b4e889c93e34177237665fe842186d1f581/alg/gdaltransformer.cpp#L1274C5-L1275C67
+    GDALGenImgProjTransformInfo *psInfo = static_cast<GDALGenImgProjTransformInfo *>(GDALCreateGenImgProjTransformer(in, s_srs.c_str(), out, NULL, TRUE, 0.0, 1 ));
+
+    // TODO: Do we need to check if t_srs and/or s_src are empty?
+    // Overwrite reprojection transform if needed, to benefit from cache
+    OGRSpatialReference srs_in;
+    srs_in.SetFromUserInput(s_srs.c_str());
+    void *tmparg = psInfo->pReprojectArg; // must be freed later
+    if (!srs_in.IsSame(&srs_out)) {
+        psInfo->pReprojectArg = gdal_transformation_cache::instance()->get(s_srs, t_srs);
+        psInfo->pReproject = reproject;
+    }
+    
+    psWarpOptions->pTransformerArg =  (void*)psInfo;
+    psWarpOptions->pfnTransformer = GDALGenImgProjTransform;
+
+    // Derive best overview level to use
+    int n_ov = in->GetRasterBand(1)->GetOverviewCount();
+    if (config::instance()->get_gdal_use_overviews() && n_ov > 0) {
+        double *x = (double *)std::malloc(sizeof(double) * 4);
+        double *y = (double *)std::malloc(sizeof(double) * 4);
+        int *succ = (int *)std::malloc(sizeof(int) * 4);
+        x[0] = 0;
+        x[1] = 0;
+        x[2] = ts_x;
+        x[3] = ts_x;
+        y[0] = ts_y;
+        y[1] = 0;
+        y[2] = ts_y;
+        y[3] = 0;
+
+        // Transform corners
+        GDALGenImgProjTransform(psWarpOptions->pTransformerArg, 1, 4, x, y, NULL, succ);
+
+        double minx = std::min(std::min(x[0], x[1]), std::min(x[2], x[3]));
+        double maxx = std::max(std::max(x[0], x[1]), std::max(x[2], x[3]));
+        double target_ratio = (maxx - minx) / double(ts_x);
+
+        int16_t ilevel = 0;
+        while (ilevel < n_ov) {
+            double ov_ratio = double(in->GetRasterBand(1)->GetXSize()) / double(in->GetRasterBand(1)->GetOverview(ilevel)->GetXSize());
+            if (ov_ratio > target_ratio) {
+                --ilevel;
+                break;
+            }
+            ++ilevel;
+        }
+        if (ilevel >= n_ov) {
+            ilevel = n_ov - 1;
+        }
+        if (ilevel >= 0) {
+            //GCBS_TRACE("Using overview level" + std::to_string(ilevel));
+            char **oo = nullptr;
+            oo = CSLAddString(oo, ("OVERVIEW_LEVEL=" + std::to_string(ilevel)).c_str());
+
+            std::string descr = in->GetDescription();
+            GDALClose(in);
+            in = (GDALDataset *)GDALOpenEx(descr.c_str(), GDAL_OF_RASTER | GDAL_OF_READONLY, NULL, oo, NULL);
+            if (in != NULL) {
+                destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
+                psWarpOptions->pTransformerArg = create_transform(in, out, s_srs, t_srs);
+                psWarpOptions->hSrcDS = in;  // TODO: close in_ov
+            } else {
+                GCBS_WARN("Failed to open GDAL overview dataset for '" + descr + "', using original full resolution image.");
+            }
+            CSLDestroy(oo);
+        }
+
+        std::free(x);
+        std::free(y);
+        std::free(succ);
+    }
+
+    psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_NearestNeighbour;
+    if (resampling == "bilinear") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Bilinear;
+    } else if (resampling == "cubic") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Cubic;
+    } else if (resampling == "cubicspline") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_CubicSpline;
+    } else if (resampling == "lanczos") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Lanczos;
+    } else if (resampling == "average") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Average;
+    } else if (resampling == "mode") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Mode;
+    } else if (resampling == "max") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Max;
+    } else if (resampling == "min") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Min;
+    } else if (resampling == "med") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Med;
+    } else if (resampling == "q1") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Q1;
+    } else if (resampling == "q3") {
+        psWarpOptions->eResampleAlg = GDALResampleAlg::GRA_Q3;
+    }
+
+    psWarpOptions->nBandCount = in->GetRasterCount();
+    psWarpOptions->panSrcBands = (int *)CPLMalloc(sizeof(int) * psWarpOptions->nBandCount);
+    psWarpOptions->panDstBands = (int *)CPLMalloc(sizeof(int) * psWarpOptions->nBandCount);
+    double *dst_nodata = (double *)CPLMalloc(sizeof(double) * psWarpOptions->nBandCount);
+
+    // Due to issues on Windows with GDAL 2.2.3 if imag no data values are not set,
+    // we explicitly set then to 0 in the following. This might be removed in the future.
+    double *dst_nodata_img = (double *)CPLMalloc(sizeof(double) * psWarpOptions->nBandCount);
+    for (uint16_t i = 0; i < psWarpOptions->nBandCount; ++i) {
+        dst_nodata[i] = NAN;
+        dst_nodata_img[i] = 0.0;
+        psWarpOptions->panSrcBands[i] = i + 1;
+        psWarpOptions->panDstBands[i] = i + 1;
+    }
+    double *src_nodata = nullptr;
+    double *src_nodata_img = nullptr;
+
+    if (!srcnodata.empty()) {
+        src_nodata = (double *)CPLMalloc(sizeof(double) * psWarpOptions->nBandCount);
+        src_nodata_img = (double *)CPLMalloc(sizeof(double) * psWarpOptions->nBandCount);
+        if (srcnodata.size() == 1) {
+            for (uint16_t i = 0; i < psWarpOptions->nBandCount; ++i) {
+                src_nodata[i] = srcnodata[0];
+                src_nodata_img[i] = 0.0;
+            }
+            psWarpOptions->padfSrcNoDataReal = src_nodata;
+            psWarpOptions->padfSrcNoDataImag = src_nodata_img;
+        } else if (srcnodata.size() == (uint16_t)psWarpOptions->nBandCount) {
+            for (uint16_t i = 0; i < psWarpOptions->nBandCount; ++i) {
+                src_nodata[i] = srcnodata[i];
+                src_nodata_img[i] = 0.0;
+            }
+            psWarpOptions->padfSrcNoDataReal = src_nodata;
+            psWarpOptions->padfSrcNoDataImag = src_nodata_img;
+        } else {
+            GCBS_DEBUG("Number of no data values does not match number of bands of source dataset, no data values will be ignored");
+            std::free(src_nodata);
+            std::free(src_nodata_img);
+        }
+    }
+    psWarpOptions->padfDstNoDataReal = dst_nodata;
+    psWarpOptions->padfDstNoDataImag = dst_nodata_img;
+
+    char **wo = nullptr;
+    wo = CSLAddString(wo, "INIT_DEST=nan");
+    wo = CSLAddString(wo, ("NUM_THREADS=" + std::to_string(config::instance()->get_gdal_num_threads())).c_str());
+    psWarpOptions->papszWarpOptions = wo;
+
+    // Initialize and execute the warp operation.
+    GDALWarpOperation oOperation;
+    if (oOperation.Initialize(psWarpOptions) != CE_None) {
+        GCBS_ERROR("Initialization of gdalwarp failed");
+    }
+
+    if(oOperation.ChunkAndWarpImage(0, 0,
+                                 GDALGetRasterXSize(out),
+                                 GDALGetRasterYSize(out)) != CE_None) {
+        GCBS_DEBUG("gdalwarp returned error code #" + std::to_string(CPLGetLastErrorNo()) + ": " + std::string(CPLGetLastErrorMsg()) + 
+                   "[" + std::string(in->GetDescription()) + "]");
+
+    }
+
+    static_cast<GDALGenImgProjTransformInfo *>(psWarpOptions->pTransformerArg)->pReprojectArg = tmparg; // safe release
+    GDALDestroyGenImgProjTransformer(psWarpOptions->pTransformerArg);
+    GDALDestroyWarpOptions(psWarpOptions);
+
+    CPLFree(wkt_out);
+
+    if (in) {
+        GDALClose(in);
+    }
+    return out;
+}
+
+
+
+
+
+
+
 }  // namespace gdalcubes
+
+
+
+
+
+
