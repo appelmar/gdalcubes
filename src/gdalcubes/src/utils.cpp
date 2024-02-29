@@ -161,6 +161,16 @@ void utils::env::unset_all() {
     _vars.clear();
 }
 
+
+std::string utils::env::get(std::string var_name, std::string default_value) {
+    std::string out = default_value;
+    char* r = getenv(var_name.c_str());
+    if (r) {
+        out = r;
+    }
+    return out;
+}
+
 std::string utils::env::to_string() {
     std::string out;
     out = "{";

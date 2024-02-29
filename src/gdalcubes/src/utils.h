@@ -96,6 +96,7 @@ class utils {
         void set(std::map<std::string, std::string> vars);
         void unset(std::set<std::string> var_names);
         void unset_all();
+        std::string get(std::string var_name, std::string default_value = "");
 
         // Convert environment variable map to a JSON string
         std::string to_string();
