@@ -2,6 +2,11 @@
 
 * add `as.data.frame()` to easily convert data cubes to data frames
 * add `predict.cube()` to predict pixel values based on models (lm, glm, caret, tidymodels, and similar)
+* add `window_space()` to apply (focal) moving window kernels or aggregation functions
+* `extract()` now combines extracted values with input geometries and attributes (if `merge = TRUE`)           
+* add support for imagery with spatial reference from geolocation arrays (including curvilinear grids) 
+* `stac_image_collection()` now accepts STACItemCollection objects directly and should be more robust
+* Windows build uses pkg-config if available
 
 
 # gdalcubes 0.6.4 (2023-04-14)

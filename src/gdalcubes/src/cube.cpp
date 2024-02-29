@@ -1799,6 +1799,101 @@ std::shared_ptr<chunk_data> cube::to_double_array(std::shared_ptr<chunk_processo
 
 }
 
+
+
+
+std::shared_ptr<chunk_data> cube::read_window(std::array<int32_t, 3> lower, std::array<int32_t, 3> upper) {
+    // This function allows negative coordinates
+    // This funtion guarantees that the output buffer has size prod(upper - lower + 1)
+
+    if (upper[0] < lower[0] || upper[1] < lower[1] || upper[2] < lower[2]) {
+        GCBS_ERROR("ERROR in cube::read_window(): invalid window provided.");
+        throw std::string("ERROR in cube::read_window(): invalid window provided.");
+    }
+
+    std::array<int32_t, 3> chnk_min = {lower[0] / int32_t(_chunk_size[0]), lower[1] / int32_t(_chunk_size[1]), lower[2] / int32_t(_chunk_size[2])};
+    std::array<int32_t, 3> chnk_max = {upper[0] / int32_t(_chunk_size[0]), upper[1] / int32_t(_chunk_size[1]), upper[2] / int32_t(_chunk_size[2])};
+
+    std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
+    coords_nd<int32_t, 3> size_tyx = {upper[0] - lower[0] + 1, upper[1] - lower[1] + 1, upper[2] - lower[2] + 1};
+    
+
+    coords_nd<uint32_t, 4> size_btyx = {uint32_t(_bands.count()), uint32_t(size_tyx[0]), uint32_t(size_tyx[1]), uint32_t(size_tyx[2])};
+    out->size(size_btyx);
+
+    // Fill buffers accordingly
+    out->buf(std::calloc(size_btyx[0] * size_btyx[1] * size_btyx[2] * size_btyx[3], sizeof(double)));
+    double* begin = (double*)out->buf();
+    double* end = ((double*)out->buf()) + size_btyx[0] * size_btyx[1] * size_btyx[2] * size_btyx[3];
+    std::fill(begin, end, NAN);
+
+    // Areas outside the cube are always filled with NAN. Padding must be explicitly implemented in upstram code, if needed (e.g. window_space)
+    for (int32_t ict = std::max(chnk_min[0], 0); ict<= std::min(chnk_max[0], (int32_t)count_chunks_t()-1); ++ict) {
+        for (int32_t icy = std::max(chnk_min[1], 0); icy<= std::min(chnk_max[1], (int32_t)count_chunks_y()-1); ++icy) {
+            for (int32_t icx = std::max(chnk_min[2], 0); icx<= std::min(chnk_max[2], (int32_t)count_chunks_x()-1); ++icx) {
+                
+                // 1. Read chunk
+                chunkid_t chnk_id = chunk_id_from_coords({uint32_t(ict), uint32_t(icy), uint32_t(icx)}); // casting to unsigned needed?
+                std::shared_ptr<chunk_data> cin = this->read_chunk(chnk_id);
+                if (cin->empty()) {
+                    continue;
+                }
+      
+
+                // 2. Iterate over chunk and copy values to correct position in the buffer
+
+                // Offsets: Relative position between chunk pixels and target buffer pixels
+                int32_t offst_t = lower[0] - ict * _chunk_size[0];
+                int32_t offst_y = lower[1] - icy * _chunk_size[1];
+                int32_t offst_x = lower[2] - icx * _chunk_size[2];
+
+                int32_t start_t = std::max(offst_t, 0);
+                int32_t end_t = std::min(int32_t(cin->size()[1]) - 1, offst_t + (upper[0] - lower[0]));
+                int32_t start_y = std::max(offst_y, 0);
+                int32_t end_y = std::min(int32_t(cin->size()[2]) - 1, offst_y + (upper[1] - lower[1]));
+                int32_t start_x = std::max(offst_x, 0);
+                int32_t end_x = std::min(int32_t(cin->size()[3]) - 1, offst_x + (upper[2] - lower[2]));
+
+                for (int32_t ib = 0; ib < int32_t(cin->size()[0]); ++ib) {
+                    for (int32_t it = start_t; it<=end_t; ++it) {
+                        for (int32_t iy = start_y; iy<=end_y; ++iy) {
+                            for (int32_t ix = start_x; ix<=end_x; ++ix) {
+                                ((double*)(out->buf()))[
+                                    ib * size_tyx[0] * size_tyx[1] * size_tyx[2] + 
+                                    (it - offst_t) * size_tyx[1] * size_tyx[2] + 
+                                    (iy - offst_y) * size_tyx[2] + 
+                                    (ix - offst_x)] = 
+                                    ((double*)(cin->buf()))[
+                                        ib * (int32_t)cin->size()[1] * (int32_t)cin->size()[2] * cin->size()[3] + 
+                                        it * (int32_t)cin->size()[2] * (int32_t)cin->size()[3] + 
+                                        iy * (int32_t)cin->size()[3] + 
+                                        ix];
+                            }
+                        }   
+                    }
+                }
+            } 
+        }
+    }
+
+    return out;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void chunk_data::write_ncdf(std::string path, uint8_t compression_level, bool force) {
     if (filesystem::exists(path)) {
         GCBS_ERROR("File already exists");

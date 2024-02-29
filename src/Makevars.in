@@ -20,6 +20,7 @@ OBJECTS = gdalcubes/src/aggregate_time.o \
 			gdalcubes/src/select_time.o \
 			gdalcubes/src/reduce_time.o \
 			gdalcubes/src/reduce_space.o \
+			gdalcubes/src/window_space.o \
 			gdalcubes/src/window_time.o \
 			gdalcubes/src/select_bands.o \
 			gdalcubes/src/slice_time.o \

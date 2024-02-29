@@ -1143,6 +1143,42 @@ SEXP gc_create_window_time_cube_kernel(SEXP pin, std::vector<int> window, std::v
   }
 }
 
+// [[Rcpp::export]]
+SEXP gc_create_window_space_cube_reduce(SEXP pin, std::vector<std::string> reducers, std::vector<std::string> bands, int win_size_y, int win_size_x, bool keep_bands, std::string pad_mode, double pad_fill) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::vector<std::pair<std::string, std::string>> reducer_bands;
+    for (uint16_t i=0; i<reducers.size(); ++i) {
+      // assuming reducers.size() == bands.size(), this is checked in R code calling this function
+      reducer_bands.push_back(std::make_pair(reducers[i], bands[i]));
+    }
+    
+    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, reducer_bands, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill));
+    Rcpp::XPtr< std::shared_ptr<window_space_cube> > p(x, true) ;
+    
+    return p;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+// [[Rcpp::export]]
+SEXP gc_create_window_space_cube_kernel(SEXP pin, std::vector<double> kernel, int win_size_y, int win_size_x, bool keep_bands, std::string pad_mode, double pad_fill) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<cube>>>(pin);
+    
+    std::shared_ptr<window_space_cube>* x = new std::shared_ptr<window_space_cube>(window_space_cube::create(*aa, kernel, win_size_y, win_size_x, keep_bands, pad_mode, pad_fill));
+    Rcpp::XPtr< std::shared_ptr<window_space_cube> > p(x, true) ;
+    return p;
+    
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 // [[Rcpp::export]]
 SEXP gc_create_join_bands_cube(Rcpp::List pin_list,  std::vector<std::string> cube_names) {

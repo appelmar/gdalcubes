@@ -39,6 +39,7 @@
 ^src/gdalcubes/Dockerfile$
 ^src/gdalcubes/docs\.cmake$
 ^src/gdalcubes/formats$
+^src/gdalcubes/build$
 ^src/gdalcubes/LICENSE$
 ^src/gdalcubes/LICENSE_THIRDPARTY$
 ^src/gdalcubes/README\.md$
@@ -75,6 +76,7 @@
 ^\.pkgdown.R$
 ^\.test.*$
 ^\.*.db$ 
+^.*\.aux\.xml$
 ^proj_conf_test$
 ^proj_conf_test.cpp$
 ^proj_conf_test.c$
@@ -86,3 +88,5 @@
 ^.bash_history$
 ^.vscode$
 ^README.html$
+^inst/gdal$
+^inst/proj$

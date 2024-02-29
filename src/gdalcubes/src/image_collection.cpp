@@ -852,12 +852,61 @@ void image_collection::add_with_collection_format(std::vector<std::string> descr
                     bbox.bottom = extent[1];
                 }
 
-            } else {
-                GDALClose((GDALDatasetH)dataset);
-                if (strict) throw std::string("ERROR in image_collection::add(): GDAL cannot derive spatial extent for '" + *it + "'.");
-                GCBS_WARN("Failed to derive spatial extent from " + *it);
-                continue;
             }
+            else {
+                char **slist = dataset->GetMetadata("GEOLOCATION");
+                if (slist != NULL) {
+                    std::string x_dataset = std::string(CSLFetchNameValue(slist, "X_DATASET"));
+                    std::string y_dataset = std::string(CSLFetchNameValue(slist, "Y_DATASET"));
+                    std::string geoloc_srs_str = std::string(CSLFetchNameValue(slist, "SRS"));
+                    int16_t x_band = std::stoi(std::string(CSLFetchNameValue(slist, "X_BAND")));
+                    int16_t y_band = std::stoi(std::string(CSLFetchNameValue(slist, "Y_BAND")));
+
+                    double adfMinMax[2];
+                    int bGotMin, bGotMax;
+
+                    GDALDataset* gd_x = (GDALDataset*)GDALOpen(x_dataset.c_str(), GA_ReadOnly);
+                    if (!gd_x) {
+                        GDALClose((GDALDatasetH)dataset);
+                        if (strict) throw std::string("ERROR in image_collection::add(): GDAL cannot open '" + x_dataset + "'.");
+                        GCBS_WARN("GDAL failed to open " + x_dataset);
+                        continue;
+                    }
+                    GDALRasterBand* b_x = gd_x->GetRasterBand(x_band);
+                    adfMinMax[0] = b_x->GetMinimum( &bGotMin );
+                    adfMinMax[1] = b_x->GetMaximum( &bGotMax );
+                    if(!(bGotMin && bGotMax))
+                        GDALComputeRasterMinMax((GDALRasterBandH)b_x, FALSE, adfMinMax);
+                    bbox.left = adfMinMax[0];
+                    bbox.right = adfMinMax[1];
+                    GDALClose(gd_x);
+
+                    GDALDataset* gd_y = (GDALDataset*)GDALOpen(y_dataset.c_str(), GA_ReadOnly);
+                    if (!gd_y) {
+                        GDALClose((GDALDatasetH)dataset);
+                        if (strict) throw std::string("ERROR in image_collection::add(): GDAL cannot open '" + y_dataset + "'.");
+                        GCBS_WARN("GDAL failed to open " + y_dataset);
+                        continue;
+                    }
+                    GDALRasterBand* b_y = gd_y->GetRasterBand(y_band);
+                    adfMinMax[0] = b_y->GetMinimum( &bGotMin );
+                    adfMinMax[1] = b_y->GetMaximum( &bGotMax );
+                    if(!(bGotMin && bGotMax))
+                        GDALComputeRasterMinMax((GDALRasterBandH)b_y, FALSE, adfMinMax);
+                    bbox.bottom = adfMinMax[0];
+                    bbox.top = adfMinMax[1];
+                    GDALClose(gd_y);
+
+                    bbox.transform(geoloc_srs_str, "EPSG:4326");
+                }
+                else { // No extent??? 
+                    GDALClose((GDALDatasetH)dataset);
+                    if (strict) throw std::string("ERROR in image_collection::add(): GDAL cannot derive spatial extent for '" + *it + "'.");
+                    GCBS_WARN("Failed to derive spatial extent from " + *it);
+                    continue;
+                }
+            
+             }  
         } else {
             bbox.left = affine_in[0];
             bbox.right = affine_in[0] + affine_in[1] * dataset->GetRasterXSize() + affine_in[2] * dataset->GetRasterYSize();
