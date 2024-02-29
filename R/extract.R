@@ -12,8 +12,8 @@
 #' @param FUN optional function to compute per feature summary statistics
 #' @param ... additional arguments passed to \code{FUN}
 #' @param reduce_time logical; if TRUE, time is ignored when \code{FUN} is applied
-#' @param merge; logical; return a combined data.frame with data cube values and labels, defaults to FALSE
-#' @param drop_geom; remove geometries from output, only applicable if merge is TRUE, defaults to FALSE
+#' @param merge logical; return a combined data.frame with data cube values and labels, defaults to FALSE
+#' @param drop_geom logical; remove geometries from output, only used if merge is TRUE, defaults to FALSE
 #' @return A data.frame with columns FID, time, and data cube bands / variables, see Details 
 #' @details 
 #' The geometry in \code{sf} can be of any simple feature type supported by GDAL, including 

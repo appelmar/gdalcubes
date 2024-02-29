@@ -27,13 +27,13 @@ extract_geom(
 
 \item{FUN}{optional function to compute per feature summary statistics}
 
+\item{merge}{logical; return a combined data.frame with data cube values and labels, defaults to FALSE}
+
+\item{drop_geom}{logical; remove geometries from output, only used if merge is TRUE, defaults to FALSE}
+
 \item{...}{additional arguments passed to \code{FUN}}
 
 \item{reduce_time}{logical; if TRUE, time is ignored when \code{FUN} is applied}
-
-\item{merge;}{logical; return a combined data.frame with data cube values and labels, defaults to FALSE}
-
-\item{drop_geom;}{remove geometries from output, only applicable if merge is TRUE, defaults to FALSE}
 }
 \value{
 A data.frame with columns FID, time, and data cube bands / variables, see Details

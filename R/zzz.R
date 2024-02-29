@@ -50,6 +50,7 @@
   if (dir.exists(system.file("gdal", package="gdalcubes"))) {
     Sys.setenv("GDAL_DATA" = system.file("gdal", package="gdalcubes"))
   }
+  gdalcubes_set_gdal_config("CPL_TMPDIR", tempdir())
   invisible()
 }
 

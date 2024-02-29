@@ -87,6 +87,7 @@
 ^gdalcubes.log$
 ^.bash_history$
 ^.vscode$
+^src/gdalcubes/.vscode$
 ^README.html$
 ^inst/gdal$
 ^inst/proj$

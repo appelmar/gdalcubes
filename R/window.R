@@ -131,7 +131,7 @@ is.window_time_cube  <- function(obj) {
 #' @param ... optional additional expressions (if expr is not a vector)
 #' @return proxy data cube object
 #' @note Implemented reducers will ignore any NAN values (as \code{na.rm = TRUE} does).
-#' @note THIS FUNCTION IS STILL EXPERIMENTAL.
+#' @note Calling this function consecutively many times may result in long computation times depending on chunk and window sizes due to the need to read adjacent data cube chunks.
 #' @examples 
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
@@ -150,7 +150,8 @@ is.window_time_cube  <- function(obj) {
 #' L8.cube.mean5x5 = window_space(L8.cube, kernel = matrix(1/25, 5, 5))
 #' L8.cube.mean5x5
 #' 
-#' L8.cube.med_sd = window_space(L8.cube, "median(B04)" ,"sd(B04)", "median(B05)", "sd(B05)", window = c(5,5), keep_bands = TRUE)
+#' L8.cube.med_sd = window_space(L8.cube, "median(B04)" ,"sd(B04)", "median(B05)", "sd(B05)", 
+#'                               window = c(5,5), keep_bands = TRUE)
 #' L8.cube.med_sd
 #' 
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
