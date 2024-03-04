@@ -15,18 +15,19 @@ and irregular temporal sampling.
 
 # Features
 
-  - Read and process multitemporal, multispectral Earth observation
-    image collections as *regular raster data cubes* by applying
-    on-the-fly reprojection, rescaling, cropping, and resampling.
-  - Work with existing Earth observation imagery on local disks or cloud
-    storage without the need to maintain a 2nd copy of the data.
-  - Apply user-defined R functions on data cubes.
-  - Execute data cube operation chains using parallel processing and
-    lazy evaluation.
+- Read and process multitemporal, multispectral Earth observation image
+  collections as *regular raster data cubes* by applying on-the-fly
+  reprojection, rescaling, cropping, and resampling.
+- Work with existing Earth observation imagery on local disks or cloud
+  storage without the need to maintain a 2nd copy of the data.
+- Apply user-defined R functions on data cubes.
+- Execute data cube operation chains using parallel processing and lazy
+  evaluation.
 
 Among others, the package has been successfully used to process data
-from the Sentinel-2, Landsat, PlanetScope, MODIS, and Global
-Precipitation Measurement Earth observation satellites / missions.
+from the Sentinel-2, Sentinel-5P, Landsat, PlanetScope, MODIS, and
+Global Precipitation Measurement Earth observation satellites /
+missions.
 
 # Installation
 
@@ -58,23 +59,23 @@ The package builds on the external libraries
 ## Windows
 
 On Windows, you will need
-[Rtools](https://cran.r-project.org/bin/windows/Rtools). System
-libraries are automatically downloaded from
-[rwinlib](https://github.com/rwinlib).
+[Rtools](https://cran.r-project.org/bin/windows/Rtools) to build the
+package from sources.
 
 ## Linux
 
 Please install the system libraries e.g. with the package manager of
 your Linux distribution. Also make sure that you are using a recent
-version of GDAL (\>2.3.0). On Ubuntu, the following commands install all
-libraries.
+version of GDAL (\>2.3.0). On Ubuntu, the following commands will
+install all neccessary libraries.
 
     sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
     sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-dev libudunits2-dev
 
 ## MacOS
 
-Use [Homebrew](https://brew.sh) to install system libraries with
+Using [Homebrew](https://brew.sh), required system libraries can be
+installed with
 
     brew install pkg-config
     brew install gdal
@@ -93,7 +94,7 @@ Use [Homebrew](https://brew.sh) to install system libraries with
 
 ``` r
 if (!dir.exists("L8_Amazon")) {
-  download.file("https://hs-bochum.sciebo.de/s/8XcKAmPfPGp2CYh/download", destfile = "L8_Amazon.zip")
+  download.file("https://hs-bochum.sciebo.de/s/8XcKAmPfPGp2CYh/download", destfile = "L8_Amazon.zip",mode = "wb")
   unzip("L8_Amazon.zip", exdir = "L8_Amazon")
 }
 ```
@@ -105,7 +106,7 @@ metadata such as their spatial extent and acquisition time. The
 resulting *image collection* is stored on disk, and typically consumes a
 few kilobytes per image. Due to the diverse structure of satellite image
 products, the rules how to derive the required metadata are formalized
-as *collection\_formats*. The package comes with predefined formats for
+as *collection_formats*. The package comes with predefined formats for
 some Sentinel, Landsat, and MODIS products (see `collection_formats()`
 to print a list of available formats).
 
@@ -119,13 +120,13 @@ files = list.files("L8_Amazon", recursive = TRUE,
 length(files)
 ```
 
-    ## [1] 1800
+    ## [1] 1805
 
 ``` r
 sum(file.size(files)) / 1024^2 # MiB
 ```
 
-    ## [1] 1919.118
+    ## [1] 1919.12
 
 ``` r
 L8.col = create_image_collection(files, format = "L8_SR", out_file = "L8.db")
@@ -270,23 +271,27 @@ raster_cube(L8.col, v.subarea.yearly) |>
 Data cubes can be exported as single netCDF files with `write_ncdf()`,
 or as a collection of (possibly cloud-optimized) GeoTIFF files with
 `write_tif()`, where each time slice of the cube yields one GeoTIFF
-file. Data cubes can also be converted to `raster` or `stars`objects:
+file. Data cubes can also be converted to `terra` or `stars`objects:
 
 ``` r
 raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   write_tif() |>
-  raster::stack() -> x
+  terra::rast() -> x
 x
 ```
 
-    ## class      : RasterStack 
-    ## dimensions : 559, 783, 437697, 7  (nrow, ncol, ncell, nlayers)
-    ## resolution : 1000, 1000  (x, y)
-    ## extent     : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
-    ## crs        : +proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs 
-    ## names      : NDVI.1, NDVI.2, NDVI.3, NDVI.4, NDVI.5, NDVI.6, NDVI.7
+    ## class       : SpatRaster 
+    ## dimensions  : 559, 783, 7  (nrow, ncol, nlyr)
+    ## resolution  : 1000, 1000  (x, y)
+    ## extent      : -6582280, -5799280, -764014.4, -205014.4  (xmin, xmax, ymin, ymax)
+    ## coord. ref. : WGS 84 / Pseudo-Mercator (EPSG:3857) 
+    ## sources     : cube_845e62ea0e0a2013-01-01.tif  
+    ##               cube_845e62ea0e0a2014-01-01.tif  
+    ##               cube_845e62ea0e0a2015-01-01.tif  
+    ##               ... and 4 more source(s)
+    ## names       : NDVI, NDVI, NDVI, NDVI, NDVI, NDVI, ...
 
 ``` r
 raster_cube(L8.col, v.overview) |>
@@ -373,22 +378,22 @@ raster_cube(L8.col, v.overview) |>
   dplyr::sample_n(15) # print 15 random rows
 ```
 
-    ##    FID       time      B04      B05
-    ## 42  13 2019-01-01 528.6972 2642.340
-    ## 39  61 2019-01-01 171.6595 2864.671
-    ## 18  11 2014-01-01 491.0714 3093.513
-    ## 9    3 2014-01-01 229.4688 1846.892
-    ## 19  85 2015-01-01 196.6346 2949.415
-    ## 28  38 2016-01-01 284.4181 3058.162
-    ## 16  70 2014-01-01 204.4690 3153.227
-    ## 64  68 2019-01-01 314.5702 2602.949
-    ## 15  79 2015-01-01 372.4574 2985.155
-    ## 52   2 2019-01-01 194.7523 2932.755
-    ## 17  14 2014-01-01 195.4712 2892.836
-    ## 35  86 2016-01-01 251.5154 3109.103
-    ## 47  23 2019-01-01 367.7108 3223.365
-    ## 33  93 2015-01-01 551.6841 3367.454
-    ## 37   5 2016-01-01 213.2052 2887.869
+    ##    FID       time       B04       B05
+    ## 21  95 2016-01-01  182.3935 3360.3492
+    ## 50  11 2016-01-01  282.0869 3039.4177
+    ## 34  96 2018-01-01  885.3366 3565.0468
+    ## 54   4 2019-01-01  171.4910 2825.5037
+    ## 38   1 2018-01-01  249.7769 3091.6986
+    ## 42  64 2018-01-01  315.9540 3326.0070
+    ## 3   18 2014-01-01  720.9067 3689.0444
+    ## 55  47 2019-01-01  569.0251 2844.1652
+    ## 22  74 2017-01-01  264.0236 3036.4862
+    ## 29  73 2017-01-01  198.0629 3135.8718
+    ## 39  38 2018-01-01  201.2096 2882.1543
+    ## 28  30 2017-01-01  171.2704 2754.2129
+    ## 61  27 2019-01-01  405.6078  588.0934
+    ## 51  25 2019-01-01  150.7253 2886.3868
+    ## 25  19 2016-01-01 3593.0970 5285.5944
 
 ``` r
 # time series at spatial points
@@ -399,21 +404,21 @@ raster_cube(L8.col, v.overview) |>
 ```
 
     ##     FID       time      B04      B05
-    ## 441  61 2018-01-01 248.7178 2780.589
-    ## 264  74 2018-01-01 173.8156 2929.278
-    ## 122  50 2014-01-01 174.2775 2756.543
-    ## 73   20 2014-01-01 187.1711 2840.537
-    ## 124  75 2014-01-01 233.2986 3204.541
-    ## 80   80 2014-01-01 167.6043 3001.744
-    ## 352  13 2017-01-01 246.5017 3140.106
-    ## 157  35 2015-01-01 227.6701 2921.447
-    ## 309  22 2016-01-01 558.1645 3572.036
-    ## 280  28 2018-01-01 157.5138 2545.733
-    ## 331  16 2017-01-01 233.3473 3042.368
-    ## 336  17 2017-01-01 186.0070 3002.936
-    ## 239  55 2017-01-01 771.2047 3188.574
-    ## 384  30 2018-01-01 295.9505 3397.156
-    ## 190  58 2015-01-01 306.0879 3025.997
+    ## 319  98 2017-01-01 217.7226 3296.470
+    ## 25   86 2013-01-01 199.9388 2844.481
+    ## 100  58 2014-01-01 202.8860 2869.232
+    ## 256  43 2017-01-01 280.8320 3187.573
+    ## 390  41 2019-01-01 149.7427 2879.540
+    ## 60   45 2013-01-01 239.1001 3219.560
+    ## 288  85 2016-01-01 309.2750 2876.053
+    ## 290  24 2017-01-01 238.6707 3151.653
+    ## 135  31 2015-01-01 951.8869 3004.181
+    ## 315   4 2017-01-01 146.7365 2891.950
+    ## 66   18 2015-01-01 436.6083 3535.842
+    ## 381  96 2019-01-01 190.6946 2812.518
+    ## 40   49 2013-01-01 169.4907 2761.769
+    ## 284  33 2016-01-01 225.0206 2925.426
+    ## 222  45 2016-01-01 295.2418 3153.687
 
 In the following, we use the example Landsat dataset (reduced
 resolution) from the package and compute median NDVI values within some
@@ -439,21 +444,21 @@ dplyr::sample_n(zstats, 15) # print 15 random rows
 ```
 
     ##    FID       time         NDVI
-    ## 1   47 2018-12-01 -0.003722353
-    ## 2   43 2018-03-01  0.022954312
-    ## 3   57 2018-12-01  0.053809129
-    ## 4   22 2018-08-01  0.143675695
-    ## 5    7 2018-05-01  0.071711941
-    ## 6   15 2018-04-01  0.059019065
-    ## 7   56 2018-12-01  0.048132687
-    ## 8    9 2018-06-01  0.082063801
-    ## 9   35 2018-01-01  0.016194754
-    ## 10  33 2018-04-01  0.086141534
-    ## 11  59 2018-05-01  0.047808749
-    ## 12  64 2018-06-01  0.040585707
-    ## 13   1 2018-04-01  0.033851363
-    ## 14  31 2018-07-01  0.071683399
-    ## 15  27 2018-09-01  0.090892190
+    ## 1   68 2018-03-01  0.008483257
+    ## 2   49 2018-05-01  0.041807600
+    ## 3   41 2018-01-01 -0.012513485
+    ## 4   47 2018-10-01  0.002116781
+    ## 5   71 2018-08-01  0.255297575
+    ## 6   26 2018-12-01  0.060638615
+    ## 7   48 2018-06-01  0.055183957
+    ## 8   56 2018-10-01  0.138487053
+    ## 9   25 2018-10-01  0.093297342
+    ## 10  58 2018-04-01  0.022237839
+    ## 11  57 2018-12-01  0.053809129
+    ## 12  43 2018-08-01  0.065916489
+    ## 13   2 2018-08-01  0.130797459
+    ## 14  31 2018-10-01  0.044141370
+    ## 15  32 2018-01-01  0.058137169
 
 We can combine the result with the original features by a table join on
 the FID column using `merge()`:
@@ -479,41 +484,28 @@ catalogs and discovered by connecting to STAC API endpoints using the
 [`rstac` package](https://cran.r-project.org/package=rstac) (see links
 at the end of this page).
 
-**Masks**: Mask bands (e.g. general pixel quality measures or cloud
-masks) can be applied during the construction of the raster data cube,
-such that masked values will not contribute to the data cube values.
+**Machine learning**: The built-in functions `extract_geom` and
+`predict` help to create training data and apply predictions on data
+cubes using machine learning models as created from packages `caret` or
+`tidymodels`.
 
 **Further operations**: The previous examples covered only a limited set
 of built-in functions. Further data cube operations for example include
 spatial and/or temporal slicing (`slice_time`, `slice_space`), cropping
-(`crop`), apply moving window filters over time series (`window_time`),
-filtering by arithmetic expressions on pixel values and spatial
-geometries (`filter_pixel`, `filter_geom`), and combining two or more
-data cubes with identical shape (`join_bands`).
-
-# Limitations
-
-  - Data cubes are limited to four dimensions
-    ([stars](https://cran.r-project.org/package=stars) has cubes with
-    any number of dimensions).
-  - Some operations such as `window_time()` do not support user-defined
-    R functions at the moment.
-  - Images must be orthorectified / regularly gridded; there is no
-    support for curvilinear grids.
-  - There is no support for vector data cubes
-    ([stars](https://cran.r-project.org/package=stars) has vector data
-    cubes).
+(`crop`), application of moving window / focal operations
+(`window_time`, `window_space`), filtering by arithmetic expressions on
+pixel values and spatial geometries (`filter_pixel`, `filter_geom`), and
+combining two or more data cubes with identical shape (`join_bands`).
 
 # Further reading
 
-  - [Official R package website](https://gdalcubes.github.io)
-  - [Tutorial on YouTube](https://youtu.be/Xlg__2PeTXM?t=3693) how to
-    use gdalcubes in the cloud, streamed at OpenGeoHub Summer School
-    2021
-  - [1st blog post on
-    r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
-  - [2nd blog post on
-    r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html)
-    describing how to use gdalcubes in cloud-computing environments
-  - [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the
-    special issue on Earth observation data cubes of the data journal
+- [Official R package website](https://gdalcubes.github.io)
+- [Tutorial on YouTube](https://youtu.be/Xlg__2PeTXM?t=3693) how to use
+  gdalcubes in the cloud, streamed at OpenGeoHub Summer School 2021
+- [1st blog post on
+  r-spatial.org](https://www.r-spatial.org/r/2019/07/18/gdalcubes1.html)
+- [2nd blog post on
+  r-spatial.org](https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html)
+  describing how to use gdalcubes in cloud-computing environments
+- [Open access paper](https://www.mdpi.com/2306-5729/4/3/92) in the
+  special issue on Earth observation data cubes of the data journal

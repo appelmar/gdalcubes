@@ -7,7 +7,7 @@
 * add support for imagery with spatial reference from geolocation arrays (including curvilinear grids) 
 * `stac_image_collection()` now accepts STACItemCollection objects directly and should be more robust
 * Windows build uses pkg-config if available
-
+* Improved error reporting for inaccessible imagery
 
 # gdalcubes 0.6.4 (2023-04-14)
 

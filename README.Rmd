@@ -29,7 +29,7 @@ The package represents the data as _regular raster data cubes_ with dimensions `
 - Execute data cube operation chains using parallel processing and lazy evaluation.
 
 
-Among others, the package has been successfully used to process data from the Sentinel-2, Landsat, PlanetScope, MODIS, and Global Precipitation Measurement Earth observation satellites / missions.
+Among others, the package has been successfully used to process data from the Sentinel-2, Sentinel-5P, Landsat, PlanetScope, MODIS, and Global Precipitation Measurement Earth observation satellites / missions.
 
 # Installation
 
@@ -54,11 +54,11 @@ The package builds on the external libraries [GDAL](https://www.gdal.org), [NetC
 
 ## Windows
 
-On Windows, you will need [Rtools](https://cran.r-project.org/bin/windows/Rtools). System libraries are automatically downloaded from [rwinlib](https://github.com/rwinlib).
+On Windows, you will need [Rtools](https://cran.r-project.org/bin/windows/Rtools) to build the package from sources.
 
 
 ## Linux
-Please install the system libraries e.g. with the package manager of your Linux distribution. Also make sure that you are using a recent version of GDAL (>2.3.0). On Ubuntu, the following commands install all libraries.
+Please install the system libraries e.g. with the package manager of your Linux distribution. Also make sure that you are using a recent version of GDAL (>2.3.0). On Ubuntu, the following commands will install all neccessary libraries.
 
 ```
 sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
@@ -66,7 +66,7 @@ sudo apt-get install libgdal-dev libnetcdf-dev libcurl4-openssl-dev libsqlite3-d
 ```
 
 ## MacOS
-Use [Homebrew](https://brew.sh) to install system libraries with
+Using [Homebrew](https://brew.sh), required system libraries can be installed with
 
 ```
 brew install pkg-config
@@ -86,7 +86,7 @@ brew install protobuf
 ## Download example data
 ```{r download}
 if (!dir.exists("L8_Amazon")) {
-  download.file("http://data.gdalcubes.org/L8_Amazon.zip", destfile = "L8_Amazon.zip",mode = "wb")
+  download.file("https://hs-bochum.sciebo.de/s/8XcKAmPfPGp2CYh/download", destfile = "L8_Amazon.zip",mode = "wb")
   unzip("L8_Amazon.zip", exdir = "L8_Amazon")
 }
 ```
@@ -168,7 +168,7 @@ raster_cube(L8.col, v.subarea.yearly) |>
 
 ## Data cube export
 
-Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `raster` or `stars`objects:
+Data cubes can be exported as single netCDF files with `write_ncdf()`, or as a collection of (possibly cloud-optimized) GeoTIFF files with `write_tif()`, where each time slice of the cube yields one GeoTIFF file. Data cubes can also be converted to `terra` or `stars`objects:
 
 ```{r extpkgload, include=FALSE} 
 library(raster)
@@ -180,7 +180,7 @@ raster_cube(L8.col, v.overview) |>
   select_bands(c("B04","B05")) |>
   apply_pixel(c("(B05-B04)/(B05+B04)"), names="NDVI") |>
   write_tif() |>
-  raster::stack() -> x
+  terra::rast() -> x
 x
 
 raster_cube(L8.col, v.overview) |>
@@ -281,19 +281,10 @@ hence makes it easy to create training data for machine learning models.
 
 **Cloud support with STAC**: `gdalcubes` can be used directly on cloud computing platforms including Amazon Web Services, Google Cloud Platform, and Microsoft Azure. Imagery can be read from their open data catalogs and discovered by connecting to STAC API endpoints using the [`rstac` package](https://cran.r-project.org/package=rstac) (see links at the end of this page).
 
-**Masks**: Mask bands (e.g. general pixel quality measures or cloud masks) can be applied during the construction of the raster data cube, such that masked values will not contribute to the data cube values. 
+**Machine learning**: The built-in functions `extract_geom` and `predict` help to create training data and apply predictions on data cubes using machine learning models as created from packages `caret` or `tidymodels`. 
 
-**Further operations**: The previous examples covered only a limited set of built-in functions. Further data cube operations for example include spatial and/or temporal slicing (`slice_time`, `slice_space`), cropping (`crop`), apply moving window filters over time series (`window_time`), filtering by arithmetic expressions on pixel values and spatial geometries (`filter_pixel`, `filter_geom`), and combining two or more data cubes with identical shape (`join_bands`).
+**Further operations**: The previous examples covered only a limited set of built-in functions. Further data cube operations for example include spatial and/or temporal slicing (`slice_time`, `slice_space`), cropping (`crop`), application of moving window / focal operations  (`window_time`, `window_space`), filtering by arithmetic expressions on pixel values and spatial geometries (`filter_pixel`, `filter_geom`), and combining two or more data cubes with identical shape (`join_bands`).
 
-
-
-
-# Limitations
-
-* Data cubes are limited to four dimensions ([stars](https://cran.r-project.org/package=stars) has cubes with any number of dimensions). 
-* Some operations such as `window_time()` do not support user-defined R functions at the moment.
-* Images must be orthorectified / regularly gridded; there is no support for curvilinear grids.
-* There is no support for vector data cubes ([stars](https://cran.r-project.org/package=stars) has vector data cubes). 
 
 
 
