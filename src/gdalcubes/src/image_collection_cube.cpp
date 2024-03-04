@@ -423,7 +423,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
             std::string bandsel_vrt_name = "";
             GDALDataset *g = (GDALDataset *)GDALOpen(it->first.c_str(), GA_ReadOnly);
             if (!g) {
-                GCBS_WARN("GDAL could not open '" + it->first + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                GCBS_WARN("GDAL could not open '" + it->first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                 if (_strict) {
                     if (img_buf) std::free(img_buf);
                     if (mask_buf) std::free(mask_buf);
@@ -507,7 +507,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                                                  resampling::to_string(view()->resampling_method()), nodata_value_list);
             }
             if (!gdal_out) {
-                GCBS_WARN("GDAL could not warp '" + it->first + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                GCBS_WARN("GDAL could not warp '" + it->first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                 if (_strict) {
                     if (img_buf) std::free(img_buf);
                     if (mask_buf) std::free(mask_buf);
@@ -536,7 +536,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                     res = gdal_out->GetRasterBand(std::get<1>(it->second[b]))->RasterIO(GF_Read, 0, 0, size_btyx[3], size_btyx[2], ((double *)img_buf) + b_internal * size_btyx[2] * size_btyx[3], size_btyx[3], size_btyx[2], GDT_Float64, 0, 0, NULL);
                 }
                 if (res != CE_None) {
-                    GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                    GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                     if (_strict) {
                         if (img_buf) std::free(img_buf);
                         if (mask_buf) std::free(mask_buf);
@@ -568,7 +568,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                 GDALDataset *bandsel_vrt = nullptr;
                 GDALDataset *g = (GDALDataset *)GDALOpen(mask_dataset_band.first.c_str(), GA_ReadOnly);
                 if (!g) {
-                    GCBS_WARN("GDAL could not open '" + mask_dataset_band.first + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                    GCBS_WARN("GDAL could not open '" + mask_dataset_band.first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                     if (_strict) {
                         if (img_buf) std::free(img_buf);
                         if (mask_buf) std::free(mask_buf);
@@ -618,7 +618,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                                                          "near", std::vector<double>());
                     }
                     if (!gdal_out) {
-                        GCBS_WARN("GDAL could not warp '" + mask_dataset_band.first + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                        GCBS_WARN("GDAL could not warp '" + mask_dataset_band.first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                         if (_strict) {
                             if (img_buf) std::free(img_buf);
                             if (mask_buf) std::free(mask_buf);
@@ -634,7 +634,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                     CPLErr res = gdal_out->GetRasterBand(mask_dataset_band.second)->RasterIO(GF_Read, 0, 0, size_btyx[3], size_btyx[2], mask_buf, size_btyx[3], size_btyx[2], GDT_Float64, 0, 0, NULL);
                     
                     if (res != CE_None) {
-                        GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                        GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
                         if (_strict) {
                             if (img_buf) std::free(img_buf);
                             if (mask_buf) std::free(mask_buf);
@@ -672,7 +672,9 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
 
     // check if chunk is completely NAN and if yes, return empty chunk
     if (out->all_nan()) {
+        auto s = out->status();
         out = std::make_shared<chunk_data>();
+        out->set_status(s);
     }
 
     //    CPLFree(srs_out_str);

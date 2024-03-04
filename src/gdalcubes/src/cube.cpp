@@ -716,12 +716,18 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
         if (dim_x_bnds) std::free(dim_x_bnds);
     }
 
-    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, op, prg, &v_bands, ncout, &packing, &v_chunkstatus](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
+    uint32_t chunk_error_count = 0;
+    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, op, prg, &v_bands, &chunk_error_count, ncout, &packing, &v_chunkstatus](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
 
         // TODO: check if it is OK to simply not write anything to netCDF or if we need to fill dat explicity with no data values, check also for packed output
         int nc_chunk_status = (int)dat->status();
         std::size_t nc_chunk_id = std::size_t(id);
+        m.lock();
         nc_put_var1_int(ncout, v_chunkstatus, &nc_chunk_id, &nc_chunk_status);
+        if (dat->status() != chunk_data::chunk_status::OK) {
+            chunk_error_count++;
+        }
+        m.unlock();
         if (!dat->empty()) {
             chunk_size_btyx csize = dat->size();
             bounds_nd<uint32_t, 3> climits = chunk_limits(id);
@@ -853,6 +859,15 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
     p->apply(shared_from_this(), f);
     nc_close(ncout);
     prg->finalize();
+
+
+
+    if(chunk_error_count > 0) {
+        std::string msg = std::to_string(chunk_error_count) + " out of " + std::to_string(count_chunks()) + " chunks have repoprted errors / incompleteness. "\
+        "This is most likely caused by failed computations and/or inaccessible image data. Please check detailed output or run with debug option again.";
+        GCBS_WARN(msg);
+    }
+
 
     // netCDF is now written, write additional per-time-slice VRT datasets if needed
 
@@ -1547,8 +1562,9 @@ void chunk_data::write_ncdf(std::string path, uint8_t compression_level, bool fo
     }
 
     if (!force) {
-        if (empty() || all_nan()) {
-            GCBS_WARN("Requested chunk is completely empty (NAN), and will not be written to a netCDF file on disk");
+        // Only avoid writing chunks if they have status OK and are empty / all NAN
+        if (_status == chunk_status::OK && all_nan()) { 
+            GCBS_DEBUG("Requested chunk is completely empty (NAN), and will not be written to a netCDF file on disk");
             return;
         }
     }
@@ -1604,14 +1620,14 @@ void chunk_data::read_ncdf(std::string path) {
     }
 
     int s = 0;
-    if (nc_get_att_int(ncfile, NC_GLOBAL, "chunk_status", &s)) {
+    if (nc_get_att_int(ncfile, NC_GLOBAL, "chunk_status", &s) == NC_NOERR) {
         set_status(static_cast<chunk_data::chunk_status>(s));
     }
     else {
         GCBS_DEBUG("NetCDF chunk file does not contain chunk status data. ");
         set_status(chunk_data::chunk_status::UNKNOWN);
     }
-    
+
     int dim_id_x = -1;
     int dim_id_y = -1;
     int dim_id_t = -1;
