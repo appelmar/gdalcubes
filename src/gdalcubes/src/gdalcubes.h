@@ -58,7 +58,6 @@
 #include "stream_reduce_space.h"
 #include "stream_reduce_time.h"
 #include "utils.h"
-#include "vector_queries.h"
 #include "window_space.h"
 #include "window_time.h"
 

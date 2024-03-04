@@ -45,73 +45,6 @@ SOFTWARE.
 
 namespace gdalcubes {
 
-void cube::write_chunks_gtiff(std::string dir, std::shared_ptr<chunk_processor> p) {
-    if (!filesystem::exists(dir)) {
-        filesystem::mkdir_recursive(dir);
-    }
-
-    if (!filesystem::is_directory(dir)) {
-        throw std::string("ERROR in cube::write_chunks_gtiff(): output is not a directory.");
-    }
-
-    GDALDriver *gtiff_driver = (GDALDriver *)GDALGetDriverByName("GTiff");
-    if (gtiff_driver == NULL) {
-        throw std::string("ERROR: cannot find GDAL driver for GTiff.");
-    }
-
-    if (!_st_ref->has_regular_space()) {
-        throw std::string("ERROR: GeoTIFF export currently does not support irregular spatial dimensions");
-    }
-
-    // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
-    std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>(_st_ref);
-
-    std::shared_ptr<progress> prg = config::instance()->get_default_progress_bar()->get();
-    prg->set(0);  // explicitly set to zero to show progress bar immediately
-
-    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, dir, prg, gtiff_driver, stref](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
-        bounds_st cextent = this->bounds_from_chunk(id);  // implemented in derived classes
-        double affine[6];
-        affine[0] = cextent.s.left;
-        affine[3] = cextent.s.top;
-        affine[1] = stref->dx();
-        affine[5] = -stref->dy();
-        affine[2] = 0.0;
-        affine[4] = 0.0;
-
-        CPLStringList out_co;
-        //out_co.AddNameValue("TILED", "YES");
-        //out_co.AddNameValue("BLOCKXSIZE", "256");
-        // out_co.AddNameValue("BLOCKYSIZE", "256");
-
-        for (uint16_t ib = 0; ib < dat->count_bands(); ++ib) {
-            for (uint32_t it = 0; it < dat->size()[1]; ++it) {
-                std::string out_file = filesystem::join(dir, (std::to_string(id) + "_" + std::to_string(ib) + "_" + std::to_string(it) + ".tif"));
-
-                GDALDataset *gdal_out = gtiff_driver->Create(out_file.c_str(), dat->size()[3], dat->size()[2], 1, GDT_Float64, out_co.List());
-                CPLErr res = gdal_out->GetRasterBand(1)->RasterIO(GF_Write, 0, 0, dat->size()[3], dat->size()[2], ((double *)dat->buf()) + (ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + it * dat->size()[2] * dat->size()[3]), dat->size()[3], dat->size()[2], GDT_Float64, 0, 0, NULL);
-                if (res != CE_None) {
-                    GCBS_WARN("RasterIO (write) failed for band " + _bands.get(ib).name);
-                }
-                gdal_out->GetRasterBand(1)->SetNoDataValue(std::stod(_bands.get(ib).no_data_value));
-                char *wkt_out;
-                OGRSpatialReference srs_out;
-                srs_out.SetFromUserInput(_st_ref->srs().c_str());
-                srs_out.exportToWkt(&wkt_out);
-
-                GDALSetProjection(gdal_out, wkt_out);
-                GDALSetGeoTransform(gdal_out, affine);
-                CPLFree(wkt_out);
-
-                GDALClose(gdal_out);
-            }
-        }
-        prg->increment((double)1 / (double)this->count_chunks());
-    };
-
-    p->apply(shared_from_this(), f);
-    prg->finalize();
-}
 
 void cube::write_tif_collection(std::string dir, std::string prefix,
                                 bool overviews, bool cog,
@@ -437,301 +370,6 @@ void cube::write_tif_collection(std::string dir, std::string prefix,
     prg->finalize();
 }
 
-void cube::write_png_collection(std::string dir, std::string prefix, std::vector<std::string> bands, std::vector<double> zlim_min,
-                                std::vector<double> zlim_max, double gamma, std::vector<uint8_t> na_color, bool na_transparent,
-                                std::map<std::string, std::string> creation_options, bool drop_empty_slices, std::shared_ptr<chunk_processor> p) {
-    if (zlim_min.empty()) {
-        zlim_min = {0};
-    }
-    if (zlim_max.empty()) {
-        zlim_max = {255};
-    }
-
-    if (size_bands() > 1 && bands.empty()) {
-        if (size_bands() == 3) {
-            bands.push_back(_bands.get(0).name);
-            bands.push_back(_bands.get(1).name);
-            bands.push_back(_bands.get(2).name);
-            if (zlim_min.size() == 1) {
-                zlim_min.push_back(zlim_min[0]);
-                zlim_min.push_back(zlim_min[0]);
-            }
-            if (zlim_max.size() == 1) {
-                zlim_max.push_back(zlim_max[0]);
-                zlim_max.push_back(zlim_max[0]);
-            }
-            GCBS_WARN("Input data cube has three bands, using as (R,G,B) = (" + _bands.get(0).name + "," + _bands.get(1).name + "," + _bands.get(2).name + ")");
-        } else {
-            GCBS_WARN("Input data cube has more than one band, using " + _bands.get(0).name + " to produce a grayscale image");
-            bands.push_back(_bands.get(0).name);
-        }
-    }
-    if (bands.size() != 1 && bands.size() != 3) {
-        throw std::string("ERROR in cube::write_png_collection(): either one (grayscale) or three (RGB) bands expected, got " + std::to_string(bands.size()));
-    }
-    assert(bands.size() == 1 || bands.size() == 3);
-
-    bool grayscale_as_rgb = false;
-    if (na_transparent) {
-        na_color.clear();
-    } else {
-        if (!(na_color.empty() || na_color.size() == 1 || na_color.size() == 3)) {
-            throw std::string("ERROR in cube::write_png_collection(): either one (grayscale) or three (RGB) values expected for na_color, got " + std::to_string(na_color.size()));
-        }
-        if (na_color.size() == 3 && bands.size() == 1) {
-            grayscale_as_rgb = true;
-            bands.push_back(bands[0]);
-            bands.push_back(bands[0]);
-            if (zlim_min.size() == 1) {
-                zlim_min.push_back(zlim_min[0]);
-                zlim_min.push_back(zlim_min[0]);
-            }
-            if (zlim_max.size() == 1) {
-                zlim_max.push_back(zlim_max[0]);
-                zlim_max.push_back(zlim_max[0]);
-            }
-        } else if (na_color.size() == 1 && bands.size() == 3) {
-            na_color.clear();
-            GCBS_WARN("Expected three (RGB) no data color; no data color will be ignored");
-        }
-    }
-    assert(zlim_min.size() == bands.size());
-    assert(zlim_max.size() == bands.size());
-
-    GDALDriver *png_driver = (GDALDriver *)GDALGetDriverByName("PNG");
-    if (png_driver == NULL) {
-        throw std::string("ERROR: cannot find GDAL driver for PNG.");
-    }
-    //    GDALDriver *mem_driver = (GDALDriver *)GDALGetDriverByName("MEM");
-    //    if (png_driver == NULL) {
-    //        throw std::string("ERROR: cannot find GDAL driver for MEM.");
-    //    }
-    GDALDriver *gtiff_driver = (GDALDriver *)GDALGetDriverByName("GTiff");
-    if (png_driver == NULL) {
-        throw std::string("ERROR: cannot find GDAL driver for GTiff.");
-    }
-
-    if (!filesystem::exists(dir)) {
-        filesystem::mkdir_recursive(dir);
-    }
-    if (!filesystem::is_directory(dir)) {
-        throw std::string("ERROR in cube::write_png_collection(): invalid output directory.");
-    }
-
-    std::shared_ptr<progress> prg = config::instance()->get_default_progress_bar()->get();
-    prg->set(0);  // explicitly set to zero to show progress bar immediately
-
-    CPLStringList out_co;
-    for (auto it = creation_options.begin(); it != creation_options.end(); ++it) {
-        std::string key = it->first;
-        std::transform(key.begin(), key.end(), key.begin(), (int (*)(int))std::toupper);
-        out_co.AddNameValue(it->first.c_str(), it->second.c_str());
-    }
-
-    std::vector<uint16_t> band_nums;
-    for (uint16_t i = 0; i < bands.size(); ++i) {
-        if (!_bands.has(bands[i])) {
-            throw std::string("Data cube has no band with name '" + bands[i] + "'");
-        }
-        band_nums.push_back(_bands.get_index(bands[i]));
-    }
-    uint8_t nbands = band_nums.size();
-    int add_alpha = na_transparent ? 1 : 0;
-
-    /*  GTiff out */
-    // avoid parallel RasterIO calls writing to the same file
-    std::map<uint32_t, std::mutex> mtx;  // time_slice_index -> mutex
-
-    CPLStringList out_co_gtiff;
-    out_co_gtiff.AddNameValue("TILED", "YES");
-    out_co_gtiff.AddNameValue("BLOCKXSIZE", std::to_string(chunk_size()[2]).c_str());
-    out_co_gtiff.AddNameValue("BLOCKYSIZE", std::to_string(chunk_size()[1]).c_str());
-
-    std::string tempdir = filesystem::join(filesystem::get_tempdir(), utils::generate_unique_filename());
-    filesystem::mkdir_recursive(tempdir);
-
-    // create all temporary tif datasets
-    for (uint32_t it = 0; it < size_t(); ++it) {
-        std::string name = filesystem::join(tempdir, std::to_string(it) + ".tif");
-
-        GDALDataset *gdal_out = gtiff_driver->Create(name.c_str(), size_x(), size_y(), nbands + add_alpha, GDT_Byte, out_co.List());
-        char *wkt_out;
-        OGRSpatialReference srs_out;
-        srs_out.SetFromUserInput(_st_ref->srs().c_str());
-        srs_out.exportToWkt(&wkt_out);
-        GDALSetProjection(gdal_out, wkt_out);
-
-        double affine[6];
-        affine[0] = st_reference()->left();
-        affine[3] = st_reference()->top();
-        affine[1] = _st_ref->dx();
-        affine[5] = -_st_ref->dy();
-        affine[2] = 0.0;
-        affine[4] = 0.0;
-        GDALSetGeoTransform(gdal_out, affine);
-        CPLFree(wkt_out);
-
-        if (nbands == 1) {
-            gdal_out->GetRasterBand(1)->SetColorInterpretation(GCI_GrayIndex);
-        } else {
-            gdal_out->GetRasterBand(1)->SetColorInterpretation(GCI_RedBand);
-            gdal_out->GetRasterBand(2)->SetColorInterpretation(GCI_GreenBand);
-            gdal_out->GetRasterBand(3)->SetColorInterpretation(GCI_BlueBand);
-        }
-        if (add_alpha == 1) {
-            gdal_out->GetRasterBand(nbands + 1)->SetColorInterpretation(GCI_AlphaBand);
-        }
-
-        //                    gdal_out->GetRasterBand(ib + 1)->SetNoDataValue(packing.nodata[0]);
-        //                    gdal_out->GetRasterBand(ib + 1)->SetOffset(packing.offset[0]);
-        //                    gdal_out->GetRasterBand(ib + 1)->SetScale(packing.scale[0]);
-        //                    gdal_out->GetRasterBand(ib + 1)->Fill(packing.nodata[0]);
-
-        GDALClose((GDALDatasetH)gdal_out);
-    }
-
-    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, dir, prg, &mtx, &tempdir, &nbands, &add_alpha, &na_color, &gamma, &band_nums, &zlim_min, &zlim_max, &grayscale_as_rgb](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
-        if (!dat->empty()) {
-            for (uint32_t it = 0; it < dat->size()[1]; ++it) {
-                uint32_t cur_t_index = chunk_limits(id).low[0] + it;
-                std::string name = filesystem::join(tempdir, std::to_string(cur_t_index) + ".tif");
-                mtx[cur_t_index].lock();
-                GDALDataset *gdal_out = (GDALDataset *)GDALOpen(name.c_str(), GA_Update);
-                if (!gdal_out) {
-                    GCBS_WARN("GDAL failed to open " + name);
-                    mtx[cur_t_index].unlock();
-                    continue;
-                }
-
-                uint8_t *buf_mask = nullptr;
-                if (add_alpha == 1) buf_mask = (uint8_t *)std::malloc(sizeof(uint8_t) * dat->size()[2] * dat->size()[3]);
-
-                if (grayscale_as_rgb) {
-                    uint8_t *buf = (uint8_t *)std::malloc(sizeof(uint8_t) * dat->size()[2] * dat->size()[3]);
-                    for (uint16_t ib = 0; ib < nbands; ++ib) {
-                        uint16_t b = band_nums[ib];
-                        for (uint32_t i = 0; i < dat->size()[2] * dat->size()[3]; ++i) {
-                            double v = ((double *)(dat->buf()))[b * dat->size()[1] * dat->size()[2] * dat->size()[3] +
-                                                                it * dat->size()[2] * dat->size()[3] + i];
-                            if (std::isnan(v)) {
-                                if (add_alpha == 1) {
-                                    buf_mask[i] = 0;
-                                } else if (!na_color.empty()) {
-                                    v = na_color[ib];
-                                } else {
-                                    v = 0;  // TODO: require either na_color not empty or na transparent == true
-                                }
-                            } else {
-                                if (add_alpha == 1) {
-                                    buf_mask[i] = 255;
-                                }
-                                v = ((v - zlim_min[ib]) / (zlim_max[ib] - zlim_min[ib]));
-                                v = std::round(std::pow(v, gamma) * 255);
-                                v = std::min(std::max(v, 0.0), 255.0);
-                            }
-                            buf[i] = v;
-                        }
-
-                        CPLErr res = gdal_out->GetRasterBand(ib + 1)->RasterIO(GF_Write, chunk_limits(id).low[2], chunk_limits(id).low[1], dat->size()[3], dat->size()[2],
-                                                                               buf, dat->size()[3], dat->size()[2], GDT_Byte, 0, 0, NULL);
-                        if (res != CE_None) {
-                            GCBS_WARN("RasterIO (write) failed for " + name);
-                            break;
-                        }
-                    }
-                    std::free(buf);
-                } else {  // modify band values in-place
-                    for (uint16_t ib = 0; ib < nbands; ++ib) {
-                        uint16_t b = band_nums[ib];
-                        for (uint32_t i = 0; i < dat->size()[2] * dat->size()[3]; ++i) {
-                            double &v = ((double *)(dat->buf()))[b * dat->size()[1] * dat->size()[2] * dat->size()[3] +
-                                                                 it * dat->size()[2] * dat->size()[3] + i];
-                            if (std::isnan(v)) {
-                                if (add_alpha == 1) {
-                                    buf_mask[i] = 0;
-                                } else if (!na_color.empty()) {
-                                    v = na_color[ib];
-                                } else {
-                                    v = 0;  // TODO: require either na_color not empty or na transparent == true
-                                }
-                            } else {
-                                if (add_alpha == 1) {
-                                    buf_mask[i] = 255;
-                                }
-                                v = ((v - zlim_min[ib]) / (zlim_max[ib] - zlim_min[ib]));
-                                v = std::round(std::pow(v, gamma) * 255);
-                                v = std::min(std::max(v, 0.0), 255.0);
-                            }
-                        }
-
-                        CPLErr res = gdal_out->GetRasterBand(ib + 1)->RasterIO(GF_Write, chunk_limits(id).low[2], size_y() - chunk_limits(id).high[1] - 1, dat->size()[3], dat->size()[2],
-                                                                               ((double *)dat->buf()) + (b * dat->size()[1] * dat->size()[2] * dat->size()[3] + it * dat->size()[2] * dat->size()[3]),
-                                                                               dat->size()[3], dat->size()[2], GDT_Float64, 0, 0, NULL);
-                        if (res != CE_None) {
-                            GCBS_WARN("RasterIO (write) failed for " + name);
-                            break;
-                        }
-                    }
-                }
-                if (add_alpha == 1) {
-                    CPLErr res = gdal_out->GetRasterBand(nbands + 1)->RasterIO(GF_Write, chunk_limits(id).low[2], size_y() - chunk_limits(id).high[1] - 1, dat->size()[3], dat->size()[2], buf_mask, dat->size()[3], dat->size()[2], GDT_Byte, 0, 0, NULL);
-                    if (res != CE_None) {
-                        GCBS_WARN("RasterIO (write) failed for chunk " + std::string(gdal_out->GetDescription()));
-                    }
-                    std::free(buf_mask);
-                }
-                GDALClose(gdal_out);
-                mtx[cur_t_index].unlock();
-            }
-        }
-        prg->increment((double)1 / (double)this->count_chunks());
-    };
-    p->apply(shared_from_this(), f);
-
-    for (uint32_t it = 0; it < size_t(); ++it) {
-        std::string name = filesystem::join(tempdir, std::to_string(it) + ".tif");
-
-        CPLStringList translate_args;
-        translate_args.AddString("-of");
-        translate_args.AddString("PNG");
-        for (auto it = creation_options.begin(); it != creation_options.end(); ++it) {
-            translate_args.AddString("-co");
-            std::string v = it->first + "=" + it->second;
-            translate_args.AddString(v.c_str());
-        }
-
-        GDALTranslateOptions *trans_options = GDALTranslateOptionsNew(translate_args.List(), NULL);
-        if (trans_options == NULL) {
-            GCBS_WARN("Cannot create gdal_translate options.");
-            continue;
-        }
-        GDALDataset *dataset = (GDALDataset *)GDALOpen(name.c_str(), GA_ReadOnly);
-        if (!dataset) {
-            GCBS_WARN("Cannot open GDAL dataset '" + name + "'.");
-            GDALTranslateOptionsFree(trans_options);
-            continue;
-        }
-        std::string outfile = filesystem::join(dir, prefix + _st_ref->datetime_at_index(it).to_string() + ".png");
-        if (!filesystem::exists(dir)) {
-            filesystem::mkdir(dir);
-        }
-        GDALDatasetH out = GDALTranslate(outfile.c_str(), (GDALDatasetH)dataset, trans_options, NULL);
-        if (!out) {
-            GCBS_WARN("Cannot translate GDAL dataset '" + name + "'.");
-            GDALClose((GDALDatasetH)dataset);
-            GDALTranslateOptionsFree(trans_options);
-        }
-        GDALClose(out);
-        GDALTranslateOptionsFree(trans_options);
-
-        GDALClose((GDALDatasetH)dataset);
-        filesystem::remove(name);
-    }
-    filesystem::remove(tempdir);
-
-    prg->set(1.0);
-    prg->finalize();
-}
 
 void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool with_VRT, bool write_bounds,
                              packed_export packing, bool drop_empty_slices, std::shared_ptr<chunk_processor> p) {
@@ -897,6 +535,11 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
         nc_def_var(ncout, "y_bnds", NC_DOUBLE, 2, d_ybnds, &v_ybnds);
         nc_def_var(ncout, "x_bnds", NC_DOUBLE, 2, d_xbnds, &v_xbnds);
     }
+
+    int d_chunkstatus;
+    nc_def_dim(ncout, "chunks", count_chunks(), &d_chunkstatus);
+    int v_chunkstatus;
+    nc_def_var(ncout, "chunk_status", NC_INT, 1, &d_chunkstatus, &v_chunkstatus);
 
     std::string att_source = "gdalcubes " + std::to_string(GDALCUBES_VERSION_MAJOR) + "." + std::to_string(GDALCUBES_VERSION_MINOR) + "." + std::to_string(GDALCUBES_VERSION_PATCH);
 
@@ -1073,9 +716,18 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
         if (dim_x_bnds) std::free(dim_x_bnds);
     }
 
-    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, op, prg, &v_bands, ncout, &packing](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
+    uint32_t chunk_error_count = 0;
+    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, op, prg, &v_bands, &chunk_error_count, ncout, &packing, &v_chunkstatus](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
 
         // TODO: check if it is OK to simply not write anything to netCDF or if we need to fill dat explicity with no data values, check also for packed output
+        int nc_chunk_status = (int)dat->status();
+        std::size_t nc_chunk_id = std::size_t(id);
+        m.lock();
+        nc_put_var1_int(ncout, v_chunkstatus, &nc_chunk_id, &nc_chunk_status);
+        if (dat->status() != chunk_data::chunk_status::OK) {
+            chunk_error_count++;
+        }
+        m.unlock();
         if (!dat->empty()) {
             chunk_size_btyx csize = dat->size();
             bounds_nd<uint32_t, 3> climits = chunk_limits(id);
@@ -1207,6 +859,15 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
     p->apply(shared_from_this(), f);
     nc_close(ncout);
     prg->finalize();
+
+
+
+    if(chunk_error_count > 0) {
+        std::string msg = std::to_string(chunk_error_count) + " out of " + std::to_string(count_chunks()) + " chunks have repoprted errors / incompleteness. "\
+        "This is most likely caused by failed computations and/or inaccessible image data. Please check detailed output or run with debug option again.";
+        GCBS_WARN(msg);
+    }
+
 
     // netCDF is now written, write additional per-time-slice VRT datasets if needed
 
@@ -1901,8 +1562,9 @@ void chunk_data::write_ncdf(std::string path, uint8_t compression_level, bool fo
     }
 
     if (!force) {
-        if (empty() || all_nan()) {
-            GCBS_WARN("Requested chunk is completely empty (NAN), and will not be written to a netCDF file on disk");
+        // Only avoid writing chunks if they have status OK and are empty / all NAN
+        if (_status == chunk_status::OK && all_nan()) { 
+            GCBS_DEBUG("Requested chunk is completely empty (NAN), and will not be written to a netCDF file on disk");
             return;
         }
     }
@@ -1923,6 +1585,9 @@ void chunk_data::write_ncdf(std::string path, uint8_t compression_level, bool fo
 
     std::string att_source = "gdalcubes " + std::to_string(GDALCUBES_VERSION_MAJOR) + "." + std::to_string(GDALCUBES_VERSION_MINOR) + "." + std::to_string(GDALCUBES_VERSION_PATCH);
     nc_put_att_text(ncout, NC_GLOBAL, "source", std::strlen(att_source.c_str()), att_source.c_str());
+    
+    int nc_chunk_status = (int)_status;
+    nc_put_att(ncout, NC_GLOBAL, "chunk_status", NC_INT, 1, &nc_chunk_status);
 
     int d_all[] = {d_b, d_t, d_y, d_x};
     int v;
@@ -1952,6 +1617,15 @@ void chunk_data::read_ncdf(std::string path) {
     if (retval != NC_NOERR) {
         GCBS_ERROR("Failed to open netCDF file '" + path + "'; nc_open() returned " + std::to_string(retval));
         return;
+    }
+
+    int s = 0;
+    if (nc_get_att_int(ncfile, NC_GLOBAL, "chunk_status", &s) == NC_NOERR) {
+        set_status(static_cast<chunk_data::chunk_status>(s));
+    }
+    else {
+        GCBS_DEBUG("NetCDF chunk file does not contain chunk status data. ");
+        set_status(chunk_data::chunk_status::UNKNOWN);
     }
 
     int dim_id_x = -1;

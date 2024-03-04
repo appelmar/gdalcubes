@@ -7,6 +7,7 @@
 #' @param view A data cube view defining the shape (spatiotemporal extent, resolution, and spatial reference), if missing, a default overview is used
 #' @param mask mask pixels of images based on band values, see \code{\link{image_mask}}
 #' @param chunking length-3 vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.
+#' @param incomplete_ok logical, if TRUE (the default), chunks will ignore IO failures and simply use as much images as possible, otherwise the result will contain empty chunks if IO errors or similar occur.
 #' @return A proxy data cube object
 #' @details 
 #' The following steps will be performed when the data cube is requested to read data of a chunk:
@@ -38,7 +39,7 @@
 #'  
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.
 #' @export
-raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$default_chunksize) {
+raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$default_chunksize, incomplete_ok = TRUE) {
 
   stopifnot(is.image_collection(image_collection))
   if (is.function(chunking)) {
@@ -60,10 +61,10 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$defa
   x = NULL
   if (!missing(view)) {
     stopifnot(is.cube_view(view))
-    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask, view)
+    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask, !incomplete_ok, view)
   }
   else {
-    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask)
+    x = gc_create_image_collection_cube(image_collection, as.integer(chunking), mask, !incomplete_ok)
   }
   class(x) <- c("image_collection_cube", "cube", "xptr")
   return(x)
@@ -100,6 +101,7 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$defa
 #' @param chunking vector of length 3 defining the size of data cube chunks in the order time, y, x.
 #' @param dx optional target pixel size in x direction, by default (NULL) the original or highest resolution of images is used 
 #' @param dy optional target pixel size in y direction, by default (NULL) the original or highest resolution of images is used 
+#' @param incomplete_ok logical, if TRUE (the default), chunks will ignore IO failures and simply use as much images as possible, otherwise the result will contain empty chunks if IO errors or similar occur.
 #' @return A proxy data cube object
 #' @examples 
 #' # toy example, repeating the same image as a daily time series
@@ -121,7 +123,7 @@ raster_cube <- function(image_collection, view, mask=NULL, chunking=.pkgenv$defa
 #'
 #' @note This function returns a proxy object, i.e., it will not start any computations besides deriving the shape of the result.                     
 #' @export
-stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chunking = c(1, 256, 256), dx=NULL, dy=NULL) {
+stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chunking = c(1, 256, 256), dx=NULL, dy=NULL, incomplete_ok = TRUE) {
   
   
   if (length(datetime_values) != length(x)) {
@@ -157,7 +159,7 @@ stack_cube <- function(x, datetime_values, bands = NULL, band_names = NULL, chun
     dy = -1.0
   }
  
-  x = gc_create_simple_cube(x, datetime_values, bands, band_names, dx, dy, as.integer(chunking))
+  x = gc_create_simple_cube(x, datetime_values, bands, band_names, dx, dy, as.integer(chunking), !incomplete_ok)
   class(x) <- c("simple_cube", "cube", "xptr")
   return(x)
 }

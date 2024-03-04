@@ -1,0 +1,22 @@
+{
+  "description": "Image collection format for Sentinel 5P Level 2 data (NO2 and QA bands only)",
+  "tags": ["Sentinel", "Copernicus", "Planetary-Computer", "S5P"],
+  "pattern": ".*/PRODUCT/(qa_value|nitrogendioxide_tropospheric_column)$",
+  "srs" : "EPSG:4326",
+  "subdatasets" : true,
+  "images": {
+    "pattern": ".*(S5P_.*)\\.nc.*"
+  },
+  "datetime": {
+    "pattern": ".+_(\\d{8}T\\d{6})_\\d{8}T\\d{6}_\\d{5}_\\d{2}_\\d{6}_\\d{8}T\\d{6}\\.nc.*",
+    "format": "%Y%m%dT%H%M%S"
+  },
+  "bands": {
+    "qa_value": {
+      "pattern": ".+\/PRODUCT\/qa_value.*"
+    },
+    "no2": {
+      "pattern": ".+\/PRODUCT\/nitrogendioxide_tropospheric_column.*"
+    }
+  }
+}

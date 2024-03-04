@@ -58,6 +58,14 @@ std::shared_ptr<chunk_data> crop_cube::read_chunk(chunkid_t id) {
                 chunkid_t input_chunk_id = _in_cube->chunk_id_from_coords({ch_t, ch_y, ch_x});
                 std::shared_ptr<chunk_data> in_chunk = _in_cube->read_chunk(input_chunk_id);
 
+
+                // propagate chunk status
+                if (in_chunk->status() == chunk_data::chunk_status::ERROR) {
+                    out->set_status(chunk_data::chunk_status::ERROR);
+                }
+                else if (in_chunk->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+                    out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                }
                 if (in_chunk->empty()) {
                     continue;
                 }

@@ -238,7 +238,7 @@ void chunk_processor_multiprocess::exec(std::string json_path, uint16_t pid, uin
     std::string outfile_temp =  filesystem::join(work_dir, "." + std::to_string(id) + ".nc");
     
     // TODO: exception handling?!
-    cube->read_chunk(id)->write_ncdf(outfile_temp, ncdf_compression_level); 
+    cube->read_chunk(id)->write_ncdf(outfile_temp, ncdf_compression_level, false); 
     if (filesystem::exists(outfile_temp)) {
       filesystem::move(outfile_temp, outfile);
     }

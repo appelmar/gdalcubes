@@ -397,6 +397,15 @@ std::shared_ptr<chunk_data> aggregate_time_cube::read_chunk(chunkid_t id) {
             }
 
             std::shared_ptr<chunk_data> in_chunk = chunk_cache[cur_in_chunk];
+
+            // propagate chunk status
+            if (in_chunk->status() == chunk_data::chunk_status::ERROR) {
+                out->set_status(chunk_data::chunk_status::ERROR);
+            }
+            else if (in_chunk->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+                out->set_status(chunk_data::chunk_status::INCOMPLETE);
+            }
+
             if (in_chunk->empty()) {
                 continue;
             }

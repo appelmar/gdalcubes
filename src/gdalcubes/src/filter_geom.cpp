@@ -215,6 +215,14 @@ std::shared_ptr<chunk_data> filter_geom_cube::read_chunk(chunkid_t id) {
     }
 
     std::shared_ptr<chunk_data> in = _in_cube->read_chunk(id);
+    // propagate chunk status
+    if (in->status() == chunk_data::chunk_status::ERROR) {
+        out->set_status(chunk_data::chunk_status::ERROR);
+    }
+    else if (in->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+        out->set_status(chunk_data::chunk_status::INCOMPLETE);
+    }
+
     if (in->empty()) {
         GDALClose(in_ogr_dataset);
         return out;

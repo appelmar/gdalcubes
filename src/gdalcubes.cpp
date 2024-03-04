@@ -844,7 +844,7 @@ SEXP gc_create_view(SEXP v) {
 
 
 // [[Rcpp::export]]
-SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask, SEXP v = R_NilValue) {
+SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, SEXP mask,bool strict = true, SEXP v = R_NilValue) {
 
   try {
     Rcpp::XPtr<std::shared_ptr<image_collection>> aa = Rcpp::as<Rcpp::XPtr<std::shared_ptr<image_collection>>>(pin);
@@ -858,6 +858,7 @@ SEXP gc_create_image_collection_cube(SEXP pin, Rcpp::IntegerVector chunk_sizes, 
       x = new std::shared_ptr<image_collection_cube>( image_collection_cube::create(*aa, cv));
     }
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    (*x)->set_strict(strict);
     
     
     if (mask != R_NilValue) {
@@ -1464,12 +1465,13 @@ SEXP gc_create_stream_cube(SEXP pin, std::string cmd) {
 // [[Rcpp::export]]
 SEXP gc_create_simple_cube(std::vector<std::string> files,std::vector<std::string> datetime_values, 
                                      std::vector<std::string> bands,  std::vector<std::string> band_names, 
-                                     double dx, double dy,  Rcpp::IntegerVector chunk_sizes) {
+                                     double dx, double dy,  Rcpp::IntegerVector chunk_sizes, bool strict = true) {
   try {
     std::shared_ptr<simple_cube>* x = new std::shared_ptr<simple_cube>( simple_cube::create(files, datetime_values,
                                                                                             bands, band_names,
                                                                                             dx, dy));
     (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    (*x)->set_strict(strict);
     Rcpp::XPtr< std::shared_ptr<simple_cube> > p(x, true) ;
     return p;
   }

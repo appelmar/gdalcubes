@@ -26,7 +26,10 @@ std::shared_ptr<chunk_data> fill_time_cube::read_chunk(chunkid_t id) {
     //std::vector<std::shared_ptr<chunk_data>> r_chunks;
 
     std::unordered_map<chunkid_t, std::shared_ptr<chunk_data>> in_chunks;
-    in_chunks.insert(std::pair<chunkid_t, std::shared_ptr<chunk_data>>(id, _in_cube->read_chunk(id)));
+    auto ic = _in_cube->read_chunk(id);
+    out->set_status(ic->status());  // propagate chunk status
+
+    in_chunks.insert(std::pair<chunkid_t, std::shared_ptr<chunk_data>>(id, ic));
 
     if (in_chunks[id]->empty()) {  // if input chunk is empty, fill with NANs
         in_chunks[id]->size(size_btyx);
@@ -57,7 +60,15 @@ std::shared_ptr<chunk_data> fill_time_cube::read_chunk(chunkid_t id) {
                 while (prev_chunk >= 0 && !found) {
                     // load chunk (only if needed)
                     if (in_chunks.find(prev_chunk) == in_chunks.end()) {
-                        in_chunks.insert(std::pair<chunkid_t, std::shared_ptr<chunk_data>>(prev_chunk, _in_cube->read_chunk(prev_chunk)));
+                        auto ic = _in_cube->read_chunk(prev_chunk);
+                        // propagate chunk status
+                        if (ic->status() == chunk_data::chunk_status::ERROR) {
+                            out->set_status(chunk_data::chunk_status::ERROR);
+                        }
+                        else if (ic->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+                            out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                        }
+                        in_chunks.insert(std::pair<chunkid_t, std::shared_ptr<chunk_data>>(prev_chunk, ic));
                     }
                     if (!in_chunks[prev_chunk]->empty()) {
                         prev_t = _in_cube->chunk_size()[0] - 1;
@@ -87,6 +98,14 @@ std::shared_ptr<chunk_data> fill_time_cube::read_chunk(chunkid_t id) {
                 while (next_chunk < (int32_t)_in_cube->count_chunks() && !found) {
                     // load chunk (only if needed)
                     if (in_chunks.find(next_chunk) == in_chunks.end()) {
+                        auto ic = _in_cube->read_chunk(next_chunk);
+                        // propagate chunk status
+                        if (ic->status() == chunk_data::chunk_status::ERROR) {
+                            out->set_status(chunk_data::chunk_status::ERROR);
+                        }
+                        else if (ic->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+                            out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                        }
                         in_chunks.insert(std::pair<chunkid_t, std::shared_ptr<chunk_data>>(next_chunk, _in_cube->read_chunk(next_chunk)));
                     }
                     if (!in_chunks[next_chunk]->empty()) {

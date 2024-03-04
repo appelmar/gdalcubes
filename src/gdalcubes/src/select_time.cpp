@@ -43,6 +43,14 @@ std::shared_ptr<chunk_data> select_time_cube::read_chunk(chunkid_t id) {
                 }
             }
 
+            // propagate chunk status
+            if (in_chunk->status() == chunk_data::chunk_status::ERROR) {
+                out->set_status(chunk_data::chunk_status::ERROR);
+            }
+            else if (in_chunk->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+                out->set_status(chunk_data::chunk_status::INCOMPLETE);
+            }
+            
             // for all bands
             if (!in_chunk->empty()) {
                 for (uint16_t ib = 0; ib < size_btyx[0]; ++ib) {

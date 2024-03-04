@@ -34,16 +34,16 @@
 
 namespace gdalcubes {
 
-image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic, cube_view v) : cube(std::make_shared<cube_view>(v)), _collection(ic), _input_bands(), _mask(nullptr), _mask_band("") { load_bands(); }
-image_collection_cube::image_collection_cube(std::string icfile, cube_view v) : cube(std::make_shared<cube_view>(v)), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band("") { load_bands(); }
-image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic, std::string vfile) : cube(std::make_shared<cube_view>(cube_view::read_json(vfile))), _collection(ic), _input_bands(), _mask(nullptr), _mask_band("") { load_bands(); }
-image_collection_cube::image_collection_cube(std::string icfile, std::string vfile) : cube(std::make_shared<cube_view>(cube_view::read_json(vfile))), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band("") { load_bands(); }
-image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic) : cube(), _collection(ic), _input_bands(), _mask(nullptr), _mask_band("") {
+image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic, cube_view v) : cube(std::make_shared<cube_view>(v)), _collection(ic), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) { load_bands(); }
+image_collection_cube::image_collection_cube(std::string icfile, cube_view v) : cube(std::make_shared<cube_view>(v)), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) { load_bands(); }
+image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic, std::string vfile) : cube(std::make_shared<cube_view>(cube_view::read_json(vfile))), _collection(ic), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) { load_bands(); }
+image_collection_cube::image_collection_cube(std::string icfile, std::string vfile) : cube(std::make_shared<cube_view>(cube_view::read_json(vfile))), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) { load_bands(); }
+image_collection_cube::image_collection_cube(std::shared_ptr<image_collection> ic) : cube(), _collection(ic), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) {
     st_reference(std::make_shared<cube_view>(image_collection_cube::default_view(_collection)));
     load_bands();
 }
 
-image_collection_cube::image_collection_cube(std::string icfile) : cube(), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band("") {
+image_collection_cube::image_collection_cube(std::string icfile) : cube(), _collection(std::make_shared<image_collection>(icfile)), _input_bands(), _mask(nullptr), _mask_band(""), _strict(true) {
     st_reference(std::make_shared<cube_view>(image_collection_cube::default_view(_collection)));
     load_bands();
 }
@@ -317,7 +317,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
     std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
     if (id >= count_chunks()) {
         // chunk is outside of the cube, we don't need to read anything.
-        GCBS_WARN("Chunk id " + std::to_string(id) + " is out of range");
+        GCBS_DEBUG("Chunk id " + std::to_string(id) + " is out of range");
         return out;
     }
 
@@ -377,6 +377,7 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
     }
 
     uint32_t i = 0;
+    uint32_t count_success = 0; // count successful image reads
     while (i < datasets.size()) {
         std::pair<std::string, uint16_t> mask_dataset_band;
         mask_dataset_band.first = "";
@@ -422,12 +423,22 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
             std::string bandsel_vrt_name = "";
             GDALDataset *g = (GDALDataset *)GDALOpen(it->first.c_str(), GA_ReadOnly);
             if (!g) {
-                GCBS_WARN("GDAL cannot open '" + it->first + "', image will be ignored.");
+                GCBS_WARN("GDAL could not open '" + it->first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                if (_strict) {
+                    if (img_buf) std::free(img_buf);
+                    if (mask_buf) std::free(mask_buf);
+                    delete agg;
+                    out = std::make_shared<chunk_data>();
+                    out->set_status(chunk_data::chunk_status::ERROR);
+                    return out;
+                }
+                GCBS_WARN("Dataset '" + it->first + "' will be ignored.");
+                out->set_status(chunk_data::chunk_status::INCOMPLETE);
                 continue;
             }
 
             if (g->GetRasterCount() == 0) {
-                GCBS_WARN("GDAL dataset'" + it->first + "' does not contain any raster bands and will be ignored.");
+                GCBS_DEBUG("GDAL dataset'" + it->first + "' does not contain any raster bands and will be ignored.");
                 continue;
             }
 
@@ -495,6 +506,20 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                                                  cextent.s.top, cextent.s.bottom, size_btyx[3], size_btyx[2],
                                                  resampling::to_string(view()->resampling_method()), nodata_value_list);
             }
+            if (!gdal_out) {
+                GCBS_WARN("GDAL could not warp '" + it->first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                if (_strict) {
+                    if (img_buf) std::free(img_buf);
+                    if (mask_buf) std::free(mask_buf);
+                    delete agg;
+                    out = std::make_shared<chunk_data>();
+                    out->set_status(chunk_data::chunk_status::ERROR);
+                    return out;
+                }
+                GCBS_WARN("Dataset '" + it->first + "' will be ignored.");
+                out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                continue;
+            }
 
             // For each band, call RasterIO to read and copy data to the right position in the buffers
             for (uint16_t b = 0; b < it->second.size(); ++b) {
@@ -511,7 +536,18 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                     res = gdal_out->GetRasterBand(std::get<1>(it->second[b]))->RasterIO(GF_Read, 0, 0, size_btyx[3], size_btyx[2], ((double *)img_buf) + b_internal * size_btyx[2] * size_btyx[3], size_btyx[3], size_btyx[2], GDT_Float64, 0, 0, NULL);
                 }
                 if (res != CE_None) {
-                    GCBS_WARN("RasterIO (read) failed for " + std::string(gdal_out->GetDescription()));
+                    GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                    if (_strict) {
+                        if (img_buf) std::free(img_buf);
+                        if (mask_buf) std::free(mask_buf);
+                        delete agg;
+                        out = std::make_shared<chunk_data>();
+                        out->set_status(chunk_data::chunk_status::ERROR);
+                        return out;
+                    }
+                    GCBS_WARN("Dataset '" + it->first + "' will be ignored.");
+                    out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                    continue;
                 }
             }
             if (!bandsel_vrt_name.empty()) {
@@ -532,7 +568,15 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                 GDALDataset *bandsel_vrt = nullptr;
                 GDALDataset *g = (GDALDataset *)GDALOpen(mask_dataset_band.first.c_str(), GA_ReadOnly);
                 if (!g) {
-                    GCBS_WARN("GDAL cannot open '" + mask_dataset_band.first + "', mask will be ignored");
+                    GCBS_WARN("GDAL could not open '" + mask_dataset_band.first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                    if (_strict) {
+                        if (img_buf) std::free(img_buf);
+                        if (mask_buf) std::free(mask_buf);
+                        delete agg;
+                        return std::make_shared<chunk_data>();
+                    }
+                    GCBS_WARN("Mask dataset '" + mask_dataset_band.first + "' will be ignored.");
+                    continue;
                 }
                 else {
                     // If input dataset has more bands than requested
@@ -573,9 +617,35 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                                                          cextent.s.top, cextent.s.bottom, size_btyx[3], size_btyx[2],
                                                          "near", std::vector<double>());
                     }
+                    if (!gdal_out) {
+                        GCBS_WARN("GDAL could not warp '" + mask_dataset_band.first + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                        if (_strict) {
+                            if (img_buf) std::free(img_buf);
+                            if (mask_buf) std::free(mask_buf);
+                            delete agg;
+                            out = std::make_shared<chunk_data>();
+                            out->set_status(chunk_data::chunk_status::ERROR);
+                            return out;
+                        }
+                        GCBS_WARN("Mask dataset '" + mask_dataset_band.first + "' will be ignored.");
+                        out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                        continue;
+                    }
                     CPLErr res = gdal_out->GetRasterBand(mask_dataset_band.second)->RasterIO(GF_Read, 0, 0, size_btyx[3], size_btyx[2], mask_buf, size_btyx[3], size_btyx[2], GDT_Float64, 0, 0, NULL);
+                    
                     if (res != CE_None) {
-                        GCBS_WARN("RasterIO (read) failed for " + std::string(gdal_out->GetDescription()));
+                        GCBS_WARN("RasterIO (read) failed for '" + std::string(gdal_out->GetDescription()) + "':  ERROR (" + std::to_string(CPLGetLastErrorNo()) + "): " + CPLGetLastErrorMsg());
+                        if (_strict) {
+                            if (img_buf) std::free(img_buf);
+                            if (mask_buf) std::free(mask_buf);
+                            delete agg;
+                            out = std::make_shared<chunk_data>();
+                            out->set_status(chunk_data::chunk_status::ERROR);
+                            return out;
+                        }
+                        GCBS_WARN("Mask dataset '" + mask_dataset_band.first + "' will be ignored.");
+                        out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                        continue;
                     }
                     GDALClose(gdal_out);
                     _mask->apply((double *)mask_buf, (double *)img_buf, size_btyx[0], size_btyx[2], size_btyx[3]);
@@ -585,6 +655,13 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
 
         // feed the aggregator
         agg->update(out->buf(), img_buf, itime);
+
+        count_success++;
+    }
+
+
+    if (out->status() == chunk_data::chunk_status::INCOMPLETE && count_success == 0) {
+        out->set_status(chunk_data::chunk_status::ERROR);
     }
 
     agg->finalize(out->buf());
@@ -595,7 +672,9 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
 
     // check if chunk is completely NAN and if yes, return empty chunk
     if (out->all_nan()) {
+        auto s = out->status();
         out = std::make_shared<chunk_data>();
+        out->set_status(s);
     }
 
     //    CPLFree(srs_out_str);

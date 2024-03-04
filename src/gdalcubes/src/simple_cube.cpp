@@ -30,7 +30,7 @@
 namespace gdalcubes {
 
 simple_cube::simple_cube(std::vector<std::string> files, std::vector<std::string> datetime_values, std::vector<std::string> bands,
-                         std::vector<std::string> band_names, double dx, double dy) : cube(), _in_files(files), _in_datetime(datetime_values), _in_bands(bands), _in_band_names(band_names), _in_dx(dx), _in_dy(dy), _orig_bands(), _band_selection() {
+                         std::vector<std::string> band_names, double dx, double dy) : cube(), _in_files(files), _in_datetime(datetime_values), _in_bands(bands), _in_band_names(band_names), _in_dx(dx), _in_dy(dy), _strict(true), _orig_bands(), _band_selection() {
     if (files.size() != datetime_values.size()) {
         GCBS_ERROR("Number of files differs from number of provided datetime_values values");
         throw std::string("Number of files differs from number of provided datetime_values values");
@@ -231,7 +231,7 @@ std::shared_ptr<chunk_data> simple_cube::read_chunk(chunkid_t id) {
     std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
     if (id >= count_chunks()) {
         // chunk is outside of the cube, we don't need to read anything.
-        GCBS_WARN("Chunk id " + std::to_string(id) + " is out of range");
+        GCBS_DEBUG("Chunk id " + std::to_string(id) + " is out of range");
         return out;
     }
 
@@ -261,6 +261,8 @@ std::shared_ptr<chunk_data> simple_cube::read_chunk(chunkid_t id) {
 
     //
 
+
+    uint32_t count_success = 0; // count successful image reads
     for (uint32_t it = 0; it < size_btyx[1]; ++it) {
         datetime dt = _st_ref->datetime_at_index(climits.low[0] + it);
         auto iter = _index.find(dt);
@@ -278,7 +280,15 @@ std::shared_ptr<chunk_data> simple_cube::read_chunk(chunkid_t id) {
 
             GDALDataset *dataset = (GDALDataset *)GDALOpen(gdal_file.c_str(), GA_ReadOnly);
             if (!dataset) {
-                GCBS_DEBUG("GDAL failed to open '" + gdal_file + "'");
+                GCBS_WARN("GDAL could not open '" + gdal_file + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                if (_strict) {
+                    GDALClose(dataset);
+                    out = std::make_shared<chunk_data>();
+                    out->set_status(chunk_data::chunk_status::ERROR);
+                    return out;
+                }
+                GCBS_WARN("Dataset '" + gdal_file + "' will be ignored.");
+                out->set_status(chunk_data::chunk_status::INCOMPLETE);
                 continue;
             }
 
@@ -337,11 +347,24 @@ std::shared_ptr<chunk_data> simple_cube::read_chunk(chunkid_t id) {
                                                                       it * size_btyx[2] * size_btyx[3],
                                                                   size_btyx[3], size_btyx[2], GDT_Float64, 0, 0, NULL);
                 if (res != CE_None) {
-                    GCBS_WARN("RasterIO (read) failed for " + gdal_file);
+                    GCBS_WARN("RasterIO (read) failed for '" + gdal_file + "':  ERROR no " + std::to_string(CPLGetLastErrorNo()) + ":" + CPLGetLastErrorMsg());
+                    if (_strict) {
+                        GDALClose(dataset);
+                        out = std::make_shared<chunk_data>();
+                        out->set_status(chunk_data::chunk_status::ERROR);
+                        return out;
+                    }
+                    GCBS_WARN("Dataset '" + gdal_file + "' will be ignored.");
+                    out->set_status(chunk_data::chunk_status::INCOMPLETE);
+                    continue;
                 }
             }
             GDALClose(dataset);
         }
+        count_success++;
+    }
+    if (out->status() == chunk_data::chunk_status::INCOMPLETE && count_success == 0) {
+        out->set_status(chunk_data::chunk_status::ERROR);
     }
     return out;
 }
