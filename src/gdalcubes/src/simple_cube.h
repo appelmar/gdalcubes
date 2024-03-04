@@ -98,6 +98,10 @@ class simple_cube : public cube {
         _chunk_size = {t, y, x};
     }
 
+    void set_strict(bool s) {
+        _strict = s;
+    }
+
     json11::Json make_constructible_json() override {
         json11::Json::object out;
         out["cube_type"] = "simple_cube";
@@ -133,6 +137,7 @@ class simple_cube : public cube {
 
         out["dx"] = _in_dx;
         out["dy"] = _in_dy;
+        out["strict"] = _strict;
 
         return out;
     }
@@ -145,6 +150,7 @@ class simple_cube : public cube {
     std::vector<std::string> _in_band_names;
     double _in_dx;
     double _in_dy;
+    bool _strict;
 
     std::map<datetime, std::map<std::string, std::pair<std::string, uint16_t>>> _index;
     band_collection _orig_bands;

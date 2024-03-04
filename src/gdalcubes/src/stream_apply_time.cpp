@@ -30,6 +30,13 @@ std::shared_ptr<chunk_data> stream_apply_time_cube::read_chunk(chunkid_t id) {
     for (chunkid_t i = id;
          i < _in_cube->count_chunks(); i += _in_cube->count_chunks_x() * _in_cube->count_chunks_y()) {
         std::shared_ptr<chunk_data> x = _in_cube->read_chunk(i);
+        // propagate chunk status
+        if (x->status() == chunk_data::chunk_status::ERROR) {
+            out->set_status(chunk_data::chunk_status::ERROR);
+        }
+        else if (x->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+            out->set_status(chunk_data::chunk_status::INCOMPLETE);
+        }
         if (!x->empty()) {
             if (!initialized) {
                 // Fill buffers with NAN
@@ -65,7 +72,10 @@ std::shared_ptr<chunk_data> stream_apply_time_cube::read_chunk(chunkid_t id) {
     }
     // check if inbuf is completely empty and if yes, avoid streaming at all and return empty chunk
     if (empty) {
-        return std::make_shared<chunk_data>();
+        auto s = out->status();
+        out = std::make_shared<chunk_data>();
+        out->set_status(s);
+        return out;
     }
     // generate in and out filename
     std::string f_in = filesystem::join(config::instance()->get_streaming_dir(),

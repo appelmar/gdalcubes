@@ -14,6 +14,8 @@ std::shared_ptr<chunk_data> stream_apply_pixel_cube::read_chunk(chunkid_t id) {
 
 
     std::shared_ptr<chunk_data> inbuf = _in_cube->read_chunk(id);
+
+    out->set_status(inbuf->status());  // propagate chunk status
     // check whether input chunk is empty and if yes, avoid computations
     if (inbuf->empty()) {
         return out;

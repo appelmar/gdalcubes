@@ -39,6 +39,8 @@ std::shared_ptr<chunk_data> filter_pixel_cube::read_chunk(chunkid_t id) {
 
     std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
     std::shared_ptr<chunk_data> in = _in_cube->read_chunk(id);
+
+    out->set_status(in->status());  // propagate chunk status
     if (in->empty()) {
         return out;
     }
@@ -98,7 +100,9 @@ std::shared_ptr<chunk_data> filter_pixel_cube::read_chunk(chunkid_t id) {
     }
     // check if chunk is completely NAN and if yes, return empty chunk
     if (out->all_nan()) {
+        chunk_data::chunk_status s = out->status();
         out = std::make_shared<chunk_data>();
+        out->set_status(s);
     }
 
     return out;

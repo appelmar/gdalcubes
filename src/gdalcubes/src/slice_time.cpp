@@ -18,6 +18,7 @@ std::shared_ptr<chunk_data> slice_time_cube::read_chunk(chunkid_t id) {
     chunkid_t input_chunk_id = _in_cube->chunk_id_from_coords(input_chunk_coords);
 
     std::shared_ptr<chunk_data> in_chunk = _in_cube->read_chunk(input_chunk_id);
+    out->set_status(in_chunk->status());  // propagate chunk status
     if (in_chunk && !in_chunk->empty()) {
         out->size(size_btyx);
         // Fill buffers accordingly

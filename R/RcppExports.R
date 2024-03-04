@@ -93,8 +93,8 @@ gc_create_view <- function(v) {
     .Call('_gdalcubes_gc_create_view', PACKAGE = 'gdalcubes', v)
 }
 
-gc_create_image_collection_cube <- function(pin, chunk_sizes, mask, v = NULL) {
-    .Call('_gdalcubes_gc_create_image_collection_cube', PACKAGE = 'gdalcubes', pin, chunk_sizes, mask, v)
+gc_create_image_collection_cube <- function(pin, chunk_sizes, mask, strict = TRUE, v = NULL) {
+    .Call('_gdalcubes_gc_create_image_collection_cube', PACKAGE = 'gdalcubes', pin, chunk_sizes, mask, strict, v)
 }
 
 gc_create_ncdf_cube <- function(path, chunk_sizes, auto_unpack) {
@@ -209,8 +209,8 @@ gc_create_stream_cube <- function(pin, cmd) {
     .Call('_gdalcubes_gc_create_stream_cube', PACKAGE = 'gdalcubes', pin, cmd)
 }
 
-gc_create_simple_cube <- function(files, datetime_values, bands, band_names, dx, dy, chunk_sizes) {
-    .Call('_gdalcubes_gc_create_simple_cube', PACKAGE = 'gdalcubes', files, datetime_values, bands, band_names, dx, dy, chunk_sizes)
+gc_create_simple_cube <- function(files, datetime_values, bands, band_names, dx, dy, chunk_sizes, strict = TRUE) {
+    .Call('_gdalcubes_gc_create_simple_cube', PACKAGE = 'gdalcubes', files, datetime_values, bands, band_names, dx, dy, chunk_sizes, strict)
 }
 
 gc_create_fill_time_cube <- function(pin, method) {

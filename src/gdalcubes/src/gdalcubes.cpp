@@ -37,9 +37,6 @@
 #include "image_collection_cube.h"
 #include "image_collection_ops.h"
 #include "stream.h"
-#ifndef GDALCUBES_NO_SWARM
-#include "swarm.h"
-#endif
 #include "utils.h"
 
 using namespace gdalcubes;

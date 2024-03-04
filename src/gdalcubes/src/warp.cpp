@@ -490,13 +490,13 @@ GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, s
     // see https://github.com/OSGeo/gdal/blob/64cf9b4e889c93e34177237665fe842186d1f581/alg/gdaltransformer.cpp#L1274C5-L1275C67
 
     CPLStringList trnsfrm_opts;
-    // TODO: Do we need to check if t_srs and/or s_src are empty?
     trnsfrm_opts.AddNameValue("SRC_SRS", s_srs.c_str());
     trnsfrm_opts.AddNameValue("GEOLOC_USE_TEMP_DATASETS", "NO");
     GDALGenImgProjTransformInfo *psInfo = static_cast<GDALGenImgProjTransformInfo *>(GDALCreateGenImgProjTransformer2(in, out, trnsfrm_opts.List()));
-    //GDALGenImgProjTransformInfo *psInfo = static_cast<GDALGenImgProjTransformInfo *>(GDALCreateGenImgProjTransformer(in, s_srs.c_str(), out, NULL, TRUE, 0.0, 1 ));
-
-    // TODO DO we need to check if psInfo is NULL?
+    if (!psInfo) {
+        GCBS_ERROR("Cannot find coordinate transformation from input image to target data cube");
+        throw std::string("Cannot find coordinate transformation from input image to target data cube");
+    }
 
     
     // Overwrite reprojection transform if needed, to benefit from cache

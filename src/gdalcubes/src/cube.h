@@ -317,10 +317,18 @@ class band_collection {
  */
 class chunk_data {
    public:
+
+    enum class chunk_status {
+        OK = 0,
+        ERROR = 1,
+        INCOMPLETE = 2,
+        UNKNOWN = 128
+    };
+
     /**
      * @brief Default constructor that creates an empty chunk
      */
-    chunk_data() : _buf(nullptr), _size({{0, 0, 0, 0}}) {}
+    chunk_data() : _buf(nullptr), _size({{0, 0, 0, 0}}), _status(chunk_status::OK) {}
 
     ~chunk_data() {
         if (_buf && _size[0] * _size[1] * _size[2] * _size[3] > 0) std::free(_buf);
@@ -427,9 +435,19 @@ class chunk_data {
      */
     void read_ncdf(std::string path);
 
+
+    void set_status(chunk_status s) {
+        _status = s;
+    }
+
+    chunk_status status() {
+        return _status;
+    }
+
    private:
     void *_buf;
     chunk_size_btyx _size;
+    chunk_status _status; // error flags
 };
 
 /**
@@ -777,14 +795,6 @@ class cube : public std::enable_shared_from_this<cube> {
      */
     std::shared_ptr<chunk_data> read_window(std::array<int32_t, 3> lower, std::array<int32_t, 3> upper);
 
-    /**
-     * @brief Write a data cube as a set of GeoTIFF files under a given directory
-     *
-     * @param dir directory where to store the files
-     * @param p chunk processor instance, defaults to the global configuration
-     */
-    void write_chunks_gtiff(std::string dir,
-                            std::shared_ptr<chunk_processor> p = config::instance()->get_default_chunk_processor());
 
     /**
      * @brief Writes a data cube as a collection of GeoTIFF files
@@ -845,38 +855,6 @@ class cube : public std::enable_shared_from_this<cube> {
 
     void write_single_chunk_netcdf(chunkid_t id, std::string path, uint8_t compression_level = 0);
 
-    /**
-     * @brief Writes a data cube as a collection of PNG files
-     *
-     * Each time slice of the cube will be written to one GeoTIFF file.
-     * @param dir output path
-     * @param prefix name prefix for created files
-     * @param bands vector with band names; must contain either no, one, or three elements; If empty, the first band is used to produce a grayscale image
-     * @param zlim_min minimum color value per channel (if vector has size 1 but three bands are provided, the same value is used for all bands)
-     * @param zlim_max maximum color value per channel (if vector has size 1 but three bands are provided, the same value is used for all bands)
-     * @param gamma gamma correction factor to be applied
-     * @param na_color = {}
-     * @param na_transparent if true, the resulting image will cintain an alpha channel, where NA values will be assigned alpha = 0%
-     * @param creation_options key value pairs passed to GDAL as PNG creation options (see https://gdal.org/drivers/raster/png.html)
-     * @param drop_empty_slices if true, empty time slices will be skipped; not yet implemented
-     * @param p chunk processor instance, defaults to the global configuration
-     *
-     * @note argument `drop_empty_slices` is not yet implemented.
-     *
-     * @note This function can be used to create single-band grayscale or three-bands color RGB plots.
-     * If bands is empty, the first band of the data cube will be used to produce a single-band grayscale image. If
-     * three bands are provided, they are interpreted in the order R,G,B. Depsite the number of provided bands,
-     * the color scale defined by zlim_min and zlim_max may be provided as single element vectors in which case the values are used for all color channels, or as
-     * three element vectors with separate scales for each RGB channel. If na_color is not empty, it can be used to set the color values of NA pixels either as a single gray value or as three separate RGB values.
-     * In the case of producing a single band grayscale image but three separate vlaues as na_color, the output image will contain three channels with gray values (R=G=B) for non-NA pixels and the na_color for NA values.
-     * Notice that if na_transparent is true, na_color is ignored.
-     * Further creation options can be used, e.g., to control the compression level of PNG files.
-     */
-    void write_png_collection(std::string dir, std::string prefix = "",
-                              std::vector<std::string> bands = {}, std::vector<double> zlim_min = {0}, std::vector<double> zlim_max = {255}, double gamma = 1, std::vector<uint8_t> na_color = {}, bool na_transparent = true,
-                              std::map<std::string, std::string> creation_options = std::map<std::string, std::string>(),
-                              bool drop_empty_slices = false,
-                              std::shared_ptr<chunk_processor> p = config::instance()->get_default_chunk_processor());
 
     /**
      * Get the cube's bands

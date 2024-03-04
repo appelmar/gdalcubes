@@ -286,6 +286,10 @@ class image_collection_cube : public cube {
         _chunk_size = {t, y, x};
     }
 
+    void set_strict(bool s) {
+        _strict = s;
+    }
+
     json11::Json make_constructible_json() override {
         if (_collection->is_temporary()) {
             throw std::string("ERROR in image_collection_cube::make_constructible_json(): image collection is temporary, please export as file using write() first.");
@@ -300,6 +304,7 @@ class image_collection_cube : public cube {
             out["mask"] = _mask->as_json();
             out["mask_band"] = _mask_band;
         }
+        out["strict"] = _strict;
         return out;
     }
 
@@ -314,6 +319,8 @@ class image_collection_cube : public cube {
 
     std::shared_ptr<image_mask> _mask;
     std::string _mask_band;
+
+    bool _strict;
 };
 
 }  // namespace gdalcubes

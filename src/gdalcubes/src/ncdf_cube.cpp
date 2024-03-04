@@ -460,7 +460,7 @@ std::shared_ptr<chunk_data> ncdf_cube::read_chunk(chunkid_t id) {
     std::shared_ptr<chunk_data> out = std::make_shared<chunk_data>();
     if (id >= count_chunks()) {
         // chunk is outside of the cube, we don't need to read anything.
-        GCBS_WARN("Chunk id " + std::to_string(id) + " is out of range");
+        GCBS_DEBUG("Chunk id " + std::to_string(id) + " is out of range");
         return out;
     }
 
@@ -491,8 +491,19 @@ std::shared_ptr<chunk_data> ncdf_cube::read_chunk(chunkid_t id) {
         throw std::string("Failed to open netCDF file '" + _path + "'; nc_open() returned " + std::to_string(retval));
     }
 
+    int varid = -1;
+    if (nc_inq_varid(ncfile, "chunk_status", &varid) == NC_NOERR) {
+        int s = 0;
+        std::size_t nc_chunk_id = std::size_t(id);
+        nc_get_var1_int(ncfile, varid, &nc_chunk_id, &s);
+        out->set_status(static_cast<chunk_data::chunk_status>(s));
+    }
+    else {
+        GCBS_DEBUG("NetCDF input file does not contain chunk status data. ");
+        out->set_status(chunk_data::chunk_status::UNKNOWN);
+    }
+
     for (uint16_t i = 0; i < size_btyx[0]; ++i) {
-        int varid = -1;
         if (nc_inq_varid(ncfile, _bands.get(i).name.c_str(), &varid) == NC_NOERR) {
             nc_get_vara_double(ncfile, varid, startp, countp, (&((double *)(out->buf()))[i * size_btyx[1] * size_btyx[2] * size_btyx[3]]));
         } else {
@@ -527,7 +538,9 @@ std::shared_ptr<chunk_data> ncdf_cube::read_chunk(chunkid_t id) {
 
     // check if chunk is completely NAN and if yes, return empty chunk
     if (out->all_nan()) {
+        auto s = out->status();
         out = std::make_shared<chunk_data>();
+        out->set_status(s);
     }
     return out;
 }

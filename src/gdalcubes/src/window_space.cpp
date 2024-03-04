@@ -219,7 +219,7 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
     // 2. Apply padding (if needed)
     if (_pad.mode != padding::MODE::NONE) {
 
-        double v;
+        double v = NAN;
         if (_pad.mode == padding::MODE::CONSTANT) {
             v = _pad.constant_value;
         }
@@ -586,7 +586,7 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
                     for (uint32_t ix = 0; ix < size_btyx[3]; ++ix) {
 
                         // apply kernel
-                        double sum = NAN; // TODO: complete.cases only?
+                        double sum = 0.0; // TODO: complete.cases only?
                         for (int16_t ky=0; ky < _win_size_y; ++ky) {
                             for (int16_t kx=0; kx < _win_size_x; ++kx) {
                                 double v = ((double*)(cwin->buf()))[
@@ -595,12 +595,13 @@ std::shared_ptr<chunk_data> window_space_cube::read_chunk(chunkid_t id) {
                                         (iy+ky) * cwin->size()[3] +
                                         (ix + kx)
                                     ];
-                                if (std::isnan(sum)) {
-                                    sum = _kernel[ky * _win_size_x + kx] * v;
-                                }
-                                else if (std::isfinite(v))
+                                if (std::isfinite(v)) { //
                                     sum += _kernel[ky * _win_size_x + kx] * v;
-                                    
+                                }
+                                else {
+                                    sum = NAN;
+                                    break;
+                                }                                  
                             }
                         }
 

@@ -54,6 +54,14 @@ std::shared_ptr<chunk_data> join_bands_cube::read_chunk(chunkid_t id) {
     bool allempty = true;
     for (uint16_t i = 0; i < _in.size(); ++i) {
         std::shared_ptr<chunk_data> dat = _in[i]->read_chunk(id);
+        // propagate chunk status
+        if (dat->status() == chunk_data::chunk_status::ERROR) {
+            out->set_status(chunk_data::chunk_status::ERROR);
+        }
+        else if (dat->status() == chunk_data::chunk_status::INCOMPLETE && out->status() != chunk_data::chunk_status::ERROR) {
+            out->set_status(chunk_data::chunk_status::INCOMPLETE);
+        }
+
         if (!dat->empty()) {
             allempty = false;
             std::memcpy(((double *)out->buf()) + offset, ((double *)dat->buf()), dat->size()[0] * dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(double));
@@ -61,8 +69,10 @@ std::shared_ptr<chunk_data> join_bands_cube::read_chunk(chunkid_t id) {
         offset += _in[i]->size_bands() * size_tyx[0] * size_tyx[1] * size_tyx[2];
     }
     if (allempty) {
+        auto s = out->status();
         // propagated empty chunk if all input chunks are emtpy
         out = std::make_shared<chunk_data>();
+        out->set_status(s);
     }
     return out;
 }
