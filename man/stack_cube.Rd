@@ -11,7 +11,8 @@ stack_cube(
   band_names = NULL,
   chunking = c(1, 256, 256),
   dx = NULL,
-  dy = NULL
+  dy = NULL,
+  incomplete_ok = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ stack_cube(
 \item{dx}{optional target pixel size in x direction, by default (NULL) the original or highest resolution of images is used}
 
 \item{dy}{optional target pixel size in y direction, by default (NULL) the original or highest resolution of images is used}
+
+\item{incomplete_ok}{logical, if TRUE (the default), chunks will ignore IO failures and simply use as much images as possible, otherwise the result will contain empty chunks if IO errors or similar occur.}
 }
 \value{
 A proxy data cube object

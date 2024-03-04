@@ -8,7 +8,8 @@ raster_cube(
   image_collection,
   view,
   mask = NULL,
-  chunking = .pkgenv$default_chunksize
+  chunking = .pkgenv$default_chunksize,
+  incomplete_ok = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ raster_cube(
 \item{mask}{mask pixels of images based on band values, see \code{\link{image_mask}}}
 
 \item{chunking}{length-3 vector or a function returning a vector of length 3, defining the size of data cube chunks in the order time, y, x.}
+
+\item{incomplete_ok}{logical, if TRUE (the default), chunks will ignore IO failures and simply use as much images as possible, otherwise the result will contain empty chunks if IO errors or similar occur.}
 }
 \value{
 A proxy data cube object
