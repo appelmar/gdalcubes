@@ -2,7 +2,7 @@
 % Please edit documentation in R/window.R
 \name{window_time}
 \alias{window_time}
-\title{Apply a moving window function over the time dimension of a data cube}
+\title{Apply a moving window operations over the time dimension of a data cube}
 \usage{
 window_time(x, expr, ..., kernel, window)
 }

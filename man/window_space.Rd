@@ -2,7 +2,7 @@
 % Please edit documentation in R/window.R
 \name{window_space}
 \alias{window_space}
-\title{Apply a moving window operation or convolution kernel over the spatial dimensions of a data cube}
+\title{Apply a moving window (focal) operation or a convolution kernel over spatial dimensions of a data cube.}
 \usage{
 window_space(x, expr, ..., kernel, window, keep_bands = FALSE, pad = NA)
 }
@@ -13,32 +13,37 @@ window_space(x, expr, ..., kernel, window, keep_bands = FALSE, pad = NA)
 
 \item{...}{optional additional expressions (if expr is not a vector)}
 
-\item{kernel}{two dimensional kernel (matrix) applied as convolution (must have odd number of rows and columns)}
+\item{kernel}{two dimensional kernel (matrix) applied as convolution (with odd number of rows and columns)}
 
-\item{window}{integer vector with two elements defining the size of the window before and after a cell, the total size of the window is window[1] + 1 + window[2]}
+\item{window}{integer vector with two elements defining the size (number of pixels) of the window in y and x direction, the total size of the window is window[1] *  window[2]}
 
 \item{keep_bands}{logical; if FALSE (the default), original data cube bands will be dropped.}
 
-\item{pad}{Padding method applied to the borders; use NULL for no padding, a numeric a fill value, or one of "REPLICATE", "REFLECT", "REFLECT_PIXEL"}
+\item{pad}{padding method applied to the borders; use NULL for no padding (NA), a numeric a fill value, or one of "REPLICATE", "REFLECT", "REFLECT_PIXEL"}
 }
 \value{
 proxy data cube object
 }
 \description{
-Create a proxy data cube, which applies a convolution kernel or an aggregation functions on two-dimensional moving 
-windows sliding over spatial slices of a data cube. The function can either execute a predefined agggregation function or 
-apply a custom convolution kernel. Among others, use cases include image processing (edge detection, median filter noise reduction, etc.) and
+Create a proxy data cube, which applies a convolution kernel or aggregation functions over two-dimensional moving 
+windows sliding over spatial slices of a data cube. The function can either execute one or more predefined aggregation functions or 
+apply a custom convolution kernel. Among others, use cases include image processing (edge detection, noise reduction, etc.) and
 enriching pixel values with local neighborhood properties (e.g. to use as predictor variables in ML models).
 }
 \details{
 The function either applies a kernel convolution (if the \code{kernel} argument is provided) or one or more built-in reducer function 
-over moving windows. In the former case, the kernel convolution will be applied over all bands of the input 
-cube, i.e., the output cube will have the same number of bands as the input cubes. 
-To apply one or more reducer functions, the window argument must be provided as a vector with two integer sizes in the order y, x.
-Several string expressions can be provided to create multiple bands in the output cube.
+over moving windows. 
 
-Notice that expressions have a very simple format: the reducer is followed by the name of a band in parentheses. You cannot add
-more complex functions or arguments. Possible reducers currently include "min", "max", "sum", "prod", "count", "mean", "median", "var", and "sd".
+In the former case, the kernel convolution will be applied over all bands of the input 
+cube, i.e., the output cube will have the same number of bands as the input cubes.
+ 
+To apply one or more aggregation functions over moving windows, the window argument must be provided as a vector with two integer sizes 
+in the order y, x. Several string expressions can be provided to create multiple bands in the output cube. 
+Notice that expressions have a very simple format: the reducer is followed by the name of a band in parentheses, e.g, "mean(band1)".
+Possible reducers include "min", "max", "sum", "prod", "count", "mean", "median", "var", and "sd".
+
+Padding methods "REPLICATE", "REFLECT", "REFLEX_PIXEL" are defined according to 
+\url{https://openeo.org/documentation/1.0/processes.html#apply_kernel}.
 }
 \note{
 Implemented reducers will ignore any NAN values (as \code{na.rm = TRUE} does).
@@ -65,8 +70,15 @@ L8.cube = select_bands(L8.cube, c("B04", "B05"))
 L8.cube.mean5x5 = window_space(L8.cube, kernel = matrix(1/25, 5, 5))
 L8.cube.mean5x5
 
+\donttest{
+plot(L8.cube.mean5x5, key.pos=1)
+}
+
 L8.cube.med_sd = window_space(L8.cube, "median(B04)" ,"sd(B04)", "median(B05)", "sd(B05)", 
                               window = c(5,5), keep_bands = TRUE)
 L8.cube.med_sd
+\donttest{
+plot(L8.cube.med_sd, key.pos=1)
+}
 
 }
