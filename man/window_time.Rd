@@ -2,7 +2,7 @@
 % Please edit documentation in R/window.R
 \name{window_time}
 \alias{window_time}
-\title{Apply a moving window operations over the time dimension of a data cube}
+\title{Apply a moving window operation over the time dimension of a data cube}
 \usage{
 window_time(x, expr, ..., kernel, window)
 }
@@ -22,7 +22,8 @@ proxy data cube object
 }
 \description{
 Create a proxy data cube, which applies one ore more moving window functions to selected bands over pixel time series of a data cube.
-The fuction can either use a predefined agggregation function or apply a custom convolution kernel.
+The function can either apply a built-in aggregation function or apply a custom one-dimensional 
+convolution kernel.
 }
 \details{
 The function either applies a kernel convolution (if the \code{kernel} argument is provided) or a general reducer function 
@@ -34,7 +35,7 @@ several expressions can be used to create multiple bands in the output cube.
 Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 more complex functions or arguments.
 
-Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median".
+Possible reducers include "min", "max", "sum", "prod", "count", "mean", and "median".
 }
 \note{
 Implemented reducers will ignore any NAN values (as na.rm=TRUE does).

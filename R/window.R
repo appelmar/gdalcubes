@@ -1,7 +1,8 @@
-#' Apply a moving window operations over the time dimension of a data cube
+#' Apply a moving window operation over the time dimension of a data cube
 #' 
 #' Create a proxy data cube, which applies one ore more moving window functions to selected bands over pixel time series of a data cube.
-#' The fuction can either use a predefined agggregation function or apply a custom convolution kernel. 
+#' The function can either apply a built-in aggregation function or apply a custom one-dimensional 
+#' convolution kernel. 
 #'
 #' @param x source data cube
 #' @param kernel numeric vector with elements of the kernel 
@@ -42,7 +43,7 @@
 #' Notice that expressions have a very simple format: the reducer is followed by the name of a band in parantheses. You cannot add
 #' more complex functions or arguments.
 #' 
-#' Possible reducers currently are "min", "max", "sum", "prod", "count", "mean", "median".
+#' Possible reducers include "min", "max", "sum", "prod", "count", "mean", and "median".
 #'
 #' 
 #' @export
