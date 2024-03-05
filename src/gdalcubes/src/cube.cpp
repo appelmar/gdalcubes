@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #include "cube.h"
+#include "view.h"
 
 #include <gdal_utils.h>  // for GDAL translate
 #include <netcdf.h>
@@ -44,6 +45,248 @@ SOFTWARE.
 #endif
 
 namespace gdalcubes {
+
+
+
+
+packed_export packed_export::make_none() {
+    packed_export out;
+    out.type = packing_type::PACK_NONE;
+    return out;
+}
+
+
+packed_export packed_export::make_float32() {
+    packed_export out;
+    out.type = packing_type::PACK_FLOAT32;
+    out.scale = {1};
+    out.offset = {0};
+    out.nodata = {std::numeric_limits<int16_t>::lowest()};
+    return out;
+}
+
+packed_export packed_export::make_uint16(double scale, double offset, double nodata) {
+    packed_export out;
+    out.type = packing_type::PACK_UINT16;
+    out.scale = {scale};
+    out.offset = {offset};
+    out.nodata = {nodata};
+    return out;
+}
+
+packed_export packed_export::make_uint16(std::vector<double> scale, std::vector<double> offset, std::vector<double> nodata) {
+    packed_export out;
+    out.type = packing_type::PACK_UINT16;
+    out.scale = scale;
+    out.offset = offset;
+    out.nodata = nodata;
+    return out;
+}
+
+packed_export packed_export::make_int16(double scale, double offset) {
+    packed_export out;
+    out.type = packing_type::PACK_UINT16;
+    out.scale = {scale};
+    out.offset = {offset};
+    return out;
+}
+
+packed_export packed_export::make_int16(std::vector<double> scale, std::vector<double> offset) {
+    packed_export out;
+    out.type = packing_type::PACK_INT16;
+    out.scale = scale;
+    out.offset = offset;
+    return out;
+}
+
+packed_export packed_export::make_uint8(double scale, double offset) {
+    packed_export out;
+    out.type = packing_type::PACK_UINT16;
+    out.scale = {scale};
+    out.offset = {offset};
+    return out;
+}
+
+packed_export packed_export::make_uint8(std::vector<double> scale, std::vector<double> offset) {
+    packed_export out;
+    out.type = packing_type::PACK_UINT8;
+    out.scale = scale;
+    out.offset = offset;
+    return out;
+}
+
+
+
+
+
+bool chunk_data::all_nan() {
+    if (empty()) return true;
+    for (uint32_t i=0; i< _size[0] * _size[1] * _size[2] * _size[3]; ++i) {
+        if (!std::isnan(((double*)_buf)[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+
+
+
+
+
+chunkid_t cube::find_chunk_that_contains(coords_st p) const {
+    uint32_t cumprod = 1;
+    chunkid_t id = 0;
+
+    // 1. Convert map coordinates to view-based coordinates
+    coords_nd<uint32_t, 3> s = _st_ref->cube_coords(p);
+
+    // 2. Find out which chunk contains the integer view coordinates
+    id += cumprod * (s[2] / _chunk_size[2]);
+    cumprod *= (uint32_t)std::ceil(((double)_st_ref->nx()) / ((double)_chunk_size[2]));
+    id += cumprod * (s[1] / _chunk_size[1]);
+    cumprod *= (uint32_t)std::ceil(((double)(_st_ref->ny()) / ((double)_chunk_size[1])));
+    id += cumprod * (s[0] / _chunk_size[0]);
+    //cumprod *= (uint32_t)std::ceil(((double)(_c->view().nt()) / ((double)_size_t);
+
+    return id;
+}
+
+
+bounds_nd<uint32_t, 3> cube::chunk_limits(chunk_coordinate_tyx c) const {
+    cube_coordinate_tyx out_vcoords_low;
+    cube_coordinate_tyx out_vcoords_high;
+
+    out_vcoords_low[0] = c[0] * _chunk_size[0];
+    out_vcoords_low[1] = c[1] * _chunk_size[1];
+    out_vcoords_low[2] = c[2] * _chunk_size[2];
+    out_vcoords_high[0] = out_vcoords_low[0] + _chunk_size[0] - 1;
+    out_vcoords_high[1] = out_vcoords_low[1] + _chunk_size[1] - 1;
+    out_vcoords_high[2] = out_vcoords_low[2] + _chunk_size[2] - 1;
+
+    // Shrink to view
+    if (out_vcoords_high[0] >= _st_ref->nt())
+        out_vcoords_high[0] = _st_ref->nt() - 1;
+    if (out_vcoords_low[0] >= _st_ref->nt())
+        out_vcoords_low[0] = _st_ref->nt() - 1;
+
+    if (out_vcoords_high[1] >= _st_ref->ny())
+        out_vcoords_high[1] = _st_ref->ny() - 1;
+    if (out_vcoords_low[1] >= _st_ref->ny())
+        out_vcoords_low[1] = _st_ref->ny() - 1;
+
+    if (out_vcoords_high[2] >= _st_ref->nx())
+        out_vcoords_high[2] = _st_ref->nx() - 1;
+    if (out_vcoords_low[2] >= _st_ref->nx())
+        out_vcoords_low[2] = _st_ref->nx() - 1;
+
+    bounds_nd<uint32_t, 3> out;
+    out.low = out_vcoords_low;
+    out.high = out_vcoords_high;
+    return out;
+}
+
+
+
+
+
+bounds_nd<uint32_t, 3> cube::chunk_limits(chunkid_t id) const {
+    coords_nd<uint32_t, 3> out_vcoords_low;
+    coords_nd<uint32_t, 3> out_vcoords_high;
+
+    // Transform to global coordinates based on chunk id
+    uint32_t cumprod = 1;
+    int32_t n;
+
+    n = (uint32_t)std::ceil(((double)(_st_ref->nx())) / ((double)_chunk_size[2]));
+    out_vcoords_low[2] = (id / cumprod) % n;
+    out_vcoords_low[2] *= _chunk_size[2];
+    out_vcoords_high[2] = out_vcoords_low[2] + _chunk_size[2] - 1;
+    cumprod *= n;
+
+    n = (uint32_t)std::ceil(((double)(_st_ref->ny())) / ((double)_chunk_size[1]));
+    out_vcoords_low[1] = (id / cumprod) % n;
+    out_vcoords_low[1] *= _chunk_size[1];
+    out_vcoords_high[1] = out_vcoords_low[1] + _chunk_size[1] - 1;
+    cumprod *= n;
+
+    n = (uint32_t)std::ceil(((double)(_st_ref->nt())) / ((double)_chunk_size[0]));
+    out_vcoords_low[0] = (id / cumprod) % n;
+    out_vcoords_low[0] *= _chunk_size[0];
+    out_vcoords_high[0] = out_vcoords_low[0] + _chunk_size[0] - 1;
+    cumprod *= n;
+
+    // Shrink to view
+    if (out_vcoords_high[0] >= _st_ref->nt())
+        out_vcoords_high[0] = _st_ref->nt() - 1;
+    if (out_vcoords_low[0] >= _st_ref->nt())
+        out_vcoords_low[0] = _st_ref->nt() - 1;
+
+    if (out_vcoords_high[1] >= _st_ref->ny())
+        out_vcoords_high[1] = _st_ref->ny() - 1;
+    if (out_vcoords_low[1] >= _st_ref->ny())
+        out_vcoords_low[1] = _st_ref->ny() - 1;
+
+    if (out_vcoords_high[2] >= _st_ref->nx())
+        out_vcoords_high[2] = _st_ref->nx() - 1;
+    if (out_vcoords_low[2] >= _st_ref->nx())
+        out_vcoords_low[2] = _st_ref->nx() - 1;
+
+    bounds_nd<uint32_t, 3> out;
+    out.low = out_vcoords_low;
+    out.high = out_vcoords_high;
+    return out;
+}
+
+
+
+
+chunk_coordinate_tyx cube::chunk_coords_from_id(chunkid_t id) {
+    chunk_coordinate_tyx out;
+
+    uint32_t cumprod = 1;
+    int32_t n;
+
+    n = count_chunks_x();
+    out[2] = (id / cumprod) % n;
+    cumprod *= n;
+    n = count_chunks_y();
+    out[1] = (id / cumprod) % n;
+    cumprod *= n;
+    n = count_chunks_t();
+    out[0] = (id / cumprod) % n;
+    cumprod *= n;
+
+    return out;
+}
+
+
+
+bounds_st cube::bounds_from_chunk(chunkid_t id) const {
+    bounds_st out_st;
+
+    bounds_nd<uint32_t, 3> vb = chunk_limits(id);
+    coords_st low = _st_ref->map_coords(vb.low);
+    vb.high[0] += 1;
+    vb.high[1] += 1;
+    vb.high[2] += 1;
+    coords_st high = _st_ref->map_coords(vb.high);
+
+    out_st.s.left = low.s.x;
+    out_st.s.right = high.s.x;
+    out_st.s.bottom = high.s.y; // Important: high has lower y coordinates (because integer cube coordinates go top -> bottom)
+    out_st.s.top = low.s.y; // Important: low has higher y coordinates (because integer cube coordinates go top -> bottom)
+    out_st.t0 = low.t;
+    out_st.t1 = high.t;
+
+    return out_st;
+}
+
+
+
+
 
 
 void cube::write_tif_collection(std::string dir, std::string prefix,

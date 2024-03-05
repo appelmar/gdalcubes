@@ -33,6 +33,7 @@
 
 namespace gdalcubes {
 
+
 typedef std::array<uint32_t, 4> cube_coordinate_btyx;
 typedef std::array<uint32_t, 3> cube_coordinate_tyx;
 typedef std::array<uint32_t, 4> cube_size_btyx;
@@ -84,70 +85,14 @@ struct packed_export {
      */
     std::vector<double> nodata;
 
-    static packed_export make_none() {
-        packed_export out;
-        out.type = packing_type::PACK_NONE;
-        return out;
-    }
-
-    static packed_export make_float32() {
-        packed_export out;
-        out.type = packing_type::PACK_FLOAT32;
-        out.scale = {1};
-        out.offset = {0};
-        out.nodata = {std::numeric_limits<int16_t>::lowest()};
-        return out;
-    }
-
-    static packed_export make_uint16(double scale, double offset, double nodata) {
-        packed_export out;
-        out.type = packing_type::PACK_UINT16;
-        out.scale = {scale};
-        out.offset = {offset};
-        out.nodata = {nodata};
-        return out;
-    }
-
-    static packed_export make_uint16(std::vector<double> scale, std::vector<double> offset, std::vector<double> nodata) {
-        packed_export out;
-        out.type = packing_type::PACK_UINT16;
-        out.scale = scale;
-        out.offset = offset;
-        out.nodata = nodata;
-        return out;
-    }
-
-    static packed_export make_int16(double scale, double offset) {
-        packed_export out;
-        out.type = packing_type::PACK_UINT16;
-        out.scale = {scale};
-        out.offset = {offset};
-        return out;
-    }
-
-    static packed_export make_int16(std::vector<double> scale, std::vector<double> offset) {
-        packed_export out;
-        out.type = packing_type::PACK_INT16;
-        out.scale = scale;
-        out.offset = offset;
-        return out;
-    }
-
-    static packed_export make_uint8(double scale, double offset) {
-        packed_export out;
-        out.type = packing_type::PACK_UINT16;
-        out.scale = {scale};
-        out.offset = {offset};
-        return out;
-    }
-
-    static packed_export make_uint8(std::vector<double> scale, std::vector<double> offset) {
-        packed_export out;
-        out.type = packing_type::PACK_UINT8;
-        out.scale = scale;
-        out.offset = offset;
-        return out;
-    }
+    static packed_export make_none();
+    static packed_export make_float32();
+    static packed_export make_uint16(double scale, double offset, double nodata);
+    static packed_export make_uint16(std::vector<double> scale, std::vector<double> offset, std::vector<double> nodata);
+    static packed_export make_int16(double scale, double offset);
+    static packed_export make_int16(std::vector<double> scale, std::vector<double> offset);
+    static packed_export make_uint8(double scale, double offset);
+    static packed_export make_uint8(std::vector<double> scale, std::vector<double> offset);
 };
 
 class cube;
@@ -368,15 +313,7 @@ class chunk_data {
      * @brief Check if the buffer contains only NAN values
      * @return true, if all values are NAN, or the chunk is empty
      */
-    bool all_nan() {
-        if (empty()) return true;
-        for (uint32_t i=0; i< _size[0] * _size[1] * _size[2] * _size[3]; ++i) {
-            if (!std::isnan(((double*)_buf)[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
+    bool all_nan();
 
     /**
      * @brief Access the raw buffer where the data is stored in memory
@@ -476,8 +413,6 @@ class cube : public std::enable_shared_from_this<cube> {
      */
     cube(std::shared_ptr<cube_stref> st_ref) : _st_ref(st_ref), _chunk_size(), _bands(), _pre(), _succ() {
         _chunk_size = {16, 256, 256};
-
-        // TODO: add bands
     }
 
     virtual ~cube() {}
@@ -487,114 +422,21 @@ class cube : public std::enable_shared_from_this<cube> {
      * @param p point in spacetime coordinates
      * @return a unique chunk identifier (uint32_t)
      */
-    chunkid_t find_chunk_that_contains(coords_st p) const {
-        uint32_t cumprod = 1;
-        chunkid_t id = 0;
-
-        // 1. Convert map coordinates to view-based coordinates
-        coords_nd<uint32_t, 3> s = _st_ref->cube_coords(p);
-
-        // 2. Find out which chunk contains the integer view coordinates
-        id += cumprod * (s[2] / _chunk_size[2]);
-        cumprod *= (uint32_t)std::ceil(((double)_st_ref->nx()) / ((double)_chunk_size[2]));
-        id += cumprod * (s[1] / _chunk_size[1]);
-        cumprod *= (uint32_t)std::ceil(((double)(_st_ref->ny()) / ((double)_chunk_size[1])));
-        id += cumprod * (s[0] / _chunk_size[0]);
-        //cumprod *= (uint32_t)std::ceil(((double)(_c->view().nt()) / ((double)_size_t);
-
-        return id;
-    }
+    chunkid_t find_chunk_that_contains(coords_st p) const;
 
     /**
      * @brief Calculate the limits of a given chunk
      * @param c chunk coordinates
      * @return the limits in t,y, and x, as integer data cube coordinates
      */
-    bounds_nd<uint32_t, 3> chunk_limits(chunk_coordinate_tyx c) const {
-        cube_coordinate_tyx out_vcoords_low;
-        cube_coordinate_tyx out_vcoords_high;
-
-        out_vcoords_low[0] = c[0] * _chunk_size[0];
-        out_vcoords_low[1] = c[1] * _chunk_size[1];
-        out_vcoords_low[2] = c[2] * _chunk_size[2];
-        out_vcoords_high[0] = out_vcoords_low[0] + _chunk_size[0] - 1;
-        out_vcoords_high[1] = out_vcoords_low[1] + _chunk_size[1] - 1;
-        out_vcoords_high[2] = out_vcoords_low[2] + _chunk_size[2] - 1;
-
-        // Shrink to view
-        if (out_vcoords_high[0] >= _st_ref->nt())
-            out_vcoords_high[0] = _st_ref->nt() - 1;
-        if (out_vcoords_low[0] >= _st_ref->nt())
-            out_vcoords_low[0] = _st_ref->nt() - 1;
-
-        if (out_vcoords_high[1] >= _st_ref->ny())
-            out_vcoords_high[1] = _st_ref->ny() - 1;
-        if (out_vcoords_low[1] >= _st_ref->ny())
-            out_vcoords_low[1] = _st_ref->ny() - 1;
-
-        if (out_vcoords_high[2] >= _st_ref->nx())
-            out_vcoords_high[2] = _st_ref->nx() - 1;
-        if (out_vcoords_low[2] >= _st_ref->nx())
-            out_vcoords_low[2] = _st_ref->nx() - 1;
-
-        bounds_nd<uint32_t, 3> out;
-        out.low = out_vcoords_low;
-        out.high = out_vcoords_high;
-        return out;
-    };
+    bounds_nd<uint32_t, 3> chunk_limits(chunk_coordinate_tyx c) const;
 
     /**
      * @brief Calculate the limits of a given chunk
      * @param id chunk id
      * @return the limits in t,y, and x, as integer data cube coordinates
      */
-    bounds_nd<uint32_t, 3> chunk_limits(chunkid_t id) const {
-        coords_nd<uint32_t, 3> out_vcoords_low;
-        coords_nd<uint32_t, 3> out_vcoords_high;
-
-        // Transform to global coordinates based on chunk id
-        uint32_t cumprod = 1;
-        int32_t n;
-
-        n = (uint32_t)std::ceil(((double)(_st_ref->nx())) / ((double)_chunk_size[2]));
-        out_vcoords_low[2] = (id / cumprod) % n;
-        out_vcoords_low[2] *= _chunk_size[2];
-        out_vcoords_high[2] = out_vcoords_low[2] + _chunk_size[2] - 1;
-        cumprod *= n;
-
-        n = (uint32_t)std::ceil(((double)(_st_ref->ny())) / ((double)_chunk_size[1]));
-        out_vcoords_low[1] = (id / cumprod) % n;
-        out_vcoords_low[1] *= _chunk_size[1];
-        out_vcoords_high[1] = out_vcoords_low[1] + _chunk_size[1] - 1;
-        cumprod *= n;
-
-        n = (uint32_t)std::ceil(((double)(_st_ref->nt())) / ((double)_chunk_size[0]));
-        out_vcoords_low[0] = (id / cumprod) % n;
-        out_vcoords_low[0] *= _chunk_size[0];
-        out_vcoords_high[0] = out_vcoords_low[0] + _chunk_size[0] - 1;
-        cumprod *= n;
-
-        // Shrink to view
-        if (out_vcoords_high[0] >= _st_ref->nt())
-            out_vcoords_high[0] = _st_ref->nt() - 1;
-        if (out_vcoords_low[0] >= _st_ref->nt())
-            out_vcoords_low[0] = _st_ref->nt() - 1;
-
-        if (out_vcoords_high[1] >= _st_ref->ny())
-            out_vcoords_high[1] = _st_ref->ny() - 1;
-        if (out_vcoords_low[1] >= _st_ref->ny())
-            out_vcoords_low[1] = _st_ref->ny() - 1;
-
-        if (out_vcoords_high[2] >= _st_ref->nx())
-            out_vcoords_high[2] = _st_ref->nx() - 1;
-        if (out_vcoords_low[2] >= _st_ref->nx())
-            out_vcoords_low[2] = _st_ref->nx() - 1;
-
-        bounds_nd<uint32_t, 3> out;
-        out.low = out_vcoords_low;
-        out.high = out_vcoords_high;
-        return out;
-    };
+    bounds_nd<uint32_t, 3> chunk_limits(chunkid_t id) const;
 
     /**
      * @brief Default string description method for data cubes
@@ -643,24 +485,7 @@ class cube : public std::enable_shared_from_this<cube> {
      * @param id chunk id
      * @return chunk coordinates in t,y, and x directions
      */
-    chunk_coordinate_tyx chunk_coords_from_id(chunkid_t id) {
-        chunk_coordinate_tyx out;
-
-        uint32_t cumprod = 1;
-        int32_t n;
-
-        n = count_chunks_x();
-        out[2] = (id / cumprod) % n;
-        cumprod *= n;
-        n = count_chunks_y();
-        out[1] = (id / cumprod) % n;
-        cumprod *= n;
-        n = count_chunks_t();
-        out[0] = (id / cumprod) % n;
-        cumprod *= n;
-
-        return out;
-    }
+    chunk_coordinate_tyx chunk_coords_from_id(chunkid_t id);
 
     /**
      * @brief Convert chunk coordinates to a one-dimensional chunk id
@@ -691,25 +516,7 @@ class cube : public std::enable_shared_from_this<cube> {
      * @param id Chunk identifier
      * @return Spatiotemporal extent
      */
-    bounds_st bounds_from_chunk(chunkid_t id) const {
-        bounds_st out_st;
-
-        bounds_nd<uint32_t, 3> vb = chunk_limits(id);
-        coords_st low = _st_ref->map_coords(vb.low);
-        vb.high[0] += 1;
-        vb.high[1] += 1;
-        vb.high[2] += 1;
-        coords_st high = _st_ref->map_coords(vb.high);
-
-        out_st.s.left = low.s.x;
-        out_st.s.right = high.s.x;
-        out_st.s.bottom = high.s.y; // Important: high has lower y coordinates (because integer cube coordinates go top -> bottom)
-        out_st.s.top = low.s.y; // Important: low has higher y coordinates (because integer cube coordinates go top -> bottom)
-        out_st.t0 = low.t;
-        out_st.t1 = high.t;
-
-        return out_st;
-    }
+    bounds_st bounds_from_chunk(chunkid_t id) const;
 
     /**
      * @brief Get the chunk size of the cube

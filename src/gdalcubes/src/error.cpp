@@ -22,8 +22,8 @@
     SOFTWARE.
 */
 
+#include <iostream>
 #include "error.h"
-
 #include "config.h"
 
 namespace gdalcubes {
@@ -60,5 +60,59 @@ void logger::info(std::string msg, std::string where, int error_code) {
     config::instance()->get_error_handler()(error_level::ERRLVL_INFO, msg, where, error_code);
     _m.unlock();
 }
+
+
+void error_handler::default_error_handler(error_level type, std::string msg, std::string where, int error_code) {
+#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
+    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
+    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
+    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
+        std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_WARNING) {
+        std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
+    }
+#endif
+}
+
+
+void error_handler::error_handler_debug(error_level type, std::string msg, std::string where, int error_code) {
+#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
+    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
+    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
+    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
+        std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_WARNING) {
+        std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_INFO) {
+        std::cout << "INFO" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_DEBUG) {
+        std::cout << "DEBUG" << code << ": " << msg << where_str << std::endl;
+    }
+#endif
+}
+
+
+void error_handler::error_handler_debug_server(error_level type, std::string msg, std::string where, int error_code) {
+#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
+    std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
+    std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
+    std::string now = "[" + utils::get_curdatetime() + "]";
+    if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
+        std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_WARNING) {
+        std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_INFO) {
+        std::cout << "INFO " << now << ": " << msg << where_str << std::endl;
+    } else if (type == error_level::ERRLVL_DEBUG) {
+        std::cout << "DEBUG " << now << ": " << msg << where_str << std::endl;
+    }
+#endif
+}
+
+
+
+
+
+
 
 }  // namespace gdalcubes

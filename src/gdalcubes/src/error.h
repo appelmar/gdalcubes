@@ -25,7 +25,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include <iostream>
+
 #include <mutex>
 #include <string>
 
@@ -108,17 +108,7 @@ class error_handler {
      * @param where location where the error / message comes from
      * @param error_code integer error code
      */
-    static void default_error_handler(error_level type, std::string msg, std::string where, int error_code) {
-#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
-        std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-        std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
-        if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-            std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_WARNING) {
-            std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
-        }
-#endif
-    }
+    static void default_error_handler(error_level type, std::string msg, std::string where, int error_code);
 
     /**
      * @brief Default error handler for debugging that prints messages up to the debug level to stderr and stdout
@@ -127,21 +117,7 @@ class error_handler {
      * @param where location where the error / message comes from
      * @param error_code integer error code
      */
-    static void error_handler_debug(error_level type, std::string msg, std::string where, int error_code) {
-#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
-        std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-        std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
-        if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-            std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_WARNING) {
-            std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_INFO) {
-            std::cout << "INFO" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_DEBUG) {
-            std::cout << "DEBUG" << code << ": " << msg << where_str << std::endl;
-        }
-#endif
-    }
+    static void error_handler_debug(error_level type, std::string msg, std::string where, int error_code);
 
     /**
      * @brief Error handler for debugging gdalcubes_server including system time in messages
@@ -150,22 +126,7 @@ class error_handler {
      * @param where location where the error / message comes from
      * @param error_code integer error code
      */
-    static void error_handler_debug_server(error_level type, std::string msg, std::string where, int error_code) {
-#ifndef R_PACKAGE  // avoid std::cerr and std::cout for R package, this is only to reduce R CMD check warnings
-        std::string code = (error_code != 0) ? " (" + std::to_string(error_code) + ")" : "";
-        std::string where_str = (where.empty()) ? "" : " [in " + where + "]";
-        std::string now = "[" + utils::get_curdatetime() + "]";
-        if (type == error_level::ERRLVL_ERROR || type == error_level::ERRLVL_FATAL) {
-            std::cerr << "ERROR" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_WARNING) {
-            std::cout << "WARNING" << code << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_INFO) {
-            std::cout << "INFO " << now << ": " << msg << where_str << std::endl;
-        } else if (type == error_level::ERRLVL_DEBUG) {
-            std::cout << "DEBUG " << now << ": " << msg << where_str << std::endl;
-        }
-#endif
-    }
+    static void error_handler_debug_server(error_level type, std::string msg, std::string where, int error_code);
 };
 
 }  // namespace gdalcubes
