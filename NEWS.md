@@ -1,3 +1,8 @@
+# gdalcubes 0.7.1 (2025-03-19)
+
+* fix CRAN build issues related to clang-20 and gcc_UBSAN
+
+
 # gdalcubes 0.7.0 (2024-03-06)
 
 * add `as.data.frame()` to easily convert data cubes to data frames
