@@ -109,11 +109,15 @@ static te_expr *new_expr(const int type, const te_expr *parameters[]) {
     
     int size = sizeof(te_expr);
 
-    te_expr *ret = malloc(size); 
-    ret->parameters = malloc(psize); 
+    te_expr *ret = malloc(size);
+    
     //memset(ret, 0, size); 
     if (arity && parameters) {
+        ret->parameters = malloc(psize);
         memcpy(ret->parameters, parameters, psize);
+    }
+    else {
+      ret->parameters = malloc(sizeof(void*));
     }
     ret->type = type;
     ret->binding.bound = 0;
