@@ -99,15 +99,19 @@ static te_expr *new_expr(const int type, const te_expr *parameters[]) {
     const int psize = sizeof(void*) * arity;
     //const int size = (sizeof(te_expr) - sizeof(void*)) + psize + (IS_CLOSURE(type) ? sizeof(void*) : 0);
 
-    // assert that size is >=  sizeof(te_expr) to fix GCC11 warnings
-    // (modified by Marius Appel on 2021-07-05)
-    int size = (sizeof(te_expr) - sizeof(void*)) + psize + (IS_CLOSURE(type) ? sizeof(void*) : 0);
-    if (size < sizeof(te_expr)) {
-      size = sizeof(te_expr);
-    }
+    // The following lines have been changed in order to make sure that all expressions 
+    // have the same size and that pointers to parameters have correct size (to avoid UBSAN warnings)
+    // (modified on 2025-03-18 by Marius Appel)
+    // int size = (sizeof(te_expr) - sizeof(void*)) + psize + (IS_CLOSURE(type) ? sizeof(void*) : 0);
+    // if (size < sizeof(te_expr)) {
+    //   size = sizeof(te_expr);
+    // }
+    
+    int size = sizeof(te_expr);
 
-    te_expr *ret = malloc(size);
-    memset(ret, 0, size);
+    te_expr *ret = malloc(size); 
+    ret->parameters = malloc(psize); 
+    //memset(ret, 0, size); 
     if (arity && parameters) {
         memcpy(ret->parameters, parameters, psize);
     }
@@ -134,6 +138,7 @@ void te_free_parameters(te_expr *n) {
 void te_free(te_expr *n) {
     if (!n) return;
     te_free_parameters(n);
+    if (n->parameters) free(n->parameters);
     free(n);
 }
 

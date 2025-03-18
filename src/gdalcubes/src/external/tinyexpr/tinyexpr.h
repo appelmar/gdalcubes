@@ -38,7 +38,7 @@ union te_binding{double value; const double *bound; funcptr function;};
 typedef struct te_expr {
     int type;
     union te_binding binding;
-    void **parameters; // modified by Marius Appel on 2025-03-18
+    void **parameters; // Modified on 2025-03-18 by Marius Appel
 } te_expr;
 
 
