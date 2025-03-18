@@ -40,7 +40,7 @@ cube_view(
 
 \item{aggregation}{aggregation method as string, defining how to deal with pixels containing data from multiple images, can be "min", "max", "mean", "median", or "first"}
 
-\item{resampling}{resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://gdal.org/programs/gdalwarp.html})}
+\item{resampling}{resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://gdal.org/en/stable/programs/gdalwarp.html})}
 
 \item{keep.asp}{if TRUE, derive ny or dy automatically from nx or dx (or vice versa) based on the aspect ratio of the spatial extent}
 }

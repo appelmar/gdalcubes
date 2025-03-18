@@ -16,7 +16,7 @@
 #' @param nt number of pixels in t-direction
 #' @param keep.asp if TRUE, derive ny or dy automatically from nx or dx (or vice versa) based on the aspect ratio of the spatial extent
 #' @param aggregation aggregation method as string, defining how to deal with pixels containing data from multiple images, can be "min", "max", "mean", "median", or "first"
-#' @param resampling resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://gdal.org/programs/gdalwarp.html})
+#' @param resampling resampling method used in gdalwarp when images are read, can be "near", "bilinear", "bicubic" or others as supported by gdalwarp (see \url{https://gdal.org/en/stable/programs/gdalwarp.html})
 #' @details 
 #' The \code{extent} argument expects a simple list with elementes \code{left}, \code{right}, \code{bottom}, \code{top}, \code{t0} (start date/time), \code{t1} (end date/time) or an image collection object.
 #' In the latter case, the \code{\link{extent}} function is automatically called on the image collection object to get the full spatiotemporal extent of the collection. In the former case, datetimes 

@@ -952,8 +952,8 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' @param prefix output file name
 #' @param overviews logical; generate overview images 
 #' @param COG logical; create cloud-optimized GeoTIFF files (forces overviews=TRUE)
-#' @param rsmpl_overview resampling method for overviews (image pyramid) generation (see \url{https://gdal.org/programs/gdaladdo.html} for available methods)
-#' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/drivers/raster/gtiff.html#creation-options})
+#' @param rsmpl_overview resampling method for overviews (image pyramid) generation (see \url{https://gdal.org/en/stable/programs/gdaladdo.html} for available methods)
+#' @param creation_options additional creation options for resulting GeoTIFF files, e.g. to define compression (see \url{https://gdal.org/en/stable/drivers/raster/gtiff.html#creation-options})
 #' @param write_json_descr logical; write a JSON description of x as additional file
 #' @param pack reduce output file size by packing values (see Details), defaults to no packing
 #' 

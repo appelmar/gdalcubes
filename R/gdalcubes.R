@@ -8,7 +8,6 @@
 #' All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries. 
 #' See Appel and Pebesma (2019) <doi:10.3390/data4030092> for further details.
 #'
-#' @docType package
 #' @name gdalcubes
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib gdalcubes
@@ -21,5 +20,5 @@
 #' 
 #' 
 #' 
-NULL
+"_PACKAGE"
 

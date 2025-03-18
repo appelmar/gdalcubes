@@ -199,7 +199,7 @@ gdalcubes_gdalversion <- function() {
 #' @param value value
 #' @details 
 #' Details and a list of possible options can be found at 
-#' \href{https://gdal.org/user/configoptions.html}{https://gdal.org/user/configoptions.html}.
+#' \href{https://gdal.org/en/stable/user/configoptions.html}{https://gdal.org/en/stable/user/configoptions.html}.
 #' @examples 
 #' gdalcubes_set_gdal_config("GDAL_NUM_THREADS", "ALL_CPUS")
 #' @export

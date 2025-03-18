@@ -1,7 +1,7 @@
 Package: gdalcubes
 Title: Earth Observation Data Cubes from Satellite Image Collections
-Version: 0.7.0
-Date: 2024-03-06
+Version: 0.7.1
+Date: 2025-03-19
 Authors@R: c(
     person(given = "Marius",
            family = "Appel",
@@ -49,13 +49,13 @@ Description: Processing collections of Earth observation images as on-demand mul
     exporting data cubes as 'netCDF' or 'GeoTIFF' files, plotting, and extraction from spatial and or spatiotemporal features.  
     All computational parts are implemented in C++, linking to the 'GDAL', 'netCDF', 'CURL', and 'SQLite' libraries. 
     See Appel and Pebesma (2019) <doi:10.3390/data4030092> for further details.
-Depends: R (>= 3.4)
+Depends: R (>= 4.1.0)
 Imports: Rcpp, jsonlite, ncdf4
 License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes
 BugReports: https://github.com/appelmar/gdalcubes/issues/
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 LinkingTo: Rcpp, BH
 Suggests: 
     knitr,
