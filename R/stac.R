@@ -98,10 +98,10 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".db"),
       for (i in 1:length(a)) {
         if (asset_names_exist[a[i]]) {
           bands = union(bands, asset_names[a[i]])
-          warning(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not include eo:bands metadata and will be considered as a single band source"))
+          #warning(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not include eo:bands metadata and will be considered as a single band source"))
         }
         else {
-          warning(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not exist and will be ignored"))
+          message(paste0("STAC asset with name '", asset_names[a[i]] ,"' does not exist and will be ignored"))
         }    
       }
     }
@@ -166,6 +166,9 @@ stac_image_collection <- function(s, out_file = tempfile(fileext = ".db"),
           }
           else {
             proj = s[[i]]$properties$"proj:epsg"
+            if (is.null(proj)) {
+              proj = s[[i]]$properties$"proj:code"
+            }
             if (!is.null(proj)) {
               if (!startsWith(toupper(proj), "EPSG:")) {
                 proj = paste0("EPSG:", proj)
