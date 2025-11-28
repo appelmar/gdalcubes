@@ -1,3 +1,10 @@
+# gdalcubes 0.7.2 (dev)
+
+* fix CRAN issues due to missing error handling in `add_collection_format()`
+* add support for Sentinel data from EOPF (https://zarr.eopf.copernicus.eu) in `stac_image_collection()`
+
+
+
 # gdalcubes 0.7.1 (2025-03-19)
 
 * fix CRAN build issues related to clang-20 and gcc_UBSAN

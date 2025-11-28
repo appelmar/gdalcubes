@@ -314,10 +314,14 @@ add_collection_format <- function(url, name=NULL) {
     }
   }
   destfile = file.path(system.file(package="gdalcubes"), "formats", name)
-  download.file(url, destfile = destfile)
-  if(!jsonlite::validate(readLines(destfile))) {
-    file.remove(destfile)
-    stop("downloaded file is not valid json")
-  }
+  tryCatch({
+      download.file(url, destfile = destfile)
+      if(!jsonlite::validate(readLines(destfile))) {
+        file.remove(destfile)
+        stop("Downloaded file is not a valid JSON document.")
+      }
+    }, error = function(e) {
+      message(paste0("Failed to download collection format from '", url, "'."))
+    })
   invisible()
 }
