@@ -11,6 +11,9 @@
 ^src/gdalcubes/\.travis.yml$
 ^src/gdalcubes/\.github$
 ^src/gdalcubes/\.git$
+^src/gdalcubes/doxygen$
+^src/gdalcubes/\.idea$
+^src/gdalcubes/cmake-build-debug$
 ^vignettes/gc02_AWS_Sentinel2.Rmd$
 ^vignettes/gc03_ML_training_data.Rmd$
 ^vignettes/MOD11A2$
@@ -49,10 +52,7 @@
 ^src/gdalcubes/supervisord\.conf$
 ^src/gdalcubes/src/CMakeLists\.txt$
 ^src/gdalcubes/src/Doxyfile$
-^src/gdalcubes/src/Doxygen$
-^src/gdalcubes/src/.idea$
-^src/gdalcubes/src/Doxygen$
-^src/gdalcubes/src/cmake-build-debug$
+^src/gdalcubes/src/doxygen$
 ^src/gdalcubes/src/example\.cpp$
 ^src/gdalcubes/src/server\.h$
 ^src/gdalcubes/src/server\.cpp$
