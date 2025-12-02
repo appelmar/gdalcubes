@@ -25,7 +25,7 @@
 #ifndef COORD_TYPES_H
 #define COORD_TYPES_H
 
-#include <ogr_spatialref.h>
+//#include <ogr_spatialref.h>
 
 #include <array>
 #include <limits>

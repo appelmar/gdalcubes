@@ -28,8 +28,10 @@
 
 #include <cstdint> // 2023-01-12: GCC 13 compatibility
 #include "coord_types.h"
-#include "datetime.h"
+//#include "datetime.h"
 #include "external/json11/json11.hpp"
+
+
 
 namespace gdalcubes {
 
@@ -104,6 +106,10 @@ struct resampling {
 // Forwartds declarations of all spacetime reference classes
 class cube_stref_regular;
 class cube_stref_labeled_time;
+
+struct duration;
+class datetime;
+enum class datetime_unit;
 
 class cube_stref {
    public:
