@@ -227,7 +227,7 @@ void image_collection::add_with_datetime(std::vector<std::string> descriptors, s
             if (md_domains != NULL) {
                 if (CSLFindString(md_domains, "SUBDATASETS") != -1) {
                     // if yes, list all metadata keys ending with _NAME
-                    char** md_sd = dataset->GetMetadata("SUBDATASETS");
+                    CSLConstList md_sd = dataset->GetMetadata("SUBDATASETS");
                     if (md_sd != NULL) {
                         for (uint16_t imd = 0; imd < CSLCount(md_sd); ++imd) {
                             std::string s(md_sd[imd]);
@@ -452,7 +452,7 @@ void image_collection::add_with_datetime_bands(std::vector<std::string> descript
             if (md_domains != NULL) {
                 if (CSLFindString(md_domains, "SUBDATASETS") != -1) {
                     // if yes, list all metadata keys ending with _NAME
-                    char** md_sd = dataset->GetMetadata("SUBDATASETS");
+                    CSLConstList md_sd = dataset->GetMetadata("SUBDATASETS");
                     if (md_sd != NULL) {
                         for (uint16_t imd = 0; imd < CSLCount(md_sd); ++imd) {
                             std::string s(md_sd[imd]);
@@ -698,7 +698,7 @@ void image_collection::add_with_collection_format(std::vector<std::string> descr
             if (md_domains != NULL) {
                 if (CSLFindString(md_domains, "SUBDATASETS") != -1) {
                     // if yes, list all metadata keys ending with _NAME
-                    char** md_sd = dataset->GetMetadata("SUBDATASETS");
+                    CSLConstList md_sd = dataset->GetMetadata("SUBDATASETS");
                     if (md_sd != NULL) {
                         for (uint16_t imd = 0; imd < CSLCount(md_sd); ++imd) {
                             std::string s(md_sd[imd]);
@@ -854,7 +854,7 @@ void image_collection::add_with_collection_format(std::vector<std::string> descr
 
             }
             else {
-                char **slist = dataset->GetMetadata("GEOLOCATION");
+                CSLConstList slist = dataset->GetMetadata("GEOLOCATION");
                 if (slist != NULL) {
                     std::string x_dataset = std::string(CSLFetchNameValue(slist, "X_DATASET"));
                     std::string y_dataset = std::string(CSLFetchNameValue(slist, "Y_DATASET"));
