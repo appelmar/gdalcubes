@@ -228,10 +228,12 @@ double datetime::to_double() {
 
 date::sys_seconds datetime::tryparse(std::string format, std::string d) {
     bool success = false;
-    date::sys_seconds out;  // TODO: set to invalid?!
+    //date::sys_seconds out;  // TODO: set to invalid?!
+    date::sys_time<std::chrono::seconds> out;
     if (!success) {
         std::istringstream is(d);
-        is >> date::parse(format, out);
+        //is >> date::parse(format, out);
+        date::from_stream(is, format.c_str(), out);
         if (bool(is))
             success = true;
     }

@@ -117,7 +117,11 @@ static te_expr *new_expr(const int type, const te_expr *parameters[]) {
         memcpy(ret->parameters, parameters, psize);
     }
     else {
-      ret->parameters = malloc(sizeof(void*));
+      // FIX COMPILER WARNING tinyexpr.c:547:53: warning: array subscript 1 is outside array bounds of ‘void[8]’
+      // (modified on 2026-01-18 by Marius Appel)
+      size_t nparams = IS_CLOSURE(type) ? 2 : 1;
+      ret->parameters = malloc(nparams * sizeof(void*));
+      //
     }
     ret->type = type;
     ret->binding.bound = 0;

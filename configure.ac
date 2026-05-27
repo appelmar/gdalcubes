@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([gdalcubes],[0.7.2],[marius.appel@hs-bochum.de])
+AC_INIT([gdalcubes],[0.7.3],[marius.appel@hs-bochum.de])
 AC_LANG(C++)
 
 # find R home and set CC/CFLAGS
@@ -26,10 +26,10 @@ INPKG_LIBS="${PKG_LIBS}"
 # C++11 ########################################################################################################
 # 2019-10-04: remove C++11 test based on R version because package now dependes on R(>=3.4)
 
-
-CXX11=`"${RBIN}" CMD config CXX11`
-CXX11STD=`"${RBIN}" CMD config CXX11STD`
-CXX="${CXX11} ${CXX11STD}"
+## 2025-12-16: drop CXX 11 test
+# CXX11=`"${RBIN}" CMD config CXX11`
+# CXX11STD=`"${RBIN}" CMD config CXX11STD`
+# CXX="${CXX11} ${CXX11STD}"
 
 
 

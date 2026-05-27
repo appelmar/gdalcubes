@@ -6,11 +6,11 @@ RUN apt install -y libgdal-dev libcurl4-openssl-dev libnetcdf-dev libudunits2-de
 
 USER rstudio 
 RUN Rscript -e 'install.packages(c("stars","sf","magick","knitr", "rmarkdown", "tinytest", "av","lubridate","gifski", "BH", "ncdf4"))'
+RUN Rscript -e 'install.packages("gdalcubes")'
+#COPY --chown=rstudio:rstudio . /home/rstudio/gdalcubes
 
-COPY --chown=rstudio:rstudio . /home/rstudio/gdalcubes
-
-WORKDIR /home/rstudio/gdalcubes
-RUN R CMD INSTALL .
+#WORKDIR /home/rstudio/gdalcubes
+#RUN R CMD INSTALL .
 
 USER root
 # run e.g. with 

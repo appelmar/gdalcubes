@@ -1,3 +1,8 @@
+# gdalcubes 0.7.3 (2026-01-18)
+
+* remove CXX11 dependency in configure
+* fix compilation error on CRAN r-devel-linux by updating `datetime.cpp` to fix `date::parse()` template matching
+
 # gdalcubes 0.7.2 (2025-12-01)
 
 * fix CRAN issues due to missing error handling in `add_collection_format()`
