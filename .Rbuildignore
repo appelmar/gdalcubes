@@ -54,6 +54,9 @@
 ^src/gdalcubes/src/Doxyfile$
 ^src/gdalcubes/src/doxygen$
 ^src/gdalcubes/src/example\.cpp$
+^src/gdalcubes/src/gdalcubes\.cpp$
+^src/gdalcubes/src/progress\.cpp$
+^src/gdalcubes/src/progress\.h
 ^src/gdalcubes/src/server\.h$
 ^src/gdalcubes/src/server\.cpp$
 ^src/gdalcubes/src/test$
