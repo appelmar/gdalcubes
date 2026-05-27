@@ -43,7 +43,7 @@
 #include "image_collection_ops.h"
 #include "join_bands.h"
 #include "ncdf_cube.h"
-#include "progress.h"
+#include "progress_virt.h"
 #include "reduce_space.h"
 #include "reduce_time.h"
 #include "rename_bands.h"

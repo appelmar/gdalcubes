@@ -30,7 +30,7 @@
 #include "build_info.h"
 #include "error.h"
 #include "filesystem.h"
-#include "progress.h"
+#include "progress_virt.h"
 
 namespace gdalcubes {
 

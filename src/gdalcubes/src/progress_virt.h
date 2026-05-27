@@ -1,0 +1,76 @@
+/*
+ MIT License
+ 
+ Copyright (c) 2019 Marius Appel <marius.appel@hs-bochum.de>
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+#ifndef PROGRESS_VIRT_H
+#define PROGRESS_VIRT_H
+
+
+#include <cstdint> // 2023-01-12: GCC 13 compatibility
+
+namespace gdalcubes {
+
+/**
+ * @brief Virtual base class for progress updates of long running processes
+ */
+struct progress {
+  virtual ~progress() = default;
+  
+  /**
+   * Get a new progress object of the same class
+   * @return a new progress object
+   */
+  virtual std::shared_ptr<progress> get() = 0;
+  
+  /**
+   * Set the progress to a specific value in [0,1]
+   * @param p progress, 1 means 100%
+   */
+  virtual void set(double p) = 0;
+  
+  /**
+   * Increment progress by a value of db
+   * @param dp progress increment
+   */
+  virtual void increment(double dp) = 0;
+  
+  /**
+   * Finalize the progress update such as printing "DONE"
+   */
+  virtual void finalize(){};
+};
+
+
+/**
+ * @brief Implementation of progress which ignores any progress updates
+ * @see progress
+ */
+struct progress_none : public progress {
+  std::shared_ptr<progress> get() override { return std::make_shared<progress_none>(); }
+  void set(double p) override {}
+  void increment(double dp) override {}
+};
+
+
+}  // namespace gdalcubes
+
+#endif  //PROGRESS_VIRT_H

@@ -38,6 +38,7 @@
 #include "image_collection_ops.h"
 #include "stream.h"
 #include "utils.h"
+#include "progress_virt.h"
 
 using namespace gdalcubes;
 

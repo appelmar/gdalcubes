@@ -28,50 +28,16 @@
 #include <mutex>
 #include <cstdint> // 2023-01-12: GCC 13 compatibility
 
+#include "progress_virt.h"
 #include "timer.h"
 #include "utils.h"
 
+
+
+
 namespace gdalcubes {
 
-/**
- * @brief Virtual base class for progress updates of long running processes
-*/
-struct progress {
-    virtual ~progress() = default;
 
-    /**
-     * Get a new progress object of the same class
-     * @return a new progress object
-     */
-    virtual std::shared_ptr<progress> get() = 0;
-
-    /**
-    * Set the progress to a specific value in [0,1]
-    * @param p progress, 1 means 100%
-    */
-    virtual void set(double p) = 0;
-
-    /**
-   * Increment progress by a value of db
-   * @param dp progress increment
-   */
-    virtual void increment(double dp) = 0;
-
-    /**
-     * Finalize the progress update such as printing "DONE"
-     */
-    virtual void finalize(){};
-};
-
-/**
- * @brief Implementation of progress which ignores any progress updates
- * @see progress
-*/
-struct progress_none : public progress {
-    std::shared_ptr<progress> get() override { return std::make_shared<progress_none>(); }
-    void set(double p) override {}
-    void increment(double dp) override {}
-};
 
 /**
  * @brief Implementation of progress that streams updates to stdout
