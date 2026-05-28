@@ -55,7 +55,6 @@ License: MIT + file LICENSE
 URL: https://github.com/appelmar/gdalcubes
 BugReports: https://github.com/appelmar/gdalcubes/issues/
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 LinkingTo: Rcpp, BH
 Suggests: 
     knitr,
@@ -70,3 +69,4 @@ VignetteBuilder: knitr
 Copyright: file inst/COPYRIGHTS
 NeedsCompilation: yes
 SystemRequirements: GDAL (>= 2.0.1), PROJ (>= 4.8.0), netcdf, sqlite3
+Config/roxygen2/version: 8.0.0

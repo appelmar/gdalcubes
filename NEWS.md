@@ -1,3 +1,8 @@
+# gdalcubes 0.7.4 (2026-05-28)
+
+* fix GCC16 issues on CRAN
+* fix compatibility with GDAL 3.13
+
 # gdalcubes 0.7.3 (2026-01-18)
 
 * remove CXX11 dependency in configure
