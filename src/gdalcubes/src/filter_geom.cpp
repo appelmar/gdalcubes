@@ -124,6 +124,10 @@ filter_geom_cube::filter_geom_cube(std::shared_ptr<cube> in, std::string wkt, st
     std::string output_file = "/vsimem/" + utils::generate_unique_filename(8, "crop_", ".gpkg");
     _ogr_dataset = output_file;
     GDALDriver *gpkg_driver = GetGDALDriverManager()->GetDriverByName("GPKG");
+    if (gpkg_driver == NULL) {
+        GCBS_ERROR("GPKG driver is not available");
+        throw std::string("GPKG driver is not available");
+    }
     GDALDataset *gpkg_out = gpkg_driver->Create(output_file.c_str(), 0, 0, 0, GDT_Unknown, NULL);
     if (gpkg_out == NULL) {
         GCBS_ERROR("Creation of GPKG file '" + output_file + "' failed");
@@ -182,7 +186,6 @@ std::shared_ptr<chunk_data> filter_geom_cube::read_chunk(chunkid_t id) {
     OGRPolygon pp;
     OGRLinearRing a;
     bounds_2d<double> sextent = bounds_from_chunk(id).s;
-    OGRSpatialReference srs_cube = st_reference()->srs_ogr();
 
     a.addPoint(sextent.left, sextent.bottom);
     a.addPoint(sextent.right, sextent.bottom);
@@ -190,13 +193,20 @@ std::shared_ptr<chunk_data> filter_geom_cube::read_chunk(chunkid_t id) {
     a.addPoint(sextent.left, sextent.top);
     a.addPoint(sextent.left, sextent.bottom);
     pp.addRing(&a);
-    pp.assignSpatialReference(&srs_cube);
+    // no SRS is assigned to pp: assignSpatialReference() takes refcounted ownership
+    // and ~OGRGeometry() calls Release() on it, which crashes for stack-allocated
+    // SRS objects; Contains() / Intersects() below do not use the SRS anyway
 
     // iterate over all features
     bool chunk_within_polygon = false;
     bool outside = false;
     layer->ResetReading();
     OGRFeature *cur_feature = layer->GetNextFeature();  // assumption, there is only one feature
+    if (cur_feature == NULL) {
+        GDALClose(in_ogr_dataset);
+        GCBS_ERROR("no feature found in '" + _ogr_dataset + "'");
+        throw std::string("no feature found in '" + _ogr_dataset + "'");
+    }
     OGRGeometry *geom = cur_feature->GetGeometryRef();
     if (geom != NULL) {
         if (geom->Contains(&pp)) {
@@ -276,15 +286,20 @@ std::shared_ptr<chunk_data> filter_geom_cube::read_chunk(chunkid_t id) {
         }
         int err = 0;
         GDALDataset *gdal_rasterized = (GDALDataset *)GDALRasterize("", NULL, (GDALDatasetH)in_ogr_dataset, rasterize_opts, &err);
-        if (gdal_rasterized == NULL) {
-            GCBS_ERROR("gdal_rasterize failed ");
-        }
-
         GDALRasterizeOptionsFree(rasterize_opts);
+        if (gdal_rasterized == NULL) {
+            GDALClose(in_ogr_dataset);
+            GCBS_ERROR("gdal_rasterize failed");
+            throw std::string("ERROR in filter_geom_cube::read_chunk(): gdal_rasterize failed");
+        }
 
         uint8_t *geom_mask = (uint8_t *)std::malloc(sizeof(uint8_t) * in->size()[3] * in->size()[2]);
         if (gdal_rasterized->GetRasterBand(1)->RasterIO(GF_Read, 0, 0, in->size()[3], in->size()[2], geom_mask, in->size()[3], in->size()[2], GDT_Byte, 0, 0, NULL) != CE_None) {
+            std::free(geom_mask);
+            GDALClose(gdal_rasterized);
+            GDALClose(in_ogr_dataset);
             GCBS_ERROR("RasterIO failed");
+            throw std::string("ERROR in filter_geom_cube::read_chunk(): RasterIO failed");
         }
         for (uint32_t iy = 0; iy < in->size()[2]; ++iy) {
             for (uint32_t ix = 0; ix < in->size()[3]; ++ix) {
