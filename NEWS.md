@@ -1,6 +1,7 @@
-# gdalcubes 0.7.5 (unreleased)
+# gdalcubes 0.7.5 (2026-09-15)
 
 * fix segfault in worker processes when computing a `filter_geom()` cube under GDAL 3 (#110)
+* fix CLANG23 issues on CRAN 
 
 # gdalcubes 0.7.4 (2026-05-28)
 

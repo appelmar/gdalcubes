@@ -28,6 +28,7 @@
 #include <functional>
 #include <string>
 #include <cstdint> // 2023-01-12: GCC 13 compatibility
+#include <cstdlib> // 2026-09-15: clang-23 compatibility
 
 #ifdef _WIN32
 #define DIR_SEPARATOR "\\"

@@ -80,29 +80,37 @@ export(write_tif)
 import(jsonlite)
 import(ncdf4)
 importFrom(Rcpp,sourceCpp)
-importFrom(grDevices,col2rgb)
-importFrom(grDevices,dev.capabilities)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,dev.size)
-importFrom(grDevices,grey)
-importFrom(grDevices,png)
-importFrom(grDevices,rainbow)
-importFrom(graphics,axis)
-importFrom(graphics,box)
-importFrom(graphics,image.default)
-importFrom(graphics,layout)
-importFrom(graphics,lcm)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,par)
-importFrom(graphics,plot)
-importFrom(graphics,rasterImage)
-importFrom(graphics,rect)
-importFrom(graphics,title)
-importFrom(stats,complete.cases)
-importFrom(stats,quantile)
-importFrom(stats,rnorm)
-importFrom(utils,download.file)
-importFrom(utils,head)
-importFrom(utils,object.size)
+importFrom(grDevices,
+  col2rgb,
+  dev.capabilities,
+  dev.off,
+  dev.size,
+  grey,
+  png,
+  rainbow
+)
+importFrom(graphics,
+  axis,
+  box,
+  image.default,
+  layout,
+  lcm,
+  legend,
+  lines,
+  par,
+  plot,
+  rasterImage,
+  rect,
+  title
+)
+importFrom(stats,
+  complete.cases,
+  quantile,
+  rnorm
+)
+importFrom(utils,
+  download.file,
+  head,
+  object.size
+)
 useDynLib(gdalcubes)
