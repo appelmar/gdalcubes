@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <fstream>
+#include <iostream>
 
 #include "build_info.h"
 #include "cube_factory.h"
@@ -38,7 +39,7 @@
 #include "image_collection_ops.h"
 #include "stream.h"
 #include "utils.h"
-#include "progress_virt.h"
+#include "progress.h"
 
 using namespace gdalcubes;
 
@@ -83,9 +84,6 @@ void print_usage(std::string command = "") {
         std::cout << "    , --deflate            Deflate compression level for output NetCDF file (0=no compression, 9=max compression), defaults to 1" << std::endl;
         std::cout << "  -t, --threads            Number of threads used for parallel chunk processing, defaults to 1" << std::endl;
         std::cout << "  -c, --chunk              Compute only one specific chunk, specified by its integer identifier" << std::endl;
-#ifndef GDALCUBES_NO_SWARM
-        std::cout << "      --swarm              Filename of a simple text file where each line points to a gdalcubes server API endpoint" << std::endl;
-#endif
         std::cout << "  -d, --debug              Print debug messages" << std::endl;
         std::cout << std::endl;
     } else if (command == "addo") {
@@ -281,9 +279,6 @@ int main(int argc, char* argv[]) {
             exec_desc.add_options()("output", po::value<std::string>(), "");
             exec_desc.add_options()("chunk,c", po::value<uint32_t>(), "");
             exec_desc.add_options()("threads,t", po::value<uint16_t>()->default_value(1), "");
-#ifndef GDALCUBES_NO_SWARM
-            exec_desc.add_options()("swarm", po::value<std::string>(), "");
-#endif
             exec_desc.add_options()("deflate", po::value<uint8_t>()->default_value(1), "");
 
             po::positional_options_description exec_pos;
@@ -305,20 +300,10 @@ int main(int argc, char* argv[]) {
 
             uint16_t nthreads = vm["threads"].as<uint16_t>();
             uint8_t deflate = vm["deflate"].as<uint8_t>();
-
-#ifndef GDALCUBES_NO_SWARM
-            if (vm.count("swarm")) {
-                auto p = gdalcubes_swarm::from_txtfile(vm["swarm"].as<std::string>());
-                p->set_threads(nthreads);
-                config::instance()->set_default_chunk_processor(p);
-            } else {
-#endif
-                if (nthreads > 1) {
-                    config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread>(nthreads)));
-                }
-#ifndef GDALCUBES_NO_SWARM
+            if (nthreads > 1) {
+                config::instance()->set_default_chunk_processor(std::dynamic_pointer_cast<chunk_processor>(std::make_shared<chunk_processor_multithread>(nthreads)));
             }
-#endif
+
             std::shared_ptr<cube> c = cube_factory::instance()->create_from_json_file(input);
             if (vm.count("chunk")) {
                 c->write_single_chunk_netcdf(vm["chunk"].as<chunkid_t>(), output, deflate);

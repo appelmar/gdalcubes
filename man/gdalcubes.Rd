@@ -25,6 +25,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Marius Appel \email{marius.appel@hs-bochum.de} (\href{https://orcid.org/0000-0001-5281-3896}{ORCID})
 
+Authors:
+\itemize{
+  \item Marius Appel \email{marius.appel@hs-bochum.de} (\href{https://orcid.org/0000-0001-5281-3896}{ORCID})
+}
+
 Other contributors:
 \itemize{
   \item Edzer Pebesma (\href{https://orcid.org/0000-0001-8049-7069}{ORCID}) [contributor]

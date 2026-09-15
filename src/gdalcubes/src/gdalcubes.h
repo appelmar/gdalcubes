@@ -62,7 +62,7 @@
 #include "window_time.h"
 
 #ifndef GDALCUBES_NO_SWARM
-#include "swarm.h"
+//#include "swarm.h"
 #endif
 
 #endif  //GDALCUBES_H

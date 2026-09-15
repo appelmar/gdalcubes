@@ -33,6 +33,7 @@
 #include "cube_factory.h"
 #include "gdalcubes.h"
 #include "image_collection_ops.h"
+#include "progress.h"
 
 using namespace gdalcubes;
 

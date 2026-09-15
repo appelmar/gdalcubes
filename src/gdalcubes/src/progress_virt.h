@@ -24,6 +24,9 @@
 #ifndef PROGRESS_VIRT_H
 #define PROGRESS_VIRT_H
 
+#include <memory>
+
+
 
 #include <cstdint> // 2023-01-12: GCC 13 compatibility
 
