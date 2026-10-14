@@ -203,10 +203,12 @@ void chunk_processor_multiprocess::apply(std::shared_ptr<cube> c,
   if (_debug || any_failed) {
     for (uint16_t pid=0; pid < nworker; ++pid) {
       std::ifstream wlogf(filesystem::join(work_dir, "worker_" + std::to_string(pid) + ".log")); // TODO: take path from JSON
-      while(!wlogf.eof()) 
+      // A worker that died before writing its log (e.g. killed by a signal at
+      // startup) leaves no file; the stream is then in a failed state and never
+      // reaches eof(), so loop on getline() itself rather than on eof().
+      std::string msg;
+      while (std::getline(wlogf, msg))
       {
-        std::string msg;
-        std::getline(wlogf, msg);
         if (!msg.empty()) {
           std::stringstream sss;
           sss << "[WORKER #" << std::to_string(pid) << "] " <<  msg << std::endl;
