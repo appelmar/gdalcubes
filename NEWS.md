@@ -1,3 +1,7 @@
+# gdalcubes (development version)
+
+* fix a worker crash when a band of a multi-band image is read through overviews: the source was closed before its overview was opened, and the overview of a band-selection VRT cannot be opened
+
 # gdalcubes 0.7.5 (2026-09-15)
 
 * fix segfault in worker processes when computing a `filter_geom()` cube under GDAL 3 (#110)
