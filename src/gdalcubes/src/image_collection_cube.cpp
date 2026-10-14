@@ -573,9 +573,12 @@ std::shared_ptr<chunk_data> image_collection_cube::read_chunk(chunkid_t id) {
                         if (img_buf) std::free(img_buf);
                         if (mask_buf) std::free(mask_buf);
                         delete agg;
-                        return std::make_shared<chunk_data>();
+                        out = std::make_shared<chunk_data>();
+                        out->set_status(chunk_data::chunk_status::ERROR);
+                        return out;
                     }
                     GCBS_WARN("Mask dataset '" + mask_dataset_band.first + "' will be ignored.");
+                    out->set_status(chunk_data::chunk_status::INCOMPLETE);
                     continue;
                 }
                 else {

@@ -250,10 +250,19 @@ GDALDataset *gdalwarp_client::warp_simple(GDALDataset *in, std::string s_srs, st
 
     // Initialize and execute the warp operation.
     GDALWarpOperation oOperation;
-    if (oOperation.Initialize(psWarpOptions) != CE_None) {
+    // A failed warp (e.g. a tile that cannot be read or decoded) leaves the output
+    // partly or wholly unwritten; report it as a failure rather than returning
+    // the INIT_DEST=nan buffer as if it were data.
+    bool warp_failed = false;
+    if (!warp_failed && oOperation.Initialize(psWarpOptions) != CE_None) {
         GCBS_ERROR("Initialization of gdalwarp failed");
+        warp_failed = true;
     }
-    oOperation.ChunkAndWarpImage(0, 0, GDALGetRasterXSize(out), GDALGetRasterYSize(out));
+    if (!warp_failed && oOperation.ChunkAndWarpImage(0, 0, GDALGetRasterXSize(out), GDALGetRasterYSize(out)) != CE_None) {
+        warp_failed = true;
+        GCBS_WARN("gdalwarp returned error code #" + std::to_string(CPLGetLastErrorNo()) + ": " + std::string(CPLGetLastErrorMsg()) +
+                  " [" + std::string(in->GetDescription()) + "]");
+    }
 
     destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
     GDALDestroyWarpOptions(psWarpOptions);
@@ -262,6 +271,10 @@ GDALDataset *gdalwarp_client::warp_simple(GDALDataset *in, std::string s_srs, st
 
     if (in) {
         GDALClose(in);
+    }
+    if (warp_failed) {
+        GDALClose(out);
+        return nullptr;
     }
     return out;
 }
@@ -643,16 +656,20 @@ GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, s
 
     // Initialize and execute the warp operation.
     GDALWarpOperation oOperation;
-    if (oOperation.Initialize(psWarpOptions) != CE_None) {
+    // A failed warp (e.g. a tile that cannot be read or decoded) leaves the output
+    // partly or wholly unwritten; report it as a failure rather than returning
+    // the INIT_DEST=nan buffer as if it were data.
+    bool warp_failed = false;
+    if (!warp_failed && oOperation.Initialize(psWarpOptions) != CE_None) {
         GCBS_ERROR("Initialization of gdalwarp failed");
+        warp_failed = true;
     }
-
-    if(oOperation.ChunkAndWarpImage(0, 0,
+    if (!warp_failed && oOperation.ChunkAndWarpImage(0, 0,
                                  GDALGetRasterXSize(out),
                                  GDALGetRasterYSize(out)) != CE_None) {
-        GCBS_DEBUG("gdalwarp returned error code #" + std::to_string(CPLGetLastErrorNo()) + ": " + std::string(CPLGetLastErrorMsg()) + 
-                   "[" + std::string(in->GetDescription()) + "]");
-
+        warp_failed = true;
+        GCBS_WARN("gdalwarp returned error code #" + std::to_string(CPLGetLastErrorNo()) + ": " + std::string(CPLGetLastErrorMsg()) +
+                  " [" + std::string(in->GetDescription()) + "]");
     }
 
     static_cast<GDALGenImgProjTransformInfo *>(psWarpOptions->pTransformerArg)->pReprojectArg = tmparg; // safe release
@@ -663,6 +680,10 @@ GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, s
 
     if (in) {
         GDALClose(in);
+    }
+    if (warp_failed) {
+        GDALClose(out);
+        return nullptr;
     }
     return out;
 }
