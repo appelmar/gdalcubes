@@ -1,3 +1,7 @@
+# gdalcubes (development version)
+
+* fix `write_ncdf()` and other computations hanging forever when a worker process dies before writing its log file, e.g. when killed by a signal at startup
+
 # gdalcubes 0.7.5 (2026-09-15)
 
 * fix segfault in worker processes when computing a `filter_geom()` cube under GDAL 3 (#110)
