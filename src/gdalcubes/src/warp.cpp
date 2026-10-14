@@ -158,12 +158,16 @@ GDALDataset *gdalwarp_client::warp_simple(GDALDataset *in, std::string s_srs, st
             oo = CSLAddString(oo, ("OVERVIEW_LEVEL=" + std::to_string(ilevel)).c_str());
 
             std::string descr = in->GetDescription();
-            GDALClose(in);
-            in = (GDALDataset *)GDALOpenEx(descr.c_str(), GDAL_OF_RASTER | GDAL_OF_READONLY, NULL, oo, NULL);
-            if (in != NULL) {
+            // Open the overview before closing the original: if the overview
+            // cannot be opened (e.g. a band-selection VRT, whose description is
+            // empty), the original is still there to warp from.
+            GDALDataset *in_ov = (GDALDataset *)GDALOpenEx(descr.c_str(), GDAL_OF_RASTER | GDAL_OF_READONLY, NULL, oo, NULL);
+            if (in_ov != NULL) {
+                GDALClose(in);
+                in = in_ov;
                 destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
                 psWarpOptions->pTransformerArg = create_transform(in, out, s_srs, t_srs);
-                psWarpOptions->hSrcDS = in;  // TODO: close in_ov
+                psWarpOptions->hSrcDS = in;
             } else {
                 GCBS_WARN("Failed to open GDAL overview dataset for '" + descr + "', using original full resolution image.");
             }
@@ -551,12 +555,16 @@ GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, s
             oo = CSLAddString(oo, ("OVERVIEW_LEVEL=" + std::to_string(ilevel)).c_str());
 
             std::string descr = in->GetDescription();
-            GDALClose(in);
-            in = (GDALDataset *)GDALOpenEx(descr.c_str(), GDAL_OF_RASTER | GDAL_OF_READONLY, NULL, oo, NULL);
-            if (in != NULL) {
+            // Open the overview before closing the original: if the overview
+            // cannot be opened (e.g. a band-selection VRT, whose description is
+            // empty), the original is still there to warp from.
+            GDALDataset *in_ov = (GDALDataset *)GDALOpenEx(descr.c_str(), GDAL_OF_RASTER | GDAL_OF_READONLY, NULL, oo, NULL);
+            if (in_ov != NULL) {
+                GDALClose(in);
+                in = in_ov;
                 destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
                 psWarpOptions->pTransformerArg = create_transform(in, out, s_srs, t_srs);
-                psWarpOptions->hSrcDS = in;  // TODO: close in_ov
+                psWarpOptions->hSrcDS = in;
             } else {
                 GCBS_WARN("Failed to open GDAL overview dataset for '" + descr + "', using original full resolution image.");
             }
