@@ -1,3 +1,7 @@
+# gdalcubes 0.7.6 (tbd)
+
+* fix clang-23 compatibility by using GDAL's C API for image warping (thanks to the SITS team!)
+
 # gdalcubes 0.7.5 (2026-09-15)
 
 * fix segfault in worker processes when computing a `filter_geom()` cube under GDAL 3 (#110)
