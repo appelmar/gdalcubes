@@ -249,11 +249,12 @@ GDALDataset *gdalwarp_client::warp_simple(GDALDataset *in, std::string s_srs, st
     psWarpOptions->papszWarpOptions = wo;
 
     // Initialize and execute the warp operation.
-    GDALWarpOperation oOperation;
-    if (oOperation.Initialize(psWarpOptions) != CE_None) {
+    GDALWarpOperationH hOperation = GDALCreateWarpOperation(psWarpOptions);
+    if (hOperation == nullptr) {
         GCBS_ERROR("Initialization of gdalwarp failed");
     }
-    oOperation.ChunkAndWarpImage(0, 0, GDALGetRasterXSize(out), GDALGetRasterYSize(out));
+    GDALChunkAndWarpImage(hOperation, 0, 0, GDALGetRasterXSize(out), GDALGetRasterYSize(out));
+    GDALDestroyWarpOperation(hOperation);
 
     destroy_transform((gdalwarp_client::gdalcubes_transform_info *)psWarpOptions->pTransformerArg);
     GDALDestroyWarpOptions(psWarpOptions);
@@ -642,18 +643,19 @@ GDALDataset *gdalwarp_client::warp_complex(GDALDataset *in, std::string s_srs, s
     psWarpOptions->papszWarpOptions = wo;
 
     // Initialize and execute the warp operation.
-    GDALWarpOperation oOperation;
-    if (oOperation.Initialize(psWarpOptions) != CE_None) {
+    GDALWarpOperationH hOperation = GDALCreateWarpOperation(psWarpOptions);
+    if (hOperation == nullptr) {
         GCBS_ERROR("Initialization of gdalwarp failed");
     }
 
-    if(oOperation.ChunkAndWarpImage(0, 0,
+    if(GDALChunkAndWarpImage(hOperation, 0, 0,
                                  GDALGetRasterXSize(out),
                                  GDALGetRasterYSize(out)) != CE_None) {
         GCBS_DEBUG("gdalwarp returned error code #" + std::to_string(CPLGetLastErrorNo()) + ": " + std::string(CPLGetLastErrorMsg()) + 
                    "[" + std::string(in->GetDescription()) + "]");
 
     }
+    GDALDestroyWarpOperation(hOperation);
 
     static_cast<GDALGenImgProjTransformInfo *>(psWarpOptions->pTransformerArg)->pReprojectArg = tmparg; // safe release
     GDALDestroyGenImgProjTransformer(psWarpOptions->pTransformerArg); 
