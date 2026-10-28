@@ -34,6 +34,9 @@ Other contributors:
 \itemize{
   \item Edzer Pebesma (\href{https://orcid.org/0000-0001-8049-7069}{ORCID}) [contributor]
   \item Roger Bivand [contributor]
+  \item Rolf Simoes \email{rolf.simoes@gmail.com} [contributor]
+  \item Felipe Carlos \email{efelipecarlos@gmail.com} [contributor]
+  \item Felipe Souza \email{lipecaso@gmail.com} [contributor]
   \item Jeroen Ooms (\href{https://orcid.org/0000-0002-4035-0289}{ORCID}) [contributor]
   \item Lewis Van Winkle [copyright holder]
   \item Ole Christian Eidheim [copyright holder]

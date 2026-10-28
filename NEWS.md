@@ -1,4 +1,4 @@
-# gdalcubes 0.7.6 (tbd)
+# gdalcubes 0.7.6 (2026-10-28)
 
 * fix clang-23 compatibility by using GDAL's C API for image warping (thanks to the SITS team!)
 
