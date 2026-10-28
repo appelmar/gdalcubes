@@ -82,8 +82,8 @@ L8.cube = select_bands(L8.cube, c("B04", "B05"))
 L8.ndvi = apply_pixel(L8.cube, "(B05-B04)/(B05+B04)", "NDVI")
 L8.ndvi
 
-if (gdalcubes_gdal_has_geos()) {
-  if (requireNamespace("sf", quietly = TRUE)) {
+if (gdalcubes_gdal_has_geos()) { # for automatic testing only
+  if (requireNamespace("sf", quietly = TRUE)) { # for automatic testing only
   
     # create 50 random point locations
     x = runif(50, v$space$left, v$space$right)

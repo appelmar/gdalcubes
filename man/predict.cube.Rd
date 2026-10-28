@@ -52,21 +52,23 @@ v = cube_view(extent=list(left=388941.2, right=766552.4,
 
 L8.col = image_collection(file.path(tempdir(), "L8.db"))
 
-x = sf::st_read(system.file("ny_samples.gpkg", package = "gdalcubes"))
+if (requireNamespace("sf", quietly = TRUE)) { # for automatic testing only
+  x = sf::st_read(system.file("ny_samples.gpkg", package = "gdalcubes"))
 
-raster_cube(L8.col, v) |>
-  select_bands(c("B02","B03","B04","B05")) |>
-  extract_geom(x) -> train
+  raster_cube(L8.col, v) |>
+    select_bands(c("B02","B03","B04","B05")) |>
+    extract_geom(x) -> train
 
-x$FID = rownames(x)  
-train = merge(train, x, by = "FID")
-train$iswater = as.factor(train$class == "water")
+  x$FID = rownames(x)  
+  train = merge(train, x, by = "FID")
+  train$iswater = as.factor(train$class == "water")
 
-log_model <- glm(iswater ~ B02 + B03 + B04 + B05, data = train, family = "binomial")
+  log_model <- glm(iswater ~ B02 + B03 + B04 + B05, data = train, family = "binomial")
 
-raster_cube(L8.col, v) |>
-  select_bands(c("B02","B03","B04","B05")) |>
-  predict(model=log_model, type="response") |>
-  plot(key.pos=1)
+  raster_cube(L8.col, v) |>
+    select_bands(c("B02","B03","B04","B05")) |>
+    predict(model=log_model, type="response") |>
+    plot(key.pos=1)
+}
 }
 }

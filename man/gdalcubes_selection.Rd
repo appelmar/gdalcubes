@@ -78,7 +78,7 @@ L8.cube[,,c(1,100), c(1,100)]
 L8.cube[,c(1,2),,] # crop by time (integer indexes)
 
 # subset by spatial point or bounding box
-if (requireNamespace("sf", quietly = TRUE)) {
+if (requireNamespace("sf", quietly = TRUE)) { # for automatic testing only
   s = sf::st_sfc(sf::st_point(c(500000, 4500000)), crs = "EPSG:32618")
   L8.cube[s]
 

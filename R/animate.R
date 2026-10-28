@@ -29,10 +29,12 @@
 #'                           bottom=4345299, top=4744931, t0="2018-04", t1="2018-06"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P16D")
 #' 
-#' animate(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04")), rgb=3:1,
-#'         zlim=c(0,20000), fps=1, loop=1)
+#' if (requireNamespace("gifski", quietly = TRUE)) { # for automatic testing only
+#'   animate(select_bands(raster_cube(L8.col, v), c("B02", "B03", "B04")), rgb=3:1,
+#'           zlim=c(0,20000), fps=1, loop=1)
 #' 
-#' animate(select_bands(raster_cube(L8.col, v), c("B05")), col=terrain.colors, key.pos=1)
+#'   animate(select_bands(raster_cube(L8.col, v), c("B05")), col=terrain.colors, key.pos=1)
+#' }
 #' }
 #' @export
 animate <- function(x,
