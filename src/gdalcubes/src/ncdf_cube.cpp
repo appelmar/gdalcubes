@@ -438,15 +438,15 @@ ncdf_cube::ncdf_cube(std::string path, bool auto_unpack) : cube(), _auto_unpack(
         }
     }
 
-    std::string process_graph;  // TODO: store as member variable
-    if (nc_inq_attlen(ncfile, NC_GLOBAL, "process_graph", &len) == NC_NOERR) {
-        attr_text = (char *)std::malloc(len + 1);
-        if (nc_get_att_text(ncfile, v_crs, "GeoTransform", attr_text) == NC_NOERR) {
-            attr_text[len] = '\0';
-            process_graph = attr_text;
-        }
-        std::free(attr_text);
-    }
+    // std::string process_graph;  // TODO: store as member variable
+    // if (nc_inq_attlen(ncfile, NC_GLOBAL, "process_graph", &len) == NC_NOERR) {
+    //     attr_text = (char *)std::malloc(len + 1);
+    //     if (nc_get_att_text(ncfile, v_crs, "process_graph", attr_text) == NC_NOERR) {
+    //         attr_text[len] = '\0';
+    //         process_graph = attr_text;
+    //     }
+    //     std::free(attr_text);
+    // }
 
     retval = nc_close(ncfile);
     if (retval != NC_NOERR) {

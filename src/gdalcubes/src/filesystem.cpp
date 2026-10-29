@@ -28,7 +28,7 @@
 #include <cpl_string.h>
 #include <cpl_vsi.h>
 
-#include <vector>
+#include <array>
 
 namespace gdalcubes {
 
@@ -164,11 +164,13 @@ bool filesystem::is_absolute(std::string p) {
 }
 
 std::string filesystem::get_tempdir() {
-    std::vector<std::string> env_vars = {"TMPDIR", "TMP", "TEMP", "TEMPDIR", "USERPROFILE"};
-    for (uint16_t i = 0; i < env_vars.size(); ++i) {
-        if (std::getenv(env_vars[i].c_str()) != NULL) {
-            if (filesystem::is_directory(std::getenv(env_vars[i].c_str())))
-                return std::string(std::getenv(env_vars[i].c_str()));
+    constexpr std::array<const char*, 6> env_vars = {"R_SESSION_TMPDIR", "TMPDIR", "TMP", "TEMP", "TEMPDIR", "USERPROFILE"};
+    for (const char* e : env_vars) {
+        const char* v = std::getenv(e);
+        if (v != nullptr) {
+            std::string sv = std::string(v);
+            if (filesystem::is_directory(sv))
+                return std::string(sv);
         }
     }
 
