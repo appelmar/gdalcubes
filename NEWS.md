@@ -1,6 +1,7 @@
 # gdalcubes 0.7.6 (2026-10-29)
 
 * fix clang-23 compatibility by using GDAL's C API for image warping (thanks to the SITS team!)
+* fix overview generation in `write_tif()` 
 
 # gdalcubes 0.7.5 (2026-09-15)
 

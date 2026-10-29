@@ -541,7 +541,6 @@ void cube::write_tif_collection(std::string dir, std::string prefix,
             for (int i = 1; i <= n_overviews; ++i) {
                 overview_list.push_back(std::pow(2, i));
             }
-
             if (!overview_list.empty()) {
                 CPLErr res = GDALBuildOverviews(gdal_out, overview_resampling.c_str(), n_overviews, overview_list.data(), 0, NULL, NULL, nullptr);
                 if (res != CE_None) {
@@ -550,8 +549,13 @@ void cube::write_tif_collection(std::string dir, std::string prefix,
                     continue;
                 }
             }
-
+            GDALClose((GDALDatasetH)gdal_out);
+  
             if (cog) {
+                gdal_out = (GDALDataset *)GDALOpen(name.c_str(), GA_Update);
+                if (!gdal_out) {
+                  continue;
+                }
                 CPLStringList translate_args;
                 translate_args.AddString("-of");
                 translate_args.AddString("GTiff");
