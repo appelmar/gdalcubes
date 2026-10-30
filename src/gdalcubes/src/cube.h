@@ -655,6 +655,25 @@ class cube : public std::enable_shared_from_this<cube> {
                            bool drop_empty_slices = false,
                            std::shared_ptr<chunk_processor> p = config::instance()->get_default_chunk_processor());
 
+    /**
+     * Save data cubes as a Zarr files
+     * @param path path of the destination file
+     * @param overviews generate GDAL overview images
+     * @param overview_resampling resampling algorithm used to generate overviews (see https://gdal.org/programs/gdaladdo.html)
+     * @param creation_options GDAL creation options as key values pairs (see https://gdal.org/en/stable/drivers/raster/zarr.html#creation-options)
+     * @param packing reduce size of output tile with packing (apply scale + offset and use smaller integer data types)
+     * @param p chunk processor instance, defaults to the global configuration
+     *
+     * @todo add parameter: drop_empty_slices if true, empty time slices will be skip
+     * @todo add parameter: write_bounds boolean, if true, variables time_bnds, y_bnds, x_bnds per dimension values will be added
+     */
+
+    void write_zarr(std::string path, bool overviews = false, std::string overview_resampling = "NEAREST",
+                           std::map<std::string, std::string> creation_options = std::map<std::string, std::string>(),
+                           packed_export packing = packed_export::make_none(),
+                           std::shared_ptr<chunk_processor> p = config::instance()->get_default_chunk_processor());
+
+
     void write_chunks_netcdf(std::string dir, std::string name = "", uint8_t compression_level = 0,
                              std::shared_ptr<chunk_processor> p = config::instance()->get_default_chunk_processor());
 

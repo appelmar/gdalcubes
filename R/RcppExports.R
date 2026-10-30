@@ -201,6 +201,10 @@ gc_write_chunks_ncdf <- function(pin, dir, name, compression_level = 0L) {
     invisible(.Call('_gdalcubes_gc_write_chunks_ncdf', PACKAGE = 'gdalcubes', pin, dir, name, compression_level))
 }
 
+gc_write_zarr <- function(pin, outfile, overviews = FALSE, rsmpl_overview = "nearest", creation_options = NULL, packing = NULL) {
+    invisible(.Call('_gdalcubes_gc_write_zarr', PACKAGE = 'gdalcubes', pin, outfile, overviews, rsmpl_overview, creation_options, packing))
+}
+
 gc_write_tif <- function(pin, dir, prefix = "", overviews = FALSE, cog = FALSE, creation_options = NULL, rsmpl_overview = "nearest", packing = NULL) {
     invisible(.Call('_gdalcubes_gc_write_tif', PACKAGE = 'gdalcubes', pin, dir, prefix, overviews, cog, creation_options, rsmpl_overview, packing))
 }

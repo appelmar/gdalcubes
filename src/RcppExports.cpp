@@ -627,6 +627,21 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// gc_write_zarr
+void gc_write_zarr(SEXP pin, std::string outfile, bool overviews, std::string rsmpl_overview, SEXP creation_options, SEXP packing);
+RcppExport SEXP _gdalcubes_gc_write_zarr(SEXP pinSEXP, SEXP outfileSEXP, SEXP overviewsSEXP, SEXP rsmpl_overviewSEXP, SEXP creation_optionsSEXP, SEXP packingSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type pin(pinSEXP);
+    Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP);
+    Rcpp::traits::input_parameter< bool >::type overviews(overviewsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type rsmpl_overview(rsmpl_overviewSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type creation_options(creation_optionsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type packing(packingSEXP);
+    gc_write_zarr(pin, outfile, overviews, rsmpl_overview, creation_options, packing);
+    return R_NilValue;
+END_RCPP
+}
 // gc_write_tif
 void gc_write_tif(SEXP pin, std::string dir, std::string prefix, bool overviews, bool cog, SEXP creation_options, std::string rsmpl_overview, SEXP packing);
 RcppExport SEXP _gdalcubes_gc_write_tif(SEXP pinSEXP, SEXP dirSEXP, SEXP prefixSEXP, SEXP overviewsSEXP, SEXP cogSEXP, SEXP creation_optionsSEXP, SEXP rsmpl_overviewSEXP, SEXP packingSEXP) {
@@ -904,6 +919,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gdalcubes_gc_set_err_handler", (DL_FUNC) &_gdalcubes_gc_set_err_handler, 2},
     {"_gdalcubes_gc_eval_cube", (DL_FUNC) &_gdalcubes_gc_eval_cube, 6},
     {"_gdalcubes_gc_write_chunks_ncdf", (DL_FUNC) &_gdalcubes_gc_write_chunks_ncdf, 4},
+    {"_gdalcubes_gc_write_zarr", (DL_FUNC) &_gdalcubes_gc_write_zarr, 6},
     {"_gdalcubes_gc_write_tif", (DL_FUNC) &_gdalcubes_gc_write_tif, 8},
     {"_gdalcubes_gc_create_stream_cube", (DL_FUNC) &_gdalcubes_gc_create_stream_cube, 2},
     {"_gdalcubes_gc_create_simple_cube", (DL_FUNC) &_gdalcubes_gc_create_simple_cube, 8},

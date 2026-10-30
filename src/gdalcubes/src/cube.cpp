@@ -284,10 +284,328 @@ bounds_st cube::bounds_from_chunk(chunkid_t id) const {
     return out_st;
 }
 
+void cube::write_zarr(std::string path, bool overviews, std::string overview_resampling,
+                      std::map<std::string, std::string> creation_options,
+                      packed_export packing, std::shared_ptr<chunk_processor> p) {
+
+    // TODO: add metadata as attributes, e.g. JSON graph, offset, scales, ...
+
+    std::string op = filesystem::make_absolute(path);
+
+    if (filesystem::is_directory(op)) {
+        throw std::string("ERROR in cube::write_zarr(): output already exists and is a directory.");
+    }
+    if (filesystem::exists(op)) {
+        GCBS_INFO("Existing file '" + op + "' will be overwritten for Zarr export");
+    }
+
+    if (!filesystem::exists(filesystem::parent(op))) {
+        filesystem::mkdir_recursive(filesystem::parent(op));
+    }
+
+    if (!_st_ref->has_regular_space()) {
+        throw std::string("ERROR: Zarr export currently does not support irregular spatial dimensions");
+    }
+
+
+    if (overviews) { // GDAL version must be >=  3.13, Zarr must be V3
+#if GDAL_VERSION_MAJOR > 3 || (GDAL_VERSION_MAJOR == 3 && GDAL_VERSION_MINOR >= 13)
+        if (creation_options.find("FORMAT") != creation_options.end()) {
+            std::string fmt = creation_options["FORMAT"];
+            if (fmt.compare("ZARR_V2") == 0) {
+                GCBS_INFO("Zarr multiscales convention requires Zarr V3 format; to create overview / pyramid images, please set FORMAT=ZARR_V3 as creation option");
+                overviews = false;
+            }
+        }
+        else {
+            GCBS_INFO("Using Zarr V3 format to create overview / pyramid images");
+        }
+#else
+        GCBS_WARN("Zarr multiscales convention requires GDAL version >= 3.13; skipping overview / pyramid generation");
+        overviews = false;
+#endif
+    }
+
+
+
+    // NOTE: the following will only work as long as all cube st reference types with regular spatial dimensions inherit from  cube_stref_regular class
+    std::shared_ptr<cube_stref_regular> stref = std::dynamic_pointer_cast<cube_stref_regular>(_st_ref);
+
+    std::shared_ptr<progress> prg = config::instance()->get_default_progress_bar()->get();
+    prg->set(0);  // explicitly set to zero to show progress bar immediately
 
 
 
 
+    ////////////////////////////////////////////////////////////////////
+    // Initialize  Zarr file and its groups, attributes, and dimensions
+    GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("Zarr");
+    if (!driver) {
+        throw std::string("ERROR: GDAL does not include Zarr driver ");
+    }
+
+    CPLStringList out_co;
+    std::string str_co_blocksize = std::to_string(chunk_size()[0]) + ","  + std::to_string(chunk_size()[1]) + "," + std::to_string(chunk_size()[2]);
+    out_co.AddNameValue("BLOCKSIZE", str_co_blocksize.c_str());
+
+    for (auto it = creation_options.begin(); it != creation_options.end(); ++it) {
+        std::string key = it->first;
+        std::transform(key.begin(), key.end(), key.begin(), (int (*)(int))std::toupper);
+        if (key == "BLOCKSIZE") {
+            GCBS_WARN("'BLOCKSIZE' creation options will be ignored, using chunk sizes of the data cube instead");
+            continue;
+        }
+        out_co.AddNameValue(it->first.c_str(), it->second.c_str());
+    }
+
+
+
+    auto dataset = std::unique_ptr<GDALDataset>(driver->CreateMultiDimensional(path.c_str(), nullptr, out_co.List()));  // TODO: check if creation options are correct here
+    if (!dataset) {
+        throw std::string("ERROR: Failed to create Zarr file");
+    }
+
+    auto root = dataset->GetRootGroup();
+    if( !root )
+    {
+        // TODO: GDAL Close?
+        throw std::string("ERROR: Failed to create Zarr file");
+    }
+
+    // Create dimensions
+    auto zr_dim_t = root->CreateDimension("time", "", "", size_t());
+    auto zr_dim_y = root->CreateDimension("y", "", "", size_y());
+    auto zr_dim_x = root->CreateDimension("x", "", "", size_x());
+    if (!zr_dim_t || !zr_dim_y || !zr_dim_x) {
+        // TODO: GDAL Close?
+        throw std::string("ERROR: Failed to create Zarr dimensions");
+    }
+
+    auto dim_x = (double *)std::calloc(size_x(), sizeof(double));
+    auto dim_y = (double *)std::calloc(size_y(), sizeof(double));
+    auto dim_t = (int32_t*)std::calloc(size_t(), sizeof(int32_t));
+
+    if (stref->dt().dt_unit == datetime_unit::WEEK) {
+        stref->dt_unit(datetime_unit::DAY);
+        stref->dt_interval(stref->dt_interval() * 7);
+    }
+
+    if (stref->has_regular_time()) {
+        for (uint32_t i = 0; i < size_t(); ++i) {
+            dim_t[i] = (i * stref->dt().dt_interval);
+        }
+    } else {
+        for (uint32_t i = 0; i < size_t(); ++i) {
+            dim_t[i] = (stref->datetime_at_index(i) - stref->t0()).dt_interval;
+        }
+    }
+
+    for (uint32_t i = 0; i < size_y(); ++i) {
+        dim_y[i] = stref->win().top - (i + 0.5) * stref->dy();  // cell center
+    }
+    for (uint32_t i = 0; i < size_x(); ++i) {
+        dim_x[i] = stref->win().left + (i + 0.5) * stref->dx();
+    }
+
+
+    auto v_dim_t = root->CreateMDArray("time", {zr_dim_t},
+        GDALExtendedDataType::Create(GDT_Int32));
+    auto v_dim_y = root->CreateMDArray("y", {zr_dim_y},
+       GDALExtendedDataType::Create(GDT_Float64));
+    auto v_dim_x = root->CreateMDArray("x", {zr_dim_x},
+       GDALExtendedDataType::Create(GDT_Float64));
+
+    GUInt64 xoffst[] = { 0 };
+    std::size_t xcount[] = { static_cast<std::size_t>(size_x()) };
+
+    GUInt64 yoffst[] = { 0 };
+    std::size_t ycount[] = { static_cast<std::size_t>(size_y()) };
+
+    GUInt64 toffst[] = { 0 };
+    std::size_t tcount[] = { static_cast<std::size_t>(size_t()) };
+    auto f64type = GDALExtendedDataType::Create(GDT_Float64);
+    auto i32type = GDALExtendedDataType::Create(GDT_Int32);
+
+
+    if (!v_dim_t->Write(toffst, tcount, nullptr, nullptr, i32type, dim_t) ||
+        !v_dim_y->Write(yoffst, ycount, nullptr, nullptr, f64type, dim_y) ||
+        !v_dim_x->Write(xoffst, xcount, nullptr, nullptr, f64type, dim_x)) {
+        // TODO: GDAL Close + free?
+        throw std::string("ERROR: Failed to write dimension values to Zarr");
+    }
+
+    if (dim_t) std::free(dim_t);
+    if (dim_y) std::free(dim_y);
+    if (dim_x) std::free(dim_x);
+
+    OGRSpatialReference srs_out;
+    srs_out.SetFromUserInput(_st_ref->srs().c_str());
+    // Add metadata as attributes
+    auto add_global_string_attr = [&root](std::string key, std::string value)
+    {
+        auto zr_attr = root->CreateAttribute(key.c_str(), {},
+            GDALExtendedDataType::CreateString());
+        zr_attr->Write(value.c_str());
+    };
+    add_global_string_attr("Conventions","CF-1.6");
+    add_global_string_attr("source","gdalcubes"); // TODO: add version
+    std::string att_t = stref->has_regular_time() ? "regular" : "labeled";
+    add_global_string_attr("gdalcubes.datetime_type",att_t);
+    add_global_string_attr("gdalcubes.datetime_t0",stref->t0().to_string());
+    add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
+    add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
+    add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
+
+
+    std::string dtunit_str;
+    if (stref->dt().dt_unit == datetime_unit::YEAR) {
+        dtunit_str = "years";  // WARNING: UDUNITS defines a year as 365.2425 days
+    } else if (stref->dt().dt_unit == datetime_unit::MONTH) {
+        dtunit_str = "months";  // WARNING: UDUNITS defines a month as 1/12 year
+    } else if (stref->dt().dt_unit == datetime_unit::DAY) {
+        dtunit_str = "days";
+    } else if (stref->dt().dt_unit == datetime_unit::HOUR) {
+        dtunit_str = "hours";
+    } else if (stref->dt().dt_unit == datetime_unit::MINUTE) {
+        dtunit_str = "minutes";
+    } else if (stref->dt().dt_unit == datetime_unit::SECOND) {
+        dtunit_str = "seconds";
+    }
+    dtunit_str += " since ";
+    dtunit_str += stref->t0().to_string(datetime_unit::SECOND);
+
+    auto add_array_string_attr = [](std::shared_ptr<GDALMDArray> arr, std::string key, std::string value)
+    {
+        auto zr_attr = arr->CreateAttribute(key.c_str(), {},
+            GDALExtendedDataType::CreateString());
+        zr_attr->Write(value.c_str());
+    };
+
+    add_array_string_attr(v_dim_t, "standard_name","time");
+    add_array_string_attr(v_dim_t, "long_name","time");
+    add_array_string_attr(v_dim_t, "units",dtunit_str);
+    add_array_string_attr(v_dim_t, "calendar","gregorian");
+    add_array_string_attr(v_dim_t, "axis","T");
+
+    char *wkt;
+    srs_out.exportToWkt(&wkt);
+    std::string geoloc_array_str = utils::dbl_to_string(stref->left()) + " " + utils::dbl_to_string(stref->dx()) + " 0 " + utils::dbl_to_string(stref->top()) + " 0 " + utils::dbl_to_string(-stref->dy());
+    if (srs_out.IsProjected()) {
+        // GetLinearUnits(char **) is deprecated since GDAL 2.3.0
+#if GDAL_VERSION_MAJOR > 2 || (GDAL_VERSION_MAJOR == 2 && GDAL_VERSION_MINOR >= 3)
+        const char *unit = nullptr;
+#else
+        char *unit = nullptr;
+#endif
+        srs_out.GetLinearUnits(&unit);
+        add_array_string_attr(v_dim_y, "standard_name","projection_y_coordinate");
+        add_array_string_attr(v_dim_y, "long_name","y coordinate of projection");
+        add_array_string_attr(v_dim_y, "units",unit);
+        add_array_string_attr(v_dim_y, "axis","Y");
+        add_array_string_attr(v_dim_x, "standard_name","projection_x_coordinate");
+        add_array_string_attr(v_dim_x, "long_name","x coordinate of projection");
+        add_array_string_attr(v_dim_x, "units",unit);
+        add_array_string_attr(v_dim_x, "axis","X");
+    } else {
+        add_array_string_attr(v_dim_y, "standard_name","latitude");
+        add_array_string_attr(v_dim_y, "long_name","latitude");
+        add_array_string_attr(v_dim_y, "units","degrees_north");
+        add_array_string_attr(v_dim_y, "axis","Y");
+        add_array_string_attr(v_dim_x, "standard_name","longitude");
+        add_array_string_attr(v_dim_x, "long_name","longitude");
+        add_array_string_attr(v_dim_x, "units","degrees_east");
+        add_array_string_attr(v_dim_x, "axis","X");
+    }
+    auto v_crs = root->CreateMDArray("crs", {},
+          GDALExtendedDataType::Create(GDT_Byte));
+    add_array_string_attr(v_dim_x, "spatial_ref",wkt);
+    add_array_string_attr(v_dim_x, "GeoTransform",geoloc_array_str);
+    CPLFree(wkt);
+
+
+
+
+
+
+    // Create variables for actual data
+    std::vector<std::shared_ptr<GDALMDArray>> v_bands;
+    for (uint16_t ib=0; ib<size_bands(); ++ib) {
+        // TODO: check for valid names needed (e.g. as in netCDF)?
+        std::string vname = bands().get(ib).name;
+
+        auto v = root->CreateMDArray(
+           vname.c_str(),{ zr_dim_t, zr_dim_y, zr_dim_x},
+           f64type, // TODO: packing
+           out_co.List()); // TODO: check if creation options are correct here
+
+        v->SetSpatialRef(&srs_out);
+        add_array_string_attr(v, "grid_mapping","crs");
+
+        // TODO: set attributes: no data value, noffset, scale, etc.
+        //v->SetNoDataValue();
+        // ...
+        v_bands.push_back(v);
+    }
+
+    
+
+    // Start processing
+
+    uint32_t chunk_error_count = 0;
+    std::function<void(chunkid_t, std::shared_ptr<chunk_data>, std::mutex &)> f = [this, op, prg, &v_bands, &chunk_error_count, &packing](chunkid_t id, std::shared_ptr<chunk_data> dat, std::mutex &m) {
+
+        if (dat->status() != chunk_data::chunk_status::OK) {
+            chunk_error_count++;
+        }
+        if (!dat->empty()) { // TODO: check if it is OK to simply not write anything to Zarr or if we need to fill dat explicitly with no data values, check also for packed output
+            chunk_size_btyx csize = dat->size();
+            bounds_nd<uint32_t, 3> climits = chunk_limits(id);
+            GUInt64 startp[] = {climits.low[0], climits.low[1], climits.low[2]};
+            std::size_t countp[] = {csize[1], csize[2], csize[3]};
+
+            auto type = GDALExtendedDataType::Create(GDT_Float64); // TODO: packing!
+
+            for (uint16_t ib = 0; ib < bands().count(); ++ib) {
+                void* srcpos = (void *)(((double *)dat->buf()) + (int)ib * (int)csize[1] * (int)csize[2] * (int)csize[3]);
+                m.lock();
+                v_bands[ib]->Write(startp, countp,nullptr,nullptr, type, srcpos);
+                m.unlock();
+            }
+        }
+        prg->increment((double)1 / (double)this->count_chunks()); // TODO: adapt progress bar if overviews are to be created
+    };
+
+    p->apply(shared_from_this(), f);
+    prg->finalize();
+
+    if(chunk_error_count > 0) {
+        std::string msg = std::to_string(chunk_error_count) + " out of " + std::to_string(count_chunks()) + " chunks have reported errors / incompleteness. "\
+        "This is most likely caused by failed computations and/or inaccessible image data. Please check detailed output or run with debug option again.";
+        GCBS_WARN(msg);
+    }
+
+
+
+    if (overviews) {
+        // TODO
+        for (uint32_t it = 0; it < size_t(); ++it) {
+            int n_overviews = (int)std::ceil(std::log2(std::fmax(double(size_x()), double(size_y())) / 256));
+            std::vector<int> overview_list;
+            for (int i = 1; i <= n_overviews; ++i) {
+                overview_list.push_back(std::pow(2, i));
+            }
+            if (!overview_list.empty()) {
+                if (!dataset->BuildOverviews(overview_resampling.c_str(),n_overviews, overview_list.data(), 0, NULL, NULL, nullptr)) {
+                    GCBS_WARN("GDALBuildOverviews failed for Zarr output");
+                    continue;
+                }
+
+            }
+        }
+    }
+
+
+}
 
 void cube::write_tif_collection(std::string dir, std::string prefix,
                                 bool overviews, bool cog,
@@ -1110,7 +1428,7 @@ void cube::write_netcdf_file(std::string path, uint8_t compression_level, bool w
 
 
     if(chunk_error_count > 0) {
-        std::string msg = std::to_string(chunk_error_count) + " out of " + std::to_string(count_chunks()) + " chunks have repoprted errors / incompleteness. "\
+        std::string msg = std::to_string(chunk_error_count) + " out of " + std::to_string(count_chunks()) + " chunks have reported errors / incompleteness. "\
         "This is most likely caused by failed computations and/or inaccessible image data. Please check detailed output or run with debug option again.";
         GCBS_WARN(msg);
     }

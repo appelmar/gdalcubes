@@ -1385,6 +1385,64 @@ void gc_write_chunks_ncdf( SEXP pin, std::string dir, std::string name, uint8_t 
   }
 }
 
+
+
+
+// [[Rcpp::export]]
+void gc_write_zarr(SEXP pin, std::string outfile, bool overviews = false, 
+                   std::string rsmpl_overview = "nearest", SEXP creation_options = R_NilValue,
+                   SEXP packing = R_NilValue) {
+  try {
+    Rcpp::XPtr< std::shared_ptr<cube> > aa = Rcpp::as<Rcpp::XPtr< std::shared_ptr<cube> >>(pin);
+    std::map<std::string, std::string> co;
+    
+    if (creation_options != R_NilValue) {
+      Rcpp::List colist = Rcpp::as<Rcpp::List>(creation_options);
+      Rcpp::CharacterVector names = colist.names();
+      for(uint16_t i=0; i< names.size(); ++i) {
+        std::string key = Rcpp::as<std::string>(names[i]);
+        std::string value =Rcpp::as<std::string>(Rcpp::as<Rcpp::CharacterVector>(colist[i]));
+        co[key] = value;
+      }
+    }
+    
+    
+    packed_export p = packed_export::make_none();
+    if (packing != R_NilValue) {
+      
+      std::string type = Rcpp::as<Rcpp::List>(packing)["type"];
+      
+      if (type == "uint8") {
+        p.type = packed_export::packing_type::PACK_UINT8;
+      }
+      else if (type == "uint16") {
+        p.type = packed_export::packing_type::PACK_UINT16;
+      }
+      else if (type == "uint32") {
+        p.type = packed_export::packing_type::PACK_UINT32;
+      }
+      else if (type == "int16") {
+        p.type = packed_export::packing_type::PACK_INT16;
+      }
+      else if (type == "int32") {
+        p.type = packed_export::packing_type::PACK_INT32;
+      }
+      else {
+        // TODO: NO PACKING-> WARNING
+      }
+      p.offset = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["offset"]);
+      p.scale = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["scale"]);
+      p.nodata = Rcpp::as<std::vector<double>>(Rcpp::as<Rcpp::List>(packing)["nodata"]);
+    }
+    (*aa)->write_zarr(outfile, overviews, rsmpl_overview, co, p);
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
+
+
+
 // [[Rcpp::export]]
 void gc_write_tif( SEXP pin, std::string dir, std::string prefix="", 
                              bool overviews = false, bool cog = false, 
