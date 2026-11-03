@@ -58,8 +58,10 @@ struct packed_export {
         PACK_UINT8,
         PACK_UINT16,
         PACK_UINT32,
+        PACK_INT8,
         PACK_INT16,
         PACK_INT32,
+        //PACK_FLOAT16,
         PACK_FLOAT32
     };
     packing_type type;

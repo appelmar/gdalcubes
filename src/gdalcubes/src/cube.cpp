@@ -352,7 +352,7 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
         std::string key = it->first;
         std::transform(key.begin(), key.end(), key.begin(), (int (*)(int))std::toupper);
         if (key == "BLOCKSIZE") {
-            GCBS_WARN("'BLOCKSIZE' creation options will be ignored, using chunk sizes of the data cube instead");
+            GCBS_WARN("'BLOCKSIZE' creation option will be ignored, using chunk sizes of the data cube instead");
             continue;
         }
         out_co.AddNameValue(it->first.c_str(), it->second.c_str());
@@ -368,7 +368,6 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     auto root = dataset->GetRootGroup();
     if( !root )
     {
-        // TODO: GDAL Close?
         throw std::string("ERROR: Failed to create Zarr file");
     }
 
@@ -377,7 +376,6 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     auto zr_dim_y = root->CreateDimension("y", "", "", size_y());
     auto zr_dim_x = root->CreateDimension("x", "", "", size_x());
     if (!zr_dim_t || !zr_dim_y || !zr_dim_x) {
-        // TODO: GDAL Close?
         throw std::string("ERROR: Failed to create Zarr dimensions");
     }
 
@@ -409,7 +407,7 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
 
 
     auto v_dim_t = root->CreateMDArray("time", {zr_dim_t},
-        GDALExtendedDataType::Create(GDT_Int32));
+       GDALExtendedDataType::Create(GDT_Int32));
     auto v_dim_y = root->CreateMDArray("y", {zr_dim_y},
        GDALExtendedDataType::Create(GDT_Float64));
     auto v_dim_x = root->CreateMDArray("x", {zr_dim_x},
@@ -430,7 +428,11 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     if (!v_dim_t->Write(toffst, tcount, nullptr, nullptr, i32type, dim_t) ||
         !v_dim_y->Write(yoffst, ycount, nullptr, nullptr, f64type, dim_y) ||
         !v_dim_x->Write(xoffst, xcount, nullptr, nullptr, f64type, dim_x)) {
-        // TODO: GDAL Close + free?
+
+        if (dim_t) std::free(dim_t);
+        if (dim_y) std::free(dim_y);
+        if (dim_x) std::free(dim_x);
+
         throw std::string("ERROR: Failed to write dimension values to Zarr");
     }
 
@@ -447,14 +449,14 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
             GDALExtendedDataType::CreateString());
         zr_attr->Write(value.c_str());
     };
-    add_global_string_attr("Conventions","CF-1.6");
-    add_global_string_attr("source","gdalcubes"); // TODO: add version
-    std::string att_t = stref->has_regular_time() ? "regular" : "labeled";
-    add_global_string_attr("gdalcubes.datetime_type",att_t);
-    add_global_string_attr("gdalcubes.datetime_t0",stref->t0().to_string());
-    add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
-    add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
-    add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
+    // add_global_string_attr("Conventions","CF-1.6");
+    // add_global_string_attr("source","gdalcubes"); // TODO: add version
+    // std::string att_t = stref->has_regular_time() ? "regular" : "labeled";
+    // add_global_string_attr("gdalcubes.datetime_type",att_t);
+    // add_global_string_attr("gdalcubes.datetime_t0",stref->t0().to_string());
+    // add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
+    // add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
+    // add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
 
 
     std::string dtunit_str;
@@ -474,81 +476,150 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     dtunit_str += " since ";
     dtunit_str += stref->t0().to_string(datetime_unit::SECOND);
 
-    auto add_array_string_attr = [](std::shared_ptr<GDALMDArray> arr, std::string key, std::string value)
-    {
-        auto zr_attr = arr->CreateAttribute(key.c_str(), {},
-            GDALExtendedDataType::CreateString());
-        zr_attr->Write(value.c_str());
-    };
-
-    add_array_string_attr(v_dim_t, "standard_name","time");
-    add_array_string_attr(v_dim_t, "long_name","time");
-    add_array_string_attr(v_dim_t, "units",dtunit_str);
-    add_array_string_attr(v_dim_t, "calendar","gregorian");
-    add_array_string_attr(v_dim_t, "axis","T");
-
-    char *wkt;
-    srs_out.exportToWkt(&wkt);
-    std::string geoloc_array_str = utils::dbl_to_string(stref->left()) + " " + utils::dbl_to_string(stref->dx()) + " 0 " + utils::dbl_to_string(stref->top()) + " 0 " + utils::dbl_to_string(-stref->dy());
-    if (srs_out.IsProjected()) {
-        // GetLinearUnits(char **) is deprecated since GDAL 2.3.0
-#if GDAL_VERSION_MAJOR > 2 || (GDAL_VERSION_MAJOR == 2 && GDAL_VERSION_MINOR >= 3)
-        const char *unit = nullptr;
-#else
-        char *unit = nullptr;
-#endif
-        srs_out.GetLinearUnits(&unit);
-        add_array_string_attr(v_dim_y, "standard_name","projection_y_coordinate");
-        add_array_string_attr(v_dim_y, "long_name","y coordinate of projection");
-        add_array_string_attr(v_dim_y, "units",unit);
-        add_array_string_attr(v_dim_y, "axis","Y");
-        add_array_string_attr(v_dim_x, "standard_name","projection_x_coordinate");
-        add_array_string_attr(v_dim_x, "long_name","x coordinate of projection");
-        add_array_string_attr(v_dim_x, "units",unit);
-        add_array_string_attr(v_dim_x, "axis","X");
-    } else {
-        add_array_string_attr(v_dim_y, "standard_name","latitude");
-        add_array_string_attr(v_dim_y, "long_name","latitude");
-        add_array_string_attr(v_dim_y, "units","degrees_north");
-        add_array_string_attr(v_dim_y, "axis","Y");
-        add_array_string_attr(v_dim_x, "standard_name","longitude");
-        add_array_string_attr(v_dim_x, "long_name","longitude");
-        add_array_string_attr(v_dim_x, "units","degrees_east");
-        add_array_string_attr(v_dim_x, "axis","X");
-    }
-    auto v_crs = root->CreateMDArray("crs", {},
-          GDALExtendedDataType::Create(GDT_Byte));
-    add_array_string_attr(v_dim_x, "spatial_ref",wkt);
-    add_array_string_attr(v_dim_x, "GeoTransform",geoloc_array_str);
-    CPLFree(wkt);
-
-
+//     auto add_array_string_attr = [](std::shared_ptr<GDALMDArray> arr, std::string key, std::string value)
+//     {
+//         auto zr_attr = arr->CreateAttribute(key.c_str(), {},
+//             GDALExtendedDataType::CreateString());
+//         zr_attr->Write(value.c_str());
+//     };
+//
+//     add_array_string_attr(v_dim_t, "standard_name","time");
+//     add_array_string_attr(v_dim_t, "long_name","time");
+//     add_array_string_attr(v_dim_t, "units",dtunit_str);
+//     add_array_string_attr(v_dim_t, "calendar","gregorian");
+//     add_array_string_attr(v_dim_t, "axis","T");
+//
+//     char *wkt;
+//     srs_out.exportToWkt(&wkt);
+//     std::string geoloc_array_str = utils::dbl_to_string(stref->left()) + " " + utils::dbl_to_string(stref->dx()) + " 0 " + utils::dbl_to_string(stref->top()) + " 0 " + utils::dbl_to_string(-stref->dy());
+//     if (srs_out.IsProjected()) {
+//         // GetLinearUnits(char **) is deprecated since GDAL 2.3.0
+// #if GDAL_VERSION_MAJOR > 2 || (GDAL_VERSION_MAJOR == 2 && GDAL_VERSION_MINOR >= 3)
+//         const char *unit = nullptr;
+// #else
+//         char *unit = nullptr;
+// #endif
+//         srs_out.GetLinearUnits(&unit);
+//         add_array_string_attr(v_dim_y, "standard_name","projection_y_coordinate");
+//         add_array_string_attr(v_dim_y, "long_name","y coordinate of projection");
+//         add_array_string_attr(v_dim_y, "units",unit);
+//         add_array_string_attr(v_dim_y, "axis","Y");
+//         add_array_string_attr(v_dim_x, "standard_name","projection_x_coordinate");
+//         add_array_string_attr(v_dim_x, "long_name","x coordinate of projection");
+//         add_array_string_attr(v_dim_x, "units",unit);
+//         add_array_string_attr(v_dim_x, "axis","X");
+//     } else {
+//         add_array_string_attr(v_dim_y, "standard_name","latitude");
+//         add_array_string_attr(v_dim_y, "long_name","latitude");
+//         add_array_string_attr(v_dim_y, "units","degrees_north");
+//         add_array_string_attr(v_dim_y, "axis","Y");
+//         add_array_string_attr(v_dim_x, "standard_name","longitude");
+//         add_array_string_attr(v_dim_x, "long_name","longitude");
+//         add_array_string_attr(v_dim_x, "units","degrees_east");
+//         add_array_string_attr(v_dim_x, "axis","X");
+//     }
+//     auto v_crs = root->CreateMDArray("crs", {},
+//           GDALExtendedDataType::Create(GDT_Byte));
+//     add_array_string_attr(v_dim_x, "spatial_ref",wkt);
+//     add_array_string_attr(v_dim_x, "GeoTransform",geoloc_array_str);
+//     CPLFree(wkt);
 
 
 
+
+    ///////////////////////////////////////////////////////////////////
 
     // Create variables for actual data
     std::vector<std::shared_ptr<GDALMDArray>> v_bands;
+
+    GDALExtendedDataType ot = f64type;
+    if (packing.type != packed_export::packing_type::PACK_NONE) {
+        if (packing.type == packed_export::packing_type::PACK_UINT8) {
+            ot = GDALExtendedDataType::Create(GDT_Byte);
+        } else if (packing.type == packed_export::packing_type::PACK_UINT16) {
+            ot = GDALExtendedDataType::Create(GDT_UInt16);
+        } else if (packing.type == packed_export::packing_type::PACK_UINT32) {
+            ot = GDALExtendedDataType::Create(GDT_UInt32);
+        } else if (packing.type == packed_export::packing_type::PACK_INT8) {
+            ot = GDALExtendedDataType::Create(GDT_Int8);
+        } else if (packing.type == packed_export::packing_type::PACK_INT16) {
+            ot = GDALExtendedDataType::Create(GDT_Int16);
+        } else if (packing.type == packed_export::packing_type::PACK_INT32) {
+            ot = GDALExtendedDataType::Create(GDT_Int32);
+        //} else if (packing.type == packed_export::packing_type::PACK_FLOAT16) {
+        //     ot = GDALExtendedDataType::Create(GDT_Float16);
+        //     packing.offset = {0.0};
+        //     packing.scale = {1.0};
+        //     packing.nodata = {std::numeric_limits<float>::quiet_NaN()};
+        } else if (packing.type == packed_export::packing_type::PACK_FLOAT32) {
+            ot = GDALExtendedDataType::Create(GDT_Float32);
+            packing.offset = {0.0};
+            packing.scale = {1.0};
+            packing.nodata = {std::numeric_limits<float>::quiet_NaN()};
+        }
+
+        if (!(packing.scale.size() == 1 || packing.scale.size() == size_bands())) {
+            std::string msg;
+            if (size_bands() == 1) {
+                msg = "Packed export needs exactly 1 scale and offset value.";
+            } else {
+                msg = "Packed export needs either n or 1 scale / offset values for n bands.";
+            }
+            GCBS_ERROR(msg);
+            throw(msg);
+        }
+        if (packing.scale.size() != packing.offset.size()) {
+            std::string msg = "Unequal number of scale and offset values provided for packed export.";
+            GCBS_ERROR(msg);
+            throw(msg);
+        }
+        if (packing.scale.size() != packing.nodata.size()) {
+            std::string msg = "Unequal number of scale and nodata values provided for packed export.";
+            GCBS_ERROR(msg);
+            throw(msg);
+        }
+    }
+
+
     for (uint16_t ib=0; ib<size_bands(); ++ib) {
         // TODO: check for valid names needed (e.g. as in netCDF)?
         std::string vname = bands().get(ib).name;
 
         auto v = root->CreateMDArray(
-           vname.c_str(),{ zr_dim_t, zr_dim_y, zr_dim_x},
-           f64type, // TODO: packing
+           vname,{ zr_dim_t, zr_dim_y, zr_dim_x},
+           ot, // TODO: packing
            out_co.List()); // TODO: check if creation options are correct here
 
         v->SetSpatialRef(&srs_out);
-        add_array_string_attr(v, "grid_mapping","crs");
 
-        // TODO: set attributes: no data value, noffset, scale, etc.
-        //v->SetNoDataValue();
-        // ...
+        double pscale = bands().get(ib).scale;
+        double poff = bands().get(ib).offset;
+        double pNAN = NAN;
+        if (packing.type != packed_export::packing_type::PACK_NONE) {
+            if (packing.scale.size() > 1) {
+                pscale = packing.scale[ib];
+                poff = packing.offset[ib];
+                pNAN = packing.nodata[ib];
+            } else {
+                pscale = packing.scale[0];
+                poff = packing.offset[0];
+                pNAN = packing.nodata[0];
+            }
+        }
+
+        v->SetOffset(poff);
+        v->SetScale(pscale);
+        v->SetNoDataValue(pNAN);
+
+
+       // add_array_string_attr(v, "grid_mapping","crs");
         v_bands.push_back(v);
     }
-
     
 
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Start processing
 
     uint32_t chunk_error_count = 0;
@@ -566,10 +637,107 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
             auto type = GDALExtendedDataType::Create(GDT_Float64); // TODO: packing!
 
             for (uint16_t ib = 0; ib < bands().count(); ++ib) {
-                void* srcpos = (void *)(((double *)dat->buf()) + (int)ib * (int)csize[1] * (int)csize[2] * (int)csize[3]);
-                m.lock();
-                v_bands[ib]->Write(startp, countp,nullptr,nullptr, type, srcpos);
-                m.unlock();
+
+                if (packing.type != packed_export::packing_type::PACK_NONE) {
+                    double cur_scale;
+                    double cur_offset;
+                    double cur_nodata;
+                    if (packing.scale.size() == size_bands()) {
+                        cur_scale = packing.scale[ib];
+                        cur_offset = packing.offset[ib];
+                        cur_nodata = packing.nodata[ib];
+                    } else {
+                        cur_scale = packing.scale[0];
+                        cur_offset = packing.offset[0];
+                        cur_nodata = packing.nodata[0];
+                    }
+                    uint8_t *packedbuf = nullptr;
+                    if (packing.type == packed_export::packing_type::PACK_UINT8) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(uint8_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((uint8_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_UINT16) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(uint16_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((uint16_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_UINT32) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(uint32_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((uint32_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_INT8) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(int8_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((int8_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_INT16) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(int16_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((int16_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_INT32) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(int32_t));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            if (std::isnan(v)) {
+                                v = cur_nodata;
+                            } else {
+                                v = std::round((v - cur_offset) / cur_scale);  // use std::round to avoid truncation bias
+                            }
+                            ((int32_t *)(packedbuf))[iv] = v;
+                        }
+                    } else if (packing.type == packed_export::packing_type::PACK_FLOAT32) {
+                        packedbuf = (uint8_t *)std::malloc(dat->size()[1] * dat->size()[2] * dat->size()[3] * sizeof(float));
+                        for (uint32_t iv = 0; iv < dat->size()[1] * dat->size()[2] * dat->size()[3]; ++iv) {
+                            double &v = ((double *)(dat->buf()))[ib * dat->size()[1] * dat->size()[2] * dat->size()[3] + iv];
+                            ((float *)(packedbuf))[iv] = v;
+                        }
+
+                    }
+
+                    m.lock();
+                    v_bands[ib]->Write(startp, countp,nullptr,nullptr, v_bands[ib]->GetDataType() ,  (void *)(packedbuf));
+                    m.unlock();
+                    if (packedbuf) std::free(packedbuf);
+                } else { // No packing
+                    void* srcpos = (void *)(((double *)dat->buf()) + (int)ib * (int)csize[1] * (int)csize[2] * (int)csize[3]);
+                    m.lock();
+                    v_bands[ib]->Write(startp, countp,nullptr,nullptr, v_bands[ib]->GetDataType() , srcpos);
+                    m.unlock();
+                }
+
             }
         }
         prg->increment((double)1 / (double)this->count_chunks()); // TODO: adapt progress bar if overviews are to be created
