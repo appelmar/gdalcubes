@@ -288,8 +288,6 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
                       std::map<std::string, std::string> creation_options,
                       packed_export packing, std::shared_ptr<chunk_processor> p) {
 
-    // TODO: add metadata as attributes, e.g. JSON graph, offset, scales, ...
-
     std::string op = filesystem::make_absolute(path);
 
     if (filesystem::is_directory(op)) {
@@ -450,79 +448,25 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
         zr_attr->Write(value.c_str());
     };
     // add_global_string_attr("Conventions","CF-1.6");
-    // add_global_string_attr("source","gdalcubes"); // TODO: add version
-    // std::string att_t = stref->has_regular_time() ? "regular" : "labeled";
-    // add_global_string_attr("gdalcubes.datetime_type",att_t);
-    // add_global_string_attr("gdalcubes.datetime_t0",stref->t0().to_string());
-    // add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
-    // add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
-    // add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
+    add_global_string_attr("source","gdalcubes"); // TODO: add version
+    std::string vn = std::to_string(GDALCUBES_VERSION_MAJOR) + "." + std::to_string(GDALCUBES_VERSION_MINOR) + "." + std::to_string(GDALCUBES_VERSION_PATCH);
+    add_global_string_attr("gdalcubes.version", vn);
+    add_global_string_attr("gdal.version", GDAL_RELEASE_NAME);
+    int vmajor = 0;
+    int vminor = 0;
+    int vpatch = 0;
+    OSRGetPROJVersion(&vmajor, &vminor, &vpatch);
+    add_global_string_attr("proj.version", std::to_string(vmajor) + "." + std::to_string(vminor) + "." + std::to_string(vpatch));
+    OGRGetGEOSVersion(&vmajor, &vminor, &vpatch);
+    add_global_string_attr("geos.version", std::to_string(vmajor) + "." + std::to_string(vminor) + "." + std::to_string(vpatch));
 
-
-    std::string dtunit_str;
-    if (stref->dt().dt_unit == datetime_unit::YEAR) {
-        dtunit_str = "years";  // WARNING: UDUNITS defines a year as 365.2425 days
-    } else if (stref->dt().dt_unit == datetime_unit::MONTH) {
-        dtunit_str = "months";  // WARNING: UDUNITS defines a month as 1/12 year
-    } else if (stref->dt().dt_unit == datetime_unit::DAY) {
-        dtunit_str = "days";
-    } else if (stref->dt().dt_unit == datetime_unit::HOUR) {
-        dtunit_str = "hours";
-    } else if (stref->dt().dt_unit == datetime_unit::MINUTE) {
-        dtunit_str = "minutes";
-    } else if (stref->dt().dt_unit == datetime_unit::SECOND) {
-        dtunit_str = "seconds";
-    }
-    dtunit_str += " since ";
-    dtunit_str += stref->t0().to_string(datetime_unit::SECOND);
-
-//     auto add_array_string_attr = [](std::shared_ptr<GDALMDArray> arr, std::string key, std::string value)
-//     {
-//         auto zr_attr = arr->CreateAttribute(key.c_str(), {},
-//             GDALExtendedDataType::CreateString());
-//         zr_attr->Write(value.c_str());
-//     };
-//
-//     add_array_string_attr(v_dim_t, "standard_name","time");
-//     add_array_string_attr(v_dim_t, "long_name","time");
-//     add_array_string_attr(v_dim_t, "units",dtunit_str);
-//     add_array_string_attr(v_dim_t, "calendar","gregorian");
-//     add_array_string_attr(v_dim_t, "axis","T");
-//
-//     char *wkt;
-//     srs_out.exportToWkt(&wkt);
-//     std::string geoloc_array_str = utils::dbl_to_string(stref->left()) + " " + utils::dbl_to_string(stref->dx()) + " 0 " + utils::dbl_to_string(stref->top()) + " 0 " + utils::dbl_to_string(-stref->dy());
-//     if (srs_out.IsProjected()) {
-//         // GetLinearUnits(char **) is deprecated since GDAL 2.3.0
-// #if GDAL_VERSION_MAJOR > 2 || (GDAL_VERSION_MAJOR == 2 && GDAL_VERSION_MINOR >= 3)
-//         const char *unit = nullptr;
-// #else
-//         char *unit = nullptr;
-// #endif
-//         srs_out.GetLinearUnits(&unit);
-//         add_array_string_attr(v_dim_y, "standard_name","projection_y_coordinate");
-//         add_array_string_attr(v_dim_y, "long_name","y coordinate of projection");
-//         add_array_string_attr(v_dim_y, "units",unit);
-//         add_array_string_attr(v_dim_y, "axis","Y");
-//         add_array_string_attr(v_dim_x, "standard_name","projection_x_coordinate");
-//         add_array_string_attr(v_dim_x, "long_name","x coordinate of projection");
-//         add_array_string_attr(v_dim_x, "units",unit);
-//         add_array_string_attr(v_dim_x, "axis","X");
-//     } else {
-//         add_array_string_attr(v_dim_y, "standard_name","latitude");
-//         add_array_string_attr(v_dim_y, "long_name","latitude");
-//         add_array_string_attr(v_dim_y, "units","degrees_north");
-//         add_array_string_attr(v_dim_y, "axis","Y");
-//         add_array_string_attr(v_dim_x, "standard_name","longitude");
-//         add_array_string_attr(v_dim_x, "long_name","longitude");
-//         add_array_string_attr(v_dim_x, "units","degrees_east");
-//         add_array_string_attr(v_dim_x, "axis","X");
-//     }
-//     auto v_crs = root->CreateMDArray("crs", {},
-//           GDALExtendedDataType::Create(GDT_Byte));
-//     add_array_string_attr(v_dim_x, "spatial_ref",wkt);
-//     add_array_string_attr(v_dim_x, "GeoTransform",geoloc_array_str);
-//     CPLFree(wkt);
+    std::string att_t = stref->has_regular_time() ? "regular" : "labeled";
+    add_global_string_attr("gdalcubes.datetime_type",att_t);
+    add_global_string_attr("gdalcubes.datetime_t0",stref->t0().to_string());
+    add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
+    add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
+    add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
+    //add_global_string_attr("gdalcubes.zarr_layout","/BTYX");
 
 
 
@@ -587,7 +531,7 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
 
         auto v = root->CreateMDArray(
            vname,{ zr_dim_t, zr_dim_y, zr_dim_x},
-           ot, // TODO: packing
+           ot,
            out_co.List()); // TODO: check if creation options are correct here
 
         v->SetSpatialRef(&srs_out);
@@ -611,11 +555,8 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
         v->SetScale(pscale);
         v->SetNoDataValue(pNAN);
 
-
-       // add_array_string_attr(v, "grid_mapping","crs");
         v_bands.push_back(v);
     }
-    
 
 
 

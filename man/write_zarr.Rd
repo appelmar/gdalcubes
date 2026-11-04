@@ -2,12 +2,11 @@
 % Please edit documentation in R/cube.R
 \name{write_zarr}
 \alias{write_zarr}
-\title{Export a data cube as Zarr dataset}
+\title{Export a data cube as a Zarr dataset}
 \usage{
 write_zarr(
   x,
   path = tempfile(pattern = "gdalcubes", fileext = ".zarr"),
-  overwrite = FALSE,
   overviews = FALSE,
   rsmpl_overview = "nearest",
   creation_options = NULL,
@@ -15,35 +14,38 @@ write_zarr(
 )
 }
 \arguments{
-\item{x}{a data cube proxy object (class cube)}
+\item{x}{input data cube (class cube)}
 
-\item{overwrite}{logical; overwrite output file if it already exists}
+\item{path}{destination path}
+
+\item{overviews}{logical; generate overview images according to the Zarr multiscales convention (see Details)}
+
+\item{rsmpl_overview}{resampling method for overviews (image pyramid) generation (see \url{https://gdal.org/en/stable/programs/gdaladdo.html} for available methods)}
+
+\item{creation_options}{additional creation options for resulting Zarr dataset, e.g., to define compression (see \url{https://gdal.org/en/stable/drivers/raster/zarr.html#creation-options})}
 
 \item{pack}{reduce output file size by packing values (see Details), defaults to no packing}
-
-\item{fname}{output file name}
 }
 \value{
 returns (invisibly) the path of the created Zarr dataset
 }
 \description{
-This function will read chunks of a data cube and write them to a single Zarr dateset.
+Read and process all chunks of an input data cube and write results into a single Zarr dataset.
 }
 \details{
 The resulting Zarr file(s) contain three dimensions (t, y, x) and bands as variables.
 
-To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
-integer data type for storage (only supported if \code{chunked = TRUE}). The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+The creation of overviews / pyramids requires GDAL version 3.13 and above. Overviews are supported only with Zarr V3 datasets (see \url{https://gdal.org/en/stable/drivers/raster/zarr.html#multiscales-overviews-pyramids}).
+
+To reduce the size of created files, compression can be specified as creation options (e.g. by setting \code{creation_options = list("COMPRESS"="BLOSC"))}). Additionally, values can be packed by applying a scale factor 
+and an offset value and using a smaller integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
 and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
 \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
 The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
 original scale.
 }
-\note{
-Packing is not yet implemented.
-}
 \examples{
-# TODO
+\donttest{
 # create image collection from example Landsat data only 
 # if not already done in other examples
 if (!file.exists(file.path(tempdir(), "L8.db"))) {
@@ -56,7 +58,11 @@ L8.col = image_collection(file.path(tempdir(), "L8.db"))
 v = cube_view(extent=list(left=388941.2, right=766552.4, 
               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-write_zarr(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".zarr"))
+x = select_bands(raster_cube(L8.col, v), c("B04", "B05"))
+write_zarr(x, tempfile(fileext = ".zarr"))
+
+write_zarr(x, tempfile(fileext = ".zarr"), creation_options=list("FORMAT"="ZARR_V3","COMPRESS"="BLOSC"))
+}
 }
 \seealso{
 \code{\link{gdalcubes_options}}

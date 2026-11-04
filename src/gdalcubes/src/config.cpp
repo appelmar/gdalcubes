@@ -56,8 +56,6 @@ version_info config::get_version_info() {
     v.VERSION_PATCH = GDALCUBES_VERSION_PATCH;
     v.BUILD_DATE = __DATE__;
     v.BUILD_TIME = __TIME__;
-    v.GIT_COMMIT = GDALCUBES_GIT_COMMIT;
-    v.GIT_DESC = GDALCUBES_GIT_DESC;
     return v;
 }
 

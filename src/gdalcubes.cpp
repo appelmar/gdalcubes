@@ -240,9 +240,7 @@ Rcpp::List gc_version() {
       Rcpp::Named("VERSION_MINOR") = v.VERSION_MINOR ,
       Rcpp::Named("VERSION_PATCH") = v.VERSION_PATCH ,
       Rcpp::Named("BUILD_DATE") = v.BUILD_DATE,
-      Rcpp::Named("BUILD_TIME") = v.BUILD_TIME,
-      Rcpp::Named("GIT_DESC") = v.GIT_DESC,
-      Rcpp::Named("GIT_COMMIT") = v.GIT_COMMIT));
+      Rcpp::Named("BUILD_TIME") = v.BUILD_TIME));
 }
 
 // [[Rcpp::export]]
@@ -1360,6 +1358,9 @@ void gc_eval_cube( SEXP pin, std::string outfile, uint8_t compression_level=0, b
       else if (type == "int32") {
         p.type = packed_export::packing_type::PACK_INT32;
       }
+      else if (type == "float32") {
+        p.type = packed_export::packing_type::PACK_FLOAT32;
+      }
       else {
         // TODO: NO PACKING-> WARNING
       }
@@ -1427,6 +1428,9 @@ void gc_write_zarr(SEXP pin, std::string outfile, bool overviews = false,
       else if (type == "int32") {
         p.type = packed_export::packing_type::PACK_INT32;
       }
+      else if (type == "float32") {
+        p.type = packed_export::packing_type::PACK_FLOAT32;
+      }
       else {
         // TODO: NO PACKING-> WARNING
       }
@@ -1482,6 +1486,9 @@ void gc_write_tif( SEXP pin, std::string dir, std::string prefix="",
       }
       else if (type == "int32") {
         p.type = packed_export::packing_type::PACK_INT32;
+      }
+      else if (type == "float32") {
+        p.type = packed_export::packing_type::PACK_FLOAT32;
       }
       else {
         // TODO: NO PACKING-> WARNING

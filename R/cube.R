@@ -939,36 +939,38 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 
 
 
-#' Export a data cube as Zarr dataset
+#' Export a data cube as a Zarr dataset
 #' 
-#' This function will read chunks of a data cube and write them to a single Zarr dateset.
+#' Read and process all chunks of an input data cube and write results into a single Zarr dataset.
 #' 
 #' @seealso \code{\link{gdalcubes_options}} 
-#' @param x a data cube proxy object (class cube)
-#' @param fname output file name
-#' @param overwrite logical; overwrite output file if it already exists
-
+#' @param x input data cube (class cube)
+#' @param path destination path
 #' @param pack reduce output file size by packing values (see Details), defaults to no packing
-
+#' @param overviews logical; generate overview images according to the Zarr multiscales convention (see Details) 
+#' @param rsmpl_overview resampling method for overviews (image pyramid) generation (see \url{https://gdal.org/en/stable/programs/gdaladdo.html} for available methods)
+#' @param creation_options additional creation options for resulting Zarr dataset, e.g., to define compression (see \url{https://gdal.org/en/stable/drivers/raster/zarr.html#creation-options})
 #' 
 #' @seealso \code{\link{pack_minmax}}
 #' 
 #' @details 
+#' 
+#' 
 #' The resulting Zarr file(s) contain three dimensions (t, y, x) and bands as variables.
 #' 
-#' To reduce the size of created files, values can be packed by applying a scale factor and an offset value and using a smaller
-#' integer data type for storage (only supported if \code{chunked = TRUE}). The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
+#' The creation of overviews / pyramids requires GDAL version 3.13 and above. Overviews are supported only with Zarr V3 datasets (see \url{https://gdal.org/en/stable/drivers/raster/zarr.html#multiscales-overviews-pyramids}).
+#' 
+#' To reduce the size of created files, compression can be specified as creation options (e.g. by setting \code{creation_options = list("COMPRESS"="BLOSC"))}). Additionally, values can be packed by applying a scale factor 
+#' and an offset value and using a smaller integer data type for storage. The \code{pack} argument can be either NULL (the default), or a list with elements \code{type}, \code{scale}, \code{offset}, 
 #' and \code{nodata}. \code{type} can be any of "uint8", "uint16" , "uint32", "int16", or "int32". \code{scale}, \code{offset}, and 
 #' \code{nodata} must be numeric vectors with length one or length equal to the number of data cube bands (to use different values for different bands). 
 #' The helper function  \code{\link{pack_minmax}} can be used to derive offset and scale values with maximum precision from minimum and maximum data values on
 #' original scale.
 #' 
-#' @note Packing is not yet implemented.
-#' 
 #' @return returns (invisibly) the path of the created Zarr dataset
 #' 
 #' @examples 
-#' # TODO
+#' \donttest{
 #' # create image collection from example Landsat data only 
 #' # if not already done in other examples
 #' if (!file.exists(file.path(tempdir(), "L8.db"))) {
@@ -981,16 +983,21 @@ write_ncdf <- function(x, fname = tempfile(pattern = "gdalcubes", fileext = ".nc
 #' v = cube_view(extent=list(left=388941.2, right=766552.4, 
 #'               bottom=4345299, top=4744931, t0="2018-04", t1="2018-04"),
 #'               srs="EPSG:32618", nx = 497, ny=526, dt="P1M")
-#' write_zarr(select_bands(raster_cube(L8.col, v), c("B04", "B05")), fname=tempfile(fileext = ".zarr"))
+#' x = select_bands(raster_cube(L8.col, v), c("B04", "B05"))
+#' write_zarr(x, tempfile(fileext = ".zarr"))
+#' 
+#' write_zarr(x, tempfile(fileext = ".zarr"), creation_options=list("FORMAT"="ZARR_V3","COMPRESS"="BLOSC"))
+#' }
 #' @export
-write_zarr <- function(x, path = tempfile(pattern = "gdalcubes", fileext = ".zarr"), overwrite = FALSE, 
+write_zarr <- function(x, path = tempfile(pattern = "gdalcubes", fileext = ".zarr"),
                        overviews = FALSE, rsmpl_overview="nearest", creation_options = NULL,  pack = NULL) {
   stopifnot(is.cube(x))
   path = path.expand(path)
-  if (!overwrite && file.exists(path)) {
-    stop("Destination file already exists, please change the output filename or set overwrite = TRUE")
-  }
   
+  if (file.exists(path)) {
+    stop("Destination path already exists")
+  }
+    
   
   if (!is.null(pack)) {
     stopifnot(is.list(pack))
@@ -1001,23 +1008,8 @@ write_zarr <- function(x, path = tempfile(pattern = "gdalcubes", fileext = ".zar
     stopifnot(length(pack$offset) == length(pack$nodata))
   }
   
-  
-  if (.pkgenv$use_cube_cache) {
-    j = gc_simple_hash(as_json(x))
-    if (!is.null(.pkgenv$cube_cache[[j]])
-        && file.exists(.pkgenv$cube_cache[[j]])) {
-      file.copy(from=.pkgenv$cube_cache[[j]], to = path, overwrite=TRUE)
-    }
-    else {
-      gc_write_zarr(x, path, overviews, rsmpl_overview, creation_options, pack) # TODO: caching?
-    }
-  }
-  else {
-    gc_write_zarr(x, path, overviews, rsmpl_overview, creation_options, pack)
-  }
-  
+  gc_write_zarr(x, path, overviews, rsmpl_overview, creation_options, pack)
   invisible(path)
-
 }
 
 

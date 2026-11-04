@@ -67,16 +67,6 @@ struct version_info {
     * @brief Build data (from __TIME__ macro)
     */
     std::string BUILD_TIME;
-
-    /**
-    * @brief git description (from git describe), i.e., tag and commit
-    */
-    std::string GIT_DESC;
-
-    /**
-    * @brief Last git commit (build might contain local changes anyway)
-    */
-    std::string GIT_COMMIT;
 };
 
 /**
