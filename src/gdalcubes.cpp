@@ -910,6 +910,21 @@ SEXP gc_create_ncdf_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool
 }
 
 
+// [[Rcpp::export]]
+SEXP gc_create_zarr_cube(std::string path, Rcpp::IntegerVector chunk_sizes, bool auto_unpack) {
+  
+  try {
+    std::shared_ptr<zarr_cube>* x  = new std::shared_ptr<zarr_cube>( zarr_cube::create(path, auto_unpack));
+    if (chunk_sizes.size() == 3) {
+      (*x)->set_chunk_size(chunk_sizes[0], chunk_sizes[1], chunk_sizes[2]);
+    }
+    Rcpp::XPtr< std::shared_ptr<zarr_cube> > p(x, true) ;
+    return p;
+  }
+  catch (std::string s) {
+    Rcpp::stop(s);
+  }
+}
 
 
 

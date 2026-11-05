@@ -60,6 +60,7 @@
 #include "utils.h"
 #include "window_space.h"
 #include "window_time.h"
+#include "zarr_cube.h"
 
 #ifndef GDALCUBES_NO_SWARM
 //#include "swarm.h"

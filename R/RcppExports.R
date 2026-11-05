@@ -101,6 +101,10 @@ gc_create_ncdf_cube <- function(path, chunk_sizes, auto_unpack) {
     .Call('_gdalcubes_gc_create_ncdf_cube', PACKAGE = 'gdalcubes', path, chunk_sizes, auto_unpack)
 }
 
+gc_create_zarr_cube <- function(path, chunk_sizes, auto_unpack) {
+    .Call('_gdalcubes_gc_create_zarr_cube', PACKAGE = 'gdalcubes', path, chunk_sizes, auto_unpack)
+}
+
 gc_create_dummy_cube <- function(v, nbands, fill, chunk_sizes) {
     .Call('_gdalcubes_gc_create_dummy_cube', PACKAGE = 'gdalcubes', v, nbands, fill, chunk_sizes)
 }

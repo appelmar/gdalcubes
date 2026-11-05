@@ -290,11 +290,8 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
 
     std::string op = filesystem::make_absolute(path);
 
-    if (filesystem::is_directory(op)) {
-        throw std::string("ERROR in cube::write_zarr(): output already exists and is a directory.");
-    }
     if (filesystem::exists(op)) {
-        GCBS_INFO("Existing file '" + op + "' will be overwritten for Zarr export");
+        throw std::string("ERROR in cube::write_zarr(): destination already exists.");
     }
 
     if (!filesystem::exists(filesystem::parent(op))) {
@@ -351,12 +348,10 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
         std::transform(key.begin(), key.end(), key.begin(), (int (*)(int))std::toupper);
         if (key == "BLOCKSIZE") {
             GCBS_WARN("'BLOCKSIZE' creation option will be ignored, using chunk sizes of the data cube instead");
-            continue;
+            continue; // TODO: check if it makes sense to allow overwriting block sizes
         }
         out_co.AddNameValue(it->first.c_str(), it->second.c_str());
     }
-
-
 
     auto dataset = std::unique_ptr<GDALDataset>(driver->CreateMultiDimensional(path.c_str(), nullptr, out_co.List()));  // TODO: check if creation options are correct here
     if (!dataset) {
@@ -404,12 +399,15 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     }
 
 
+
+
     auto v_dim_t = root->CreateMDArray("time", {zr_dim_t},
        GDALExtendedDataType::Create(GDT_Int32));
     auto v_dim_y = root->CreateMDArray("y", {zr_dim_y},
        GDALExtendedDataType::Create(GDT_Float64));
     auto v_dim_x = root->CreateMDArray("x", {zr_dim_x},
        GDALExtendedDataType::Create(GDT_Float64));
+
 
     GUInt64 xoffst[] = { 0 };
     std::size_t xcount[] = { static_cast<std::size_t>(size_x()) };
@@ -440,6 +438,8 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
 
     OGRSpatialReference srs_out;
     srs_out.SetFromUserInput(_st_ref->srs().c_str());
+    std::string geoloc_array_str = utils::dbl_to_string(stref->left()) + " " + utils::dbl_to_string(stref->dx()) + " 0 " + utils::dbl_to_string(stref->top()) + " 0 " + utils::dbl_to_string(-stref->dy());
+
     // Add metadata as attributes
     auto add_global_string_attr = [&root](std::string key, std::string value)
     {
@@ -466,7 +466,38 @@ void cube::write_zarr(std::string path, bool overviews, std::string overview_res
     add_global_string_attr("gdalcubes.datetime_t1",stref->t1().to_string());
     add_global_string_attr("gdalcubes.datetime_dt",stref->dt().to_string());
     add_global_string_attr("gdalcubes.process_graph",make_constructible_json().dump());
-    //add_global_string_attr("gdalcubes.zarr_layout","/BTYX");
+    add_global_string_attr("gdalcubes.geotransform",geoloc_array_str);
+
+
+
+    // Set time medatadata acooirding to UDUNITS
+    std::string dtunit_str;
+    if (stref->dt().dt_unit == datetime_unit::YEAR) {
+        dtunit_str = "years";  // WARNING: UDUNITS defines a year as 365.2425 days
+    } else if (stref->dt().dt_unit == datetime_unit::MONTH) {
+        dtunit_str = "months";  // WARNING: UDUNITS defines a month as 1/12 year
+    } else if (stref->dt().dt_unit == datetime_unit::DAY) {
+        dtunit_str = "days";
+    } else if (stref->dt().dt_unit == datetime_unit::HOUR) {
+        dtunit_str = "hours";
+    } else if (stref->dt().dt_unit == datetime_unit::MINUTE) {
+        dtunit_str = "minutes";
+    } else if (stref->dt().dt_unit == datetime_unit::SECOND) {
+        dtunit_str = "seconds";
+    }
+    dtunit_str += " since ";
+    dtunit_str += stref->t0().to_string(datetime_unit::SECOND);
+    auto add_array_string_attr = [](std::shared_ptr<GDALMDArray> arr, std::string key, std::string value)
+    {
+        auto zr_attr = arr->CreateAttribute(key.c_str(), {},
+            GDALExtendedDataType::CreateString());
+        zr_attr->Write(value.c_str());
+    };
+    add_array_string_attr(v_dim_t, "standard_name","time");
+    add_array_string_attr(v_dim_t, "long_name","time");
+    add_array_string_attr(v_dim_t, "units",dtunit_str);
+    add_array_string_attr(v_dim_t, "calendar","gregorian");
+    add_array_string_attr(v_dim_t, "axis","T");
 
 
 

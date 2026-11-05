@@ -443,6 +443,23 @@ void cube_factory::register_default() {
             }
             return x;
         }));
+
+    cube_generators.insert(std::make_pair<std::string, std::function<std::shared_ptr<cube>(json11::Json&)>>(
+        "zarr_cube", [](json11::Json& j) {
+            bool auto_unpack = j["auto_unpack"].bool_value();
+            auto x = zarr_cube::create(j["path"].string_value(), auto_unpack);
+            if (!j["chunk_size"].is_null()) {
+                x->set_chunk_size(j["chunk_size"][0].int_value(), j["chunk_size"][1].int_value(), j["chunk_size"][2].int_value());
+            }
+            if (!j["band_selection"].is_null()) {
+                std::vector<std::string> bands;
+                for (uint32_t i = 0; i < j["band_selection"].array_items().size(); ++i) {
+                    bands.push_back(j["band_selection"][i].string_value());
+                }
+                x->select_bands(bands);
+            }
+            return x;
+        }));
 }
 
 }  // namespace gdalcubes
