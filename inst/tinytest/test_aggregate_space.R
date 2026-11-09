@@ -50,11 +50,47 @@ gdalcubes:::.raster_cube_dummy(v, 3, 2.0, chunking = c(1,3,3)) |>
 expect_true(all(z == 0))
 
 
-gdalcubes:::.raster_cube_dummy(v, 2, 1.0, chunking = c(1,3,3)) |>
-  aggregate_space(dx = 3, dy = 3, method = "prod") |>
-  as_array() -> z
-expect_true(all(z == 1))
+
+### 
+# library(terra)
+# x <- rast(nrows=10, ncols=10, xmin=0, xmax=10, ymin=0,ymax=10)
+# values(x) <- m <- matrix(1:100, nrow=10, ncol=10, byrow = TRUE)
+# writeRaster(x, "m.tif",overwrite=TRUE)
+# plot(x)
 
 
+#xx |> aggregate_space(dx=2.7, dy=2.7, method = "median") |> 
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,10,10)) |> 
+  aggregate_space(fact=5, method = "mean") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,28,73,78), nrow=2, byrow=TRUE))
+  
+
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,3,3)) |> 
+  aggregate_space(fact=5, method = "mean") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,28,73,78), nrow=2, byrow=TRUE))
+
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,1,1)) |> 
+  aggregate_space(fact=5, method = "mean") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,28,73,78), nrow=2, byrow=TRUE))
+
+
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,3,3)) |> 
+  aggregate_space(dx=4.2, dy = 4.2, method = "max") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,27,30, 63, 67, 70, 93, 97, 100), nrow=3, byrow=TRUE))
+
+
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,9,2)) |> 
+  aggregate_space(dx=4.2, dy = 4.2, method = "max") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,27,30, 63, 67, 70, 93, 97, 100), nrow=3, byrow=TRUE))
+
+a = stack_cube( "m.tif",bands = "B1",datetime_values = "2000-01-01",chunking = c(1,1,1)) |> 
+  aggregate_space(dx=4.2, dy = 4.2, method = "max") |> 
+  as_array() |> drop()
+expect_equivalent(a, matrix(c(23,27,30, 63, 67, 70, 93, 97, 100), nrow=3, byrow=TRUE))
 
 
