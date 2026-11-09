@@ -393,6 +393,9 @@ class cube_stref_labeled_time : public cube_stref_regular {
     virtual coords_nd<uint32_t, 3> cube_coords(coords_st p) override;
 
     virtual datetime datetime_at_index(uint32_t index) override {
+        if (index == _t_values.size()) {
+            return _t_values[index-1] + _dt;
+        }
         return _t_values[index];
     }
 

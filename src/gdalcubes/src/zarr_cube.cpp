@@ -83,6 +83,12 @@ zarr_cube::zarr_cube(std::string path, bool auto_unpack) : cube(), _auto_unpack(
             spatial_ref_str = wkt_out;
             CPLFree(wkt_out);
 
+            // Assuming the same chunk size for all bands
+            auto csize = arr->GetBlockSize();
+            _chunk_size[0] = csize[0]; // TODO; How to make sure that the order is t,y,x?
+            _chunk_size[1] = csize[1];
+            _chunk_size[2] = csize[2];
+
             // TODO: if no spatial reference, skip
             // TODO: support two-dimensional arrays with dropped time dimension if their length is 1?
 

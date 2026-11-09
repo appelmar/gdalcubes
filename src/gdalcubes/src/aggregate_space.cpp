@@ -26,7 +26,6 @@
 #include "aggregate_space.h"
 
 
-
 struct aggregator_space_slice_singleband {
     virtual ~aggregator_space_slice_singleband() {}
 
@@ -189,7 +188,7 @@ struct count_aggregtor_space_slice_singleband : public aggregator_space_slice_si
 
 struct median_aggregtor_space_slice_singleband : public aggregator_space_slice_singleband {
     void init(double *out, uint32_t size_t, uint32_t size_y, uint32_t size_x) override {
-        _m_buckets.resize(size_t * size_x *size_y, std::vector<double>());
+        _m_buckets.resize(size_t * size_x * size_y, std::vector<double>());
         for (uint32_t ixyt = 0; ixyt < size_t *size_x *size_y; ++ixyt) {
             out[ixyt] = NAN;
         }
@@ -208,13 +207,16 @@ struct median_aggregtor_space_slice_singleband : public aggregator_space_slice_s
     void finalize(double *out, uint32_t size_t, uint32_t size_y, uint32_t size_x) override {
         for (uint32_t ixyt = 0; ixyt < size_t * size_x * size_y; ++ixyt) {
             std::vector<double> &list = _m_buckets[ixyt];
-            std::sort(list.begin(), list.end());
             if (list.size() == 0) {
                 out[ixyt] = NAN;
-            } else if (list.size() % 2 == 1) {
-                out[ixyt] = list[list.size() / 2];
-            } else {
-                out[ixyt] = (list[list.size() / 2] + list[list.size() / 2 - 1]) / ((double)2);
+            }
+            else {
+                std::sort(list.begin(), list.end());
+                if (list.size() % 2 == 1) {
+                    out[ixyt] = list[list.size() / 2];
+                } else {
+                    out[ixyt] = (list[list.size() / 2] + list[list.size() / 2 - 1]) / ((double)2);
+                }
             }
         }
     }
@@ -296,10 +298,10 @@ std::shared_ptr<chunk_data> aggregate_space_cube::read_chunk(chunkid_t id) {
     // 2. iterate over the chunks
     // 3. iterate over pixels of input chunks and update aggregator
 
-    double ix_from = (cbounds.s.left - _in_cube->st_reference()->left()) / _in_cube->st_reference()->dx();
-    double ix_to = (- 1 + (cbounds.s.right - _in_cube->st_reference()->left()) / _in_cube->st_reference()->dx());
-    double iy_from = (_in_cube->st_reference()->top() - cbounds.s.top) / _in_cube->st_reference()->dy();
-    double iy_to =  -1 + (_in_cube->st_reference()->top() - cbounds.s.bottom) / _in_cube->st_reference()->dy();
+    double ix_from =(cbounds.s.left - _in_cube->st_reference()->left()) / _in_cube->st_reference()->dx() + 0.5;
+    double ix_to = (- 1 + (cbounds.s.right - _in_cube->st_reference()->left()) / _in_cube->st_reference()->dx()) + 0.5;
+    double iy_from = (_in_cube->st_reference()->top() - cbounds.s.top) / _in_cube->st_reference()->dy() + 0.5;
+    double iy_to =  -1 + (_in_cube->st_reference()->top() - cbounds.s.bottom) / _in_cube->st_reference()->dy() + 0.5;
 
     // some check to be safe
     //if (ix_from < 0) ix_from = 0;
@@ -456,16 +458,16 @@ std::shared_ptr<chunk_data> aggregate_space_cube::read_chunk(chunkid_t id) {
                     }
                 }
             }
-
-
         }
     }
 
-    for (uint16_t ib=0; ib<_bands.count(); ++ib) {
-        agg[ib]->finalize(((double*)out->buf()) + ib * size_tyx[0] * size_tyx[1] * size_tyx[2],  size_tyx[0],  size_tyx[1],  size_tyx[2]);
-    }
-    for (uint16_t ib=0; ib<_bands.count(); ++ib) {
-        if (agg[ib] != nullptr) delete agg[ib];
+    if (chunk_initialized) {
+        for (uint16_t ib=0; ib<_bands.count(); ++ib) {
+            agg[ib]->finalize(((double*)out->buf()) + ib * size_tyx[0] * size_tyx[1] * size_tyx[2],  size_tyx[0],  size_tyx[1],  size_tyx[2]);
+        }
+        for (uint16_t ib=0; ib<_bands.count(); ++ib) {
+            if (agg[ib] != nullptr) delete agg[ib];
+        }
     }
     return out;
 }
